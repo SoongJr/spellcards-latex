@@ -46,7 +46,6 @@
 \newif\ifappendix{}
 \newif\iflistoffigures{}
 \newif\iflistoftables{}
-\newif\ifacronym{}
 \newif\iflistofformeln{}
 \newif\ifassignment{}
 \newif\ifabschlussarbeit{}
@@ -108,12 +107,14 @@
     \listoftables
   \fi
 
-  % Abkürzungsverzeichnis %%%%%%%%%%%%%%%%%%%%%%
-  \ifacronym{}
-    \printglossary[type=\acronymtype,title=Abkürzungsverzeichnis]
-  \fi
-
   \ifglossary{}
+    % Abkürzungsverzeichnis %%%%%%%%%%%%%%%%%%%%%%
+    % (nur wenn beim usepackage von glossaries-extra die Option "abbreviations" angegeben wurde)
+    \makeatletter
+    \@ifundefined{printabbreviations}{}{\printabbreviations[title=Abkürzungsverzeichnis]}
+    \makeatother
+
+    % sonstiges Glossar
     \printglossary[title=Glossar]
   \fi
 

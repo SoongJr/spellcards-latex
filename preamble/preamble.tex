@@ -86,13 +86,11 @@
 % Abkürzungen werden nur im Glossar angezeigt, wenn sie im Dokument mindestens einmal genutzt wurden
 \usepackage[
   % style=long,
-  toc, % Glossar erscheint im Inhaltsverzeichnis
-  acronym, % Setzt Akronyme in ein gesondertes Verzeichnis
+  abbreviations, % Setzt Abkürzungen in ein gesondertes Verzeichnis (nur wenn Glossarverzeichnis auch angezeigt wird)
   % footnote, % Setzt eine Fußnote beim ersten verwendet wird
   % nomain,
   % style=altlist,
-  nopostdot, % löscht den schlusspunkt nach jeder description
-]{glossaries}
+]{glossaries-extra}
 \setglossarystyle{super}
 \makeglossaries{} % Glossar generieren
 
