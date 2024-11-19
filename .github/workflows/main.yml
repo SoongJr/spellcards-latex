@@ -15,7 +15,7 @@ jobs:
     runs-on: [ubuntu-latest]
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: list .tex files in this repo
         id: list-files
         # print each filename (relative path) as an element of a JSON list, github can parse this into setting output variable "matrix"
@@ -33,7 +33,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Set up Git repository
-        uses: actions/checkout@v2  # Checks-out repository under $GITHUB_WORKSPACE
+        uses: actions/checkout@v4  # Checks-out repository under $GITHUB_WORKSPACE
       - name: Apply indentation rules to ${{ matrix.file }}
         # first format the content of the file and save this into a temporary file 
         uses: dante-ev/latex-action@latest
@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Git repository
-        uses: actions/checkout@v2  # Checks-out repository under $GITHUB_WORKSPACE
+        uses: actions/checkout@v4  # Checks-out repository under $GITHUB_WORKSPACE
       - name: Lint ${{ env.file }}.tex
         # run chktex the same way LaTeX-Workshop extension of Visual Studio code would
         uses: dante-ev/latex-action@latest
@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Git repository
-        uses: actions/checkout@v2  # Checks-out repository under $GITHUB_WORKSPACE
+        uses: actions/checkout@v4  # Checks-out repository under $GITHUB_WORKSPACE
       - name: Compile ${{ env.file }}.tex
         # run latexmk on the given file
         uses: dante-ev/latex-action@latest
