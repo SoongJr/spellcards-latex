@@ -2,56 +2,85 @@
 \documentclass[%
   %%% --- Paper Settings ---
   % avery5388,        % paper/layout to use (letter-sized index card stock)
-  din-a4,             % paper/layout to use (custom config for DIN sizes)
+  % din-a4,           % paper/layout to use (custom config for DIN sizes)
+  a6-on-a4,         % maximum usage of the A4 sheet, but requires printing very closely to the edge! TODO: verify this is printable and aligns back-to-front!
+  % a7-on-a4,         % also good usage of space, but the cards turn out tiny.
   %%% --- Display Settings ---
   % fronts,           % only print the fronts...
   % backs,            % ... or the backs. Helps to print in two batches if your printer does not offer this double-sided printing (not even "assisted")
   % grid,               % add "markers" to cut along if you do not have perforated paper. My printer is not precise enough to match these back to front!
-  frame,            % frame around each card with some clear space. On my printer this is enough so I can cut between them and only be off by a bit, but still noticeable.
+  % frame,            % frame around each card with some clear space. On my printer this is enough so I can cut between them and only be off by a bit, but still noticeable.
   % I wish this had "cutting-guides" that only show up on the outsides of the paper. Or maybe display the grid only on the front.
   % To achieve this I could run once with "fronts" and "grid" enabled, print that, then run it again with only "backs" but no grid. The text on the back will only be imperceptably askew/off-center.
+  % But with the "a6-on-a4" page layout I can "simply" cut them in half each way. Also gives me the biggest cards. There might be a tiny difference in center between left and right, but I can't imagine it will be visible.
 ]{flashcards}
 
 
-% % PREAMBLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% % including/activating and configuring packages
-% \input{preamble/preamble}
+% PREAMBLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% including/activating and configuring packages
+\input{preamble/preamble}
 
-% % additional, custom commands
-% \input{preamble/commands}
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% additional, custom commands
+\input{preamble/commands}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 % % BEGIN DOCUMENT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% TODO: create flash-cards content and include it here
-\begin{flashcard}{Front Side -- Ia}
-  Backside -- Ia
-\end{flashcard}
-\begin{flashcard}{Front Side -- IIa}
-  Backside -- IIa
-\end{flashcard}
-\begin{flashcard}{Front Side -- IIIa}
-  Backside -- IIIa
-\end{flashcard}
-\begin{flashcard}{Front Side -- IVa}
-  Backside -- IVa
-\end{flashcard}
+%% load the data from TSV in a usable format
+\input{preamble/import-data.tex}
 
-\begin{flashcard}{Front Side -- Ib}
-  Backside -- Ib
-\end{flashcard}
-\begin{flashcard}{Front Side -- IIb}
-  Backside -- IIb
-\end{flashcard}
-\begin{flashcard}{Front Side -- IIIb}
-  Backside -- IIIb
-\end{flashcard}
-\begin{flashcard}{Front Side -- IVb}
-  Backside -- IVb
-\end{flashcard}
+%% display spells on cards
+% If content on the front needs to break, it breaks onto the back of the same card.
+% If content on the back needs to break, it breaks onto the front of a new card.
+
+% sample output:
+\DTLforeach{spells}%
+  {\name=name,\description=description}%
+  {
+    \begin{flashcard}{%
+      \section*{\name{}}
+      \description{}
+    }
+    TODO\ldots
+    \end{flashcard}
+  }
+
+% TODO: design the cards with nicely-formatted header info and description
+% some thoughts to address:
+% 1) running latex on the full database like this takes three minutes for 50 entries, an extrapolated three hours.
+%    Not suitable for repeatedly runnig GitHub actions on, so for now we use only a couple lines.
+% 2) the data is now loaded and we can iterate over it, but now I want LaTeX to automatically break content onto the back of the card.
+%    Even worse: Some spells are too long for even both sides of a card, so a page break on the back of the card needs to create a new card.
+%    I currently have no clue how to accomplish this. Might try to ask the community for pointers. This could even require me to fork the flashcards module and rework it to my needs...
+% 3) I had hoped to be able to use the "description_formatted" cell, which provides simple HTML, especially for the tables found on some spells (e.g. Permanency)
+%    This may be require external processing, e.g. running pandoc on the HTML cell. Combined with problem 2, that might be the best bet.
+%    Add filtering and sorting during this step while you're at it.
+
+% \begin{flashcard}{Front Side -- IIa}
+%   Backside -- IIa
+% \end{flashcard}
+% \begin{flashcard}{Front Side -- IIIa}
+%   Backside -- IIIa
+% \end{flashcard}
+% \begin{flashcard}{Front Side -- IVa}
+%   Backside -- IVa
+% \end{flashcard}
+
+% \begin{flashcard}{Front Side -- Ib}
+%   Backside -- Ib
+% \end{flashcard}
+% \begin{flashcard}{Front Side -- IIb}
+%   Backside -- IIb
+% \end{flashcard}
+% \begin{flashcard}{Front Side -- IIIb}
+%   Backside -- IIIb
+% \end{flashcard}
+% \begin{flashcard}{Front Side -- IVb}
+%   Backside -- IVb
+% \end{flashcard}
 
 \end{document}
 % % chktex 17 ignore deliberately unmatched number of parentheses (there's a single ')' in the preamble)

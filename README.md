@@ -22,6 +22,7 @@ So the data is imported by a manuall process, as it is expected to not change ve
    (This format is more robust than .csv, which is locale-dependant; some countries actually use semicolons instead of commas...)  
 1. [optional] open the downloaded file in some other program, sort and filter to suit your needs, making sure to save as .tsv again
 1. move the resulting file into the "resources" folder, replacing the file "spell_full.tsv"
+1. ensure the format of the data has not changed! Moved, removed or added columns must be reflected int he list of keys hardcoded in import-data.tex  
 
 ## Create printable PDF from imported data
 ### Process

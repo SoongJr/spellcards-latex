@@ -1,6 +1,6 @@
 filename = spellcards
 
-neededfiles = resources/spell_full.tsv preamble/preamble.tex preamble/commands.tex din-a4.cfg
+neededfiles = resources/spell_full.tsv preamble/preamble.tex preamble/commands.tex preamble/import-data.tex din-a4.cfg a6-on-a4.cfg a7-on-a4.cfg
 
 
 UNAME_S := $(shell uname -s)
