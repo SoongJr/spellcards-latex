@@ -1,6 +1,9 @@
 name: Build LaTeX document
 on:
   push:
+    branches:
+      - main
+      - release/*
   pull_request:
   workflow_dispatch:
 env:
