@@ -6,6 +6,7 @@
 % But this also escapes underscores in table headers, breaking the translation of those into keys... So we must hardcode the column keys here and hope they do not change!
 \DTLloadrawdb[%
         keys={name,school,subschool,descriptor,spell_level,casting_time,components,costly_components,range,area,effect,targets,duration,dismissible,shapeable,saving_throw,spell_resistance,description,description_formatted,source,full_text,verbal,somatic,material,focus,divine_focus,sor,wiz,cleric,druid,ranger,bard,paladin,alchemist,summoner,witch,inquisitor,oracle,antipaladin,magus,adept,deity,SLA_Level,domain,short_description,acid,air,chaotic,cold,curse,darkness,death,disease,earth,electricity,emotion,evil,fear,fire,force,good,language_dependent,lawful,light,mind_affecting,pain,poison,shadow,sonic,water,linktext,id,material_costs,bloodline,patron,mythic_text,augmented,mythic,bloodrager,shaman,psychic,medium,mesmerist,occultist,spiritualist,skald,investigator,hunter,haunt_statistics,ruse,draconic,meditative,summoner_unchained},%
+        omitlines=2897,% ignoring the majority of the database to reduce execution time during development. Loading and handling 50 items took three minutes on my personal machine; the full DB might take three hours! Will consider dataloader's suggestion to perform data operations externally before running LaTeX...
     ]{spells}{resources/spell_full.tsv}
 \DTLmaketabspace{}  % resetting after using tab separator
 \message{Data fully loaded.}
