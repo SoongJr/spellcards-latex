@@ -1,60 +1,55 @@
-# AKAD LaTeX Vorlage für eine wissenschaftliche Arbeit
+# Purpose
 
-Diese LaTeX Vorlage entspricht den Richtlinien der AKAD University zur Erstellung wissenschaftlicher Arbeiten. Sie basiert auf einem Fork der akad-vorlage von tammon, überprüft auf Aktualität der Richtlinien, angepasst an einen Workflow mit Visual Studio Code und TeX Live, und Warnungen Behoben.
+This is a tool to import Pathfinder 1e spell information from the [Spells DB](https://home.pathfindercommunity.net/home/databases/spells)
+and format them as printable index/flash cards.  
 
-## Dateien
-(Diese Sektion war schon im ursprünglichen Fork veraltet und wurde noch nicht aktualisiert.)
-	vorlage.tex
-		Einstiegspunkt für latex compiler
-	einstellungen.tex
-		Einstellungen
-		- Benutzer
-		- Anzeige der jeweiligen Verzeichnisse
-	content/einleitung.tex 
-		Einleitung
-	content/grundlagen.tex
-		Grundlagen
-	content/hauptteil.tex
-		Hauptteil
-	content/schluss.tex
-		Schluss
-	content/abkuerzungen.tex
-		Abkürzungverzeichnis und Glossar (glossaries)
-	literatur.bib
-		Literatur in BibTex Syntax. 
-		- Zitatsgenerator http://www.literatur-generator.de/
-	preamble/commands.tex
-		Eigene Kommandos
-	resources/
-		Platz für Bilder, PDFs, Bücher und andere Ressourcen
-	output/
-		Zielordner für Output, sowohl Zwischenkompilate als auch fertiges PDF
+Design decisions were made to hopefully ensure this will still be running, without maintainer intervention, in ten year's time,
+and even when it breaks down someone can simply fork this repo and fix it,
+instead of having to start from scratch when a closed-source solution inevitably breaks down.  
 
-## LaTeX Dokument erstellen
-### Grundlagen
-Egal durch welchen Mechanismus, es wird grundsätzlich folgendes ausgeführt:
+This sacrifices other things, like ease of use especially for customization.
+You _can_ customize the output, but may need to modify LaTeX code (this is no point-and-click adventure!)
+
+## Create printable PDF
+### Process
+All of the options below basically run this command:  
 ```
-	pdflatex -halt-on-error -interaction=errorstopmode -shell-escape -synctex=1 -output-directory=output vorlage
-	biber output/vorlage
-	makeglossaries -d output vorlage
-	pdflatex -halt-on-error -interaction=errorstopmode -shell-escape -synctex=1 -output-directory=output vorlage
-	pdflatex -halt-on-error -interaction=errorstopmode -shell-escape -synctex=1 -output-directory=output vorlage
+pdflatex -halt-on-error -interaction=errorstopmode -shell-escape -synctex=1 -output-directory=output cards
 ```
-
-### Codespaces
-Mit GitHub Codespace kann ein PDF direkt in der Cloud erzeugt werden, ohne lokal irgendetwas installieren zu müssen!  
-1. Auf GitHub über den "<> Code" button einen Codespace öffnen (texlive und LaTeX Workshop sind bereits installiert und konfiguriert)
-1. In der resultierenden Web-IDE ein beliebiges tex file öffnen (z.B. vorlage.tex)
-1. Oben rechts erscheinen ein grüner Pfeil zum Erzeugen des PDFs und ein Preview-button zum Anzeigen des PDFs (aktualisiert automatisch)
-
-### Windows Batch
-Im Ordner misc liegt ein File namens make.bat, dieses kann ausgeführt werden um das PDF manuell zu erzeugen (vorausgesetzt pdflatex ist im PATH).
-### Linux/MacOS makefile
-Hierfür gibt es ein Makefile im Ordner misc.
 
 ### IDE
-Es gibt viele IDEs für LaTeX. Der aktuelle Fork existiert hauptsächlich, weil ich Visual Studio Code verwenden wollte mit der Extension "LaTeX Workshop" und der LaTeX Installation TeX Live.  
-In diesem Fall sollte in den Einstellungen der Extension der Wert "latex-workshop.latex.outDir" auf "%DIR%/output" gesetzt werden und dann mit latexmk (default) gebaut werden. Das PDF wird dann bei jedem Abspeichern erzeugt und der preview automatisch refreshed.
+There are many IDEs to work on LaTeX documents. This repository is focussed on using Visual Studio Code using the extension "LaTeX Workshop" and the LaTeX installation "TeX Live".  
+You should be able to build the PDF with "latexmk" (the default) from the IDE.
+This will refresh the preview and the actual PDF anytime you save the document.  
+
+### Codespaces
+With GitHub Codespace you can create a PDF on the Cloud, no need to set anything up locally.  
+1. Open the "<> Code" button and create a Codespace  
+  (texlive, chktex and LaTeX Workshop are installed and properly configured)  
+1. You get a Web-IDE, open any tex file you may want to edit (e.g. cards.tex)  
+1. There will be a green arrow in the top right corner to create the PDF, and a button to show a auto-refreshing preview of your current document  
+
+### Windows Batch
+The folder "misc" contains file "make.bat" you may use to create a PDF locally, provided pdflatex is installed and available in  PATH.  
+
+### Linux/MacOS makefile
+The folder "misc" contains a makefile so you can run 'make' in the repo root.  
+
+## Using the PDF
+Find the thickest cardstock your printer can handle (I decided in 200g/m²; I do have to straighten it afterwards though) and print the PDF.  
+I'm German, so all my tests were performed with DIN A4 stock!
+Hopefully LaTeX handles other formats well, but if you encounter issues, I'm willing to look at Pull Requests, see the Contributions section.
+
+## Contributing
+I'll be honest, this is a pet project I do not intend to keep spending effort on for decades to come
+and I can't know what my life looks like when issues start coming in.
+So there's a good chance I won't reply to issues or PRs.
+This repo is provided as is and if you need some tweak, feel free to fork this and work on it.  
+
+That said, if you do feel like you've got a valuable, well-tested addition, you are welcome to create a PullRequest anyway.
+Just don't expect it to get attention immediately, or ever.  
 
 ## Credits
-Weiterentwicklung basierend auf [tammon/akad-vorlage](https://github.com/tammon/akad-vorlage), selbst eine Weiterentwicklung basierend auf [derdanu/akad-vorlage](https://github.com/derdanu/akad-vorlage).
+- Information about the spells is read from the [Spells DB](https://home.pathfindercommunity.net/home/databases/spells) ([alternate link](https://www.d20pfsrd.com/magic/tools/spells-db/), [GoogleDocs link](https://docs.google.com/spreadsheets/d/1cuwb3QSvWDD7GG5McdvyyRBpqycYuKMRsXgyrvxvLFI)) table when the tool runs, providing up-to-date information when the DB gets updated.  
+- The basic project structure was forked from [tammon/akad-latex-vorlage](https://github.com/tammon/akad-latex-vorlage), but modified so heavily it should barely be recognizable... But here's a shoutout anyway 😊  
+

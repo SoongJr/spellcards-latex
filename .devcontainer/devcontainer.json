@@ -12,22 +12,24 @@
 			],
 			"settings": {
 				"latex-workshop.latex.outDir": "%DIR%/output",
-				"latex-workshop.latexindent.args": [
+				"#latex-workshop.latexindent.args#": [
 					"-c",
 					"%DIR%/",
 					"%TMPFILE%",
 					"--local=%DIR%/.latexindent.yaml"
 				],
 				"latex-workshop.linting.chktex.enabled": true,
-				"latex-workshop.linting.run": "onType",
 				"latex-workshop.linting.chktex.exec.args": [ // should match the definition in github action!
-					"-eall",
-					"-n22",
-					"-n30",
-					"-e16",
-					"-w44",
-					"-q"
-				]
+					"--erroron=all",  // treat all messages as errors by default
+					"--nowarn=22",
+					"--nowarn=30",
+					"--erroron=16",
+					"--warnon=44",
+					"--quiet"
+				],
+				// run linter/builder on save or on type
+				"latex-workshop.linting.run": "onSave",   		// onSave, onType
+				"latex-workshop.latex.autoBuild.run": "onSave"	// onSave, onFileChange
 			}
 		}
 	}

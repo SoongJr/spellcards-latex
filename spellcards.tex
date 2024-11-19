@@ -1,0 +1,57 @@
+% using the flashcards package: https://ctan.net/macros/latex/contrib/flashcards/flashcards.pdf
+\documentclass[%
+  %%% --- Paper Settings ---
+  % avery5388,        % paper/layout to use (letter-sized index card stock)
+  din-a4,             % paper/layout to use (custom config for DIN sizes)
+  %%% --- Display Settings ---
+  % fronts,           % only print the fronts...
+  % backs,            % ... or the backs. Helps to print in two batches if your printer does not offer this double-sided printing (not even "assisted")
+  % grid,               % add "markers" to cut along if you do not have perforated paper. My printer is not precise enough to match these back to front!
+  frame,            % frame around each card with some clear space. On my printer this is enough so I can cut between them and only be off by a bit, but still noticeable.
+  % I wish this had "cutting-guides" that only show up on the outsides of the paper. Or maybe display the grid only on the front.
+  % To achieve this I could run once with "fronts" and "grid" enabled, print that, then run it again with only "backs" but no grid. The text on the back will only be imperceptably askew/off-center.
+]{flashcards}
+
+
+% % PREAMBLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % including/activating and configuring packages
+% \input{preamble/preamble}
+
+% % additional, custom commands
+% \input{preamble/commands}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% % BEGIN DOCUMENT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% TODO: create flash-cards content and include it here
+\begin{flashcard}{Front Side -- Ia}
+  Backside -- Ia
+\end{flashcard}
+\begin{flashcard}{Front Side -- IIa}
+  Backside -- IIa
+\end{flashcard}
+\begin{flashcard}{Front Side -- IIIa}
+  Backside -- IIIa
+\end{flashcard}
+\begin{flashcard}{Front Side -- IVa}
+  Backside -- IVa
+\end{flashcard}
+
+\begin{flashcard}{Front Side -- Ib}
+  Backside -- Ib
+\end{flashcard}
+\begin{flashcard}{Front Side -- IIb}
+  Backside -- IIb
+\end{flashcard}
+\begin{flashcard}{Front Side -- IIIb}
+  Backside -- IIIb
+\end{flashcard}
+\begin{flashcard}{Front Side -- IVb}
+  Backside -- IVb
+\end{flashcard}
+
+\end{document}
+% % chktex 17 ignore deliberately unmatched number of parentheses (there's a single ')' in the preamble)

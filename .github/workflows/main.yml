@@ -7,9 +7,9 @@ on:
   pull_request:
   workflow_dispatch:
 env:
-  file: vorlage # root tex file to compile (without extension)
-                # If you renamed your root tex file - originally "vorlage.tex" - (e.g. to get a nice PDF name),
-                # simply also adjust the filename here.
+  file: spellcards  # root tex file to compile (without extension)
+                    # If you renamed your root tex file - originally "spellcards.tex" - (e.g. to get a different PDF name),
+                    # simply also adjust the filename here.
 jobs:
   list_tex_files:
     # list all .tex files in this repo and save them in a variable that can be used by other jobs as input for their matrix (so they run one job on each tex file)

@@ -1,0 +1,20 @@
+{
+    "latex-workshop.latex.outDir": "%DIR%/output",
+    "#latex-workshop.latexindent.args#": [
+        "-c",
+        "%DIR%/",
+        "%TMPFILE%",
+        "--local=%DIR%/.latexindent.yaml"
+    ],
+    "latex-workshop.linting.chktex.enabled": true,
+    "latex-workshop.linting.chktex.exec.args": [
+        "--erroron=all",
+        "--nowarn=22",
+        "--nowarn=30",
+        "--erroron=16",
+        "--warnon=44",
+        "--quiet"
+    ],
+    "latex-workshop.linting.run": "onSave",
+    "latex-workshop.latex.autoBuild.run": "onSave"
+}
