@@ -23,9 +23,12 @@ jobs:
         id: list-files
         # print each filename (relative path) as an element of a JSON list, github can parse this into setting output variable "matrix"
         run: |
-          printf "::set-output name=matrix::{\"include\":["
-          find . -name "*.tex" -exec printf "{\"file\":\"{}\"}," \;
-          printf "]}\n"
+          (
+            printf 'matrix={"include":['
+            # printing each file as a json element with trailing comma, then removing the last comma with sed. Tis is all in one line with the printfs:
+            find . -name "*.tex" -exec printf '{"file":"{}"},' \; | sed 's/,$//'
+            printf ']}\n'
+          ) >> $GITHUB_OUTPUT
   check_formatting:
     # run latexindent on each tex file and diff the result with committed file. Produces failure of the formatting is not applied properly.
     needs: [list_tex_files]
