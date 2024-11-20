@@ -28,8 +28,8 @@ So the data is imported by a manuall process, as it is expected to not change ve
 ### Process
 All of the options below basically run this command:  
 ```
-pdflatex -halt-on-error -interaction=errorstopmode -shell-escape -synctex=1 -output-directory=output cards
-```
+pdflatex -halt-on-error -interaction=errorstopmode -shell-escape -synctex=1 -output-directory=output spellcards
+```  
 
 ### IDE
 There are many IDEs to work on LaTeX documents. This repository is focussed on using Visual Studio Code using the extension "LaTeX Workshop" and the LaTeX installation "TeX Live".  
