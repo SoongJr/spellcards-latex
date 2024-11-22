@@ -1,6 +1,8 @@
 
 \usepackage[utf8]{inputenc}     % encoding must match the encoding of spell_full.tsv for datatool to be able to load it
 \usepackage{datatool}           % package to load data from TSV
+\usepackage{scrlayer-scrpage}   % for advanced page numbering
+\usepackage{emptypage}          % do not print useless footer on empty pages (will not be necessary after moving to KOMA)
 \usepackage{booktabs}           % nicer table formatting options
 
 
@@ -93,7 +95,4 @@
 
 \AtBeginDocument{
     \pgfpagesuselayout{8 on 2, book format} % use the layout we set up above
-    \pagestyle{empty} % disable page numbers.
-    % Ultimately we want numbers to restart with each spell, AND show the total number of pages for this spell, but I didn't get that to work using code modified from \url{https://tex.stackexchange.com/a/469585/52439}
 }
-
