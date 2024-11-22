@@ -1,15 +1,10 @@
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% calculate teh number of pages for each spell individually so user knows if they need to turn the card, or look for a second card with page 3 and 4
-% code modified from \url{https://tex.stackexchange.com/a/469585/52439}
+% show the number of pages for each spell individually so user knows if they need to turn the card, or look for a second card with page 3 and 4
+% code modified from \url{https://tex.stackexchange.com/a/578140/52439}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newcounter{dummy}
-\newcommand{\spellpages}{\pageref{first}}
-\newcommand{\resetpagecounts}{%
-  \refstepcounter{dummy}\label{first}% store highest page number of the spell we just finished printing
-  \cleardoublepage% start new spell on a new card's _front_ after this spell is complete
-  \let\spellpages=\numpages%
-  \setcounter{page}{1}% reset the page counter so every spell starts with 1
+\renewcommand*\pagemark{%
+    \usekomafont{pagenumber}{\name\hfill\thepage~/~\letterlastpage}%
 }
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -18,8 +13,6 @@
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newenvironment{card}{%
     % Note: the commands set by \DTLforeach are automatically accessible from this environment
-    \ohead{}% clear the default header (setting pagestyle to "empty" prevents us from setting a footer)
-    \cfoot{\name\hfill\thepage/\spellpages}% print spell name and display the page number
 
     % Titlebar for spell (spell name and level)
     \begin{tabular}{p{\textwidth}} \toprule
@@ -27,5 +20,6 @@
         \bottomrule
     \end{tabular} 
 }{%
-    \resetpagecounts{}
+    \cleardoublepage% start new spell on a new card's _front_ after this spell is complete
+    \setcounter{page}{1}% reset the page counter so every spell starts with 1
 }

@@ -1,10 +1,8 @@
 
 \usepackage[utf8]{inputenc}     % encoding must match the encoding of spell_full.tsv for datatool to be able to load it
 \usepackage{datatool}           % package to load data from TSV
-\usepackage{scrlayer-scrpage}   % for advanced page numbering
-\usepackage{emptypage}          % do not print useless footer on empty pages (will not be necessary after moving to KOMA)
 \usepackage{booktabs}           % nicer table formatting options
-
+\usepackage{scrletter}          % allows the use of \letterlastpage command
 
 % this takes each page of the document, sizes it down to DIN A6 and places it on a DIN A4 page
 % in a way that they can be cut and folded over in a way that it all ends up sorted correctly.
