@@ -1,1 +1,14 @@
 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% environment for formatting a spell card
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newenvironment{card}{%
+    % Note: the commands set by \DTLforeach are automatically accessible from this environment
+
+    % Titlebar for spell (spell name and level)
+    \begin{tabular}{p{\textwidth}} \toprule
+        \section*{\huge\name\hfill\MakeUppercase{\class}~\level}\\
+        \bottomrule
+    \end{tabular} 
+}{%
+}

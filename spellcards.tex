@@ -32,16 +32,30 @@
 % 2) I had hoped to be able to use the "description_formatted" cell, which provides simple HTML, especially for the tables found on some spells (e.g. Permanency)
 %    This may require external processing, e.g. running pandoc on the HTML cell. Combined with problem 1, that might be the best bet.
 %    Add filtering and sorting during this step while you're at it.
-% 3) margins are too wasteful, causing lots of overfull hboxes
-% 4) we want each spell to have a "<spellname>, page n/m" footer for the user to know if they should look at the back, or search for another card with pages 3 and 4.
+% 3) "spell_level" is not a single number, but lists levels for all classes. There are separate columns for each class,
+%    but either way, if we want to include it we must know the class of the character we are printing this for!
+% 4) margins are too wasteful, causing lots of overfull hboxes
+% 5) the footer for each spell cards is supposed to show the number of pages for this spell, but the counter does not work as intended (always shows "1")
 
+% Caution: here we have hardcoded to use the spell level for wizards!
+\newcommand{\class}{wiz}
 % print information for each spell:
 \DTLforeach*{spells}%
-  {\name=name,\description=description}%
+  {\name=name,\level=\class,\description=description}%
   {
-    \section*{\huge\name{}}
+    \begin{card}
+    % TODO: Tabular information for spell
+    % can we handle every spell with this or do we need to heavily customize? Maybe a finite set of predefined options will suffice
+
+    % TODO: Description of the spell
+    % from the Spell DB we get an HTML-formatted description, which has been transformed into LaTeX code in a pre-processing step.
     \huge\description{}
-    \cleardoublepage{}
+
+    % TODO: I would really love to have markers along the right-hand side of the page
+    % whose vertical position tells you at a glance the level of the spell. Like some books mark their chapters
+    % so you can quickly get to the level you are looking for in a stack of cards.
+    % No ordinary printer will be capable of actually printing these, but maybe we can get pretty close and dedicated users can finish it by hand.
+    \end{card}
   }
 
 \end{document}
