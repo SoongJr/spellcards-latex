@@ -1,0 +1,14 @@
+{
+    "latex-workshop.latex.outDir": "./out",
+    "latex-workshop.latex.autoBuild.run": "onSave",
+    "latex-workshop.latex.autoClean.run": "onBuilt",
+    "latex-workshop.view.pdf.viewer": "tab",
+    "latex-workshop.formatting.latex": "latexindent",
+    "latex-workshop.formatting.latexindent.args": [
+        "--cruft=%DIR%/out/",
+        "--yaml=defaultIndent: '%INDENT%'",
+        "%TMPFILE%"
+    ],
+    "files.autoSave": "onWindowChange",
+    "editor.formatOnSave": true
+}
