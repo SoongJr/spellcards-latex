@@ -6,8 +6,18 @@
     "latex-workshop.formatting.latex": "latexindent",
     "latex-workshop.formatting.latexindent.args": [
         "--cruft=%DIR%/out/",
-        "--yaml=defaultIndent: '%INDENT%'",
+        "--local=%DIR%/.latexindent.yaml",
         "%TMPFILE%"
+    ],
+    "latex-workshop.linting.run": "onSave",
+    "latex-workshop.linting.chktex.enabled": true,
+    "latex-workshop.linting.chktex.exec.args": [ // should match the definition in github action!
+        "--erroron=all", // treat all messages as errors by default
+        "--nowarn=22",
+        "--nowarn=30",
+        "--erroron=16",
+        "--warnon=44",
+        "--quiet"
     ],
     "files.autoSave": "onWindowChange",
     "editor.formatOnSave": true
