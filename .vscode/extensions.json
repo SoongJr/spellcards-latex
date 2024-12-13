@@ -1,5 +1,8 @@
 {
     "recommendations": [
-        "James-Yu.latex-workshop"
+        "James-Yu.latex-workshop",
+        "timonwong.shellcheck",
+        "foxundermoon.shell-format",
+        "mads-hartmann.bash-ide-vscode",
     ]
 }

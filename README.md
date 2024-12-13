@@ -32,6 +32,8 @@ spellcards-latex
 
 The easiest way to do this is by using GitHub Codespaces.
 
+## TODO: describe process of importing spell data, converting to LaTeX, and general pitfalls (pandoc may decide to use a package that we don't yet include, as it did with longtable)
+
 ### Recommended Extensions
 
 - **LaTeX Workshop**: Provides a rich editing experience for LaTeX documents, including syntax highlighting, preview, and compilation.

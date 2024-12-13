@@ -1,0 +1,80 @@
+% this file contains templates to show spell cards.
+% They are be used by convert.sh to create spell cards from the Spell-DB,
+% but the user is encouraged to modify those files to best suit their needs
+% (fit spells on the cards nicely, rephrase ambigious descriptions,
+% include information from other spells for those "works like X" spells, etc.)
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% environment for formatting a spell card (title-bar, header/footer, etc.)
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newenvironment{spellcard}[3]{%
+  \begingroup{}   % make macro declarations only affect the content of the "begin" statement
+  \def\class{#1}  % character class (wiz, sor, etc.)
+  \def\name{#2}   % spell name
+  \def\spelllevel{#3}  % spell level for this character class
+
+  % Titlebar for spell (spell name and level)
+  \section*{\Huge\name\hfill\MakeUppercase{\class}~\spelllevel}
+
+  % TODO: I would really love to have markers along the right-hand side of the page
+  % whose vertical position tells you at a glance the level of the spell,
+  % like some books mark their chapters, so you can quickly flip through a stack of cards
+  % to get to the the level you are looking for.
+  % No ordinary printer will be capable of actually printing these to the edge,
+  % but maybe we can get pretty close and dedicated users can finish it by hand.
+  % Currently I envision printing the spell level as close as possible to the edge
+  % and providing a 3D-printable jig or template to stick the card into
+  % and then color over it with a marker to the edge.
+  \endgroup{}
+}{%
+  \cleardoublepage% start new spell on a new card's _front_ after this spell is complete
+  \setcounter{page}{1}% reset the page counter so every spell starts with 1
+}
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Tabular information for spell
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% command to print one attribute of the spell in the spell card table that can be NULL (shall be omitted if that's the case)
+% Note: These cannot be used as the bottom-most line of the table, as they would not print a line after them.
+\newcommand{\spellattribute}[2]{%
+  \ifthenelse{\equal{#2}{NULL}}{}{\textbf{#1:} & #2 \\ \midrule}
+}
+% this command is for the last line of each table and cannot be NULL
+\newcommand{\spellattributelast}[2]{\textbf{#1:} & #2 \\ \bottomrule}
+
+% Note that TSV headers contain underscores, but LaTeX macros can only contain letters,
+% so columns such as "spell_level" should be referred to as "\spelllevel{}"
+\newcommand{\spellcardinfo}[1][0.5]{%
+  % reduced font size for table so we can fit two next to each other on one card
+  \large
+  % how much width of the page is offered to the first table is adjustable with optioonal parameter, second table gets the rest:
+  \def\firsttablewidth{#1}
+  \def\secondtablewidth{\fpeval{1-#1}}
+  % longer attribute names should be added to the left table, shorter ones to the right.
+  \begin{tabularx}{\firsttablewidth\textwidth-\tabcolsep}[b]{r>{\raggedright\arraybackslash}X}
+    \toprule
+    \spellattribute{Casting Time}{\castingtime}
+    \spellattribute{Duration}{\duration}
+    \spellattribute{Saving Throw}{\savingthrow}
+    \spellattributelast{Spell Resist}{\spellresistance}
+  \end{tabularx}
+  \hfill
+  \begin{tabularx}{\secondtablewidth\textwidth-\tabcolsep}[b]{r>{\raggedright\arraybackslash}X}
+    \toprule
+    \spellattribute{Area}{\area}
+    \spellattribute{Range}{\range}
+    \spellattribute{Comp.}{\components}
+    % evocation school is special as we want to include its descriptor:
+    \ifthenelse{\equal{\school}{evocation} \AND\NOT\equal{\descriptor}{NULL}}%
+    {\textbf{School:} & \school{} (\descriptor{})} %
+    {\textbf{School:} & \school{}                } \\ \bottomrule
+  \end{tabularx}
+  \par\vspace{1em} % insert some space before the description begins
+  % increased font size for the spell description for easier reading in low light
+  \LARGE
+}
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The description of the spell is written in the spells' file within the spellcards environment, no need for a template here.
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

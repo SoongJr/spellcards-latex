@@ -5,8 +5,8 @@ FROM miktex/miktex:essential
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
 RUN apt-get install -y \
-    git \
-    latexmk libyaml-tiny-perl libfile-homedir-perl
+    git jq \
+    latexmk libyaml-tiny-perl libfile-homedir-perl pandoc
 
 # Clean up temporary apt files
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
