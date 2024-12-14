@@ -41,7 +41,7 @@ jobs:
       - name: Set up Git repository
         uses: actions/checkout@v4  # Checks-out repository under $GITHUB_WORKSPACE
       - name: Apply indentation rules to ${{ matrix.file }}
-        # first format the content of the file and save this into a temporary file 
+        # first format the content of the file and save this into a temporary file
         uses: dante-ev/latex-action@latest
         with:
           root_file: ${{ matrix.file }}
@@ -49,12 +49,7 @@ jobs:
           args: --local=src/.latexindent.yaml -o formatted.tex    # configuration is read from local files in git repository root. you can adjust here if your file is somewhere else.
       - name: Check for correct formatting
         # now compare this temporary file, which is correctly formatted, with the actual file. Any differences will be printed in screen and fail this job.
-        uses: dante-ev/latex-action@latest
-        with:
-          root_file: formatted.tex
-          compiler: diff
-          args: ${{ matrix.file }}
-          
+        run: diff -u formatted.tex "${{ matrix.file }}"
   lint_latex:
     # use chktex to scan the whole project for style issues that could later lead to problems
     runs-on: ubuntu-latest
