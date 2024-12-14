@@ -1,0 +1,90 @@
+% this takes each page of the document, sizes it down to DIN A6 and places it on a DIN A4 page
+% in a way that they can be cut and folded over in a way that it all ends up sorted correctly.
+% lots of rotation and reordering magic going on.
+%\url{https://tex.stackexchange.com/q/638802/86}
+%Adapted from \url{http://tex.stackexchange.com/q/279042/86}
+\usepackage{pgfmorepages}
+
+\pgfpagesdeclarelayout{8 on 2, book format}
+{%
+  \edef\pgfpageoptionheight{\the\paperheight}
+  \edef\pgfpageoptionwidth{\the\paperwidth}
+  \def\pgfpageoptionborder{0pt}
+  \def\pgfpageoptionfirstshipout{1}
+}%
+{%
+  \pgfpagesphysicalpageoptions%
+  {%
+    logical pages=8,%
+    physical pages=2,%
+    physical height=\pgfpageoptionheight,%
+    physical width=\pgfpageoptionwidth,%
+    current logical shipout=\pgfpageoptionfirstshipout%
+  }
+  \pgfpagesphysicalpage{1}{}
+  \pgfpageslogicalpageoptions{1}
+  {%
+    rotation=180,
+    border shrink=\pgfpageoptionborder,%
+    resized width=.5\pgfphysicalwidth,%
+    resized height=.5\pgfphysicalheight,%
+    center=\pgfpoint{.25\pgfphysicalwidth}{.75\pgfphysicalheight}%
+  }%
+  \pgfpageslogicalpageoptions{8}
+  {%
+    rotation=180,
+    border shrink=\pgfpageoptionborder,%
+    resized width=.5\pgfphysicalwidth,%
+    resized height=.5\pgfphysicalheight,%
+    center=\pgfpoint{.75\pgfphysicalwidth}{.75\pgfphysicalheight}%
+  }%
+  \pgfpageslogicalpageoptions{4}
+  {%
+    border shrink=\pgfpageoptionborder,%
+    resized width=.5\pgfphysicalwidth,%
+    resized height=.5\pgfphysicalheight,%
+    center=\pgfpoint{.25\pgfphysicalwidth}{.25\pgfphysicalheight},%
+  }%
+  \pgfpageslogicalpageoptions{5}
+  {%
+    border shrink=\pgfpageoptionborder,%
+    resized width=.5\pgfphysicalwidth,%
+    resized height=.5\pgfphysicalheight,%
+    center=\pgfpoint{.75\pgfphysicalwidth}{.25\pgfphysicalheight},%
+  }%
+  \pgfpagesphysicalpage{2}{}
+  \pgfpageslogicalpageoptions{7}
+  {%
+    rotation=180,
+    border shrink=\pgfpageoptionborder,%
+    resized width=.5\pgfphysicalwidth,%
+    resized height=.5\pgfphysicalheight,%
+    center=\pgfpoint{.25\pgfphysicalwidth}{.75\pgfphysicalheight}%
+  }%
+  \pgfpageslogicalpageoptions{2}
+  {%
+    rotation=180,
+    border shrink=\pgfpageoptionborder,%
+    resized width=.5\pgfphysicalwidth,%
+    resized height=.5\pgfphysicalheight,%
+    center=\pgfpoint{.75\pgfphysicalwidth}{.75\pgfphysicalheight}%
+  }%
+  \pgfpageslogicalpageoptions{6}
+  {%
+    border shrink=\pgfpageoptionborder,%
+    resized width=.5\pgfphysicalwidth,%
+    resized height=.5\pgfphysicalheight,%
+    center=\pgfpoint{.25\pgfphysicalwidth}{.25\pgfphysicalheight},%
+  }%
+  \pgfpageslogicalpageoptions{3}
+  {%
+    border shrink=\pgfpageoptionborder,%
+    resized width=.5\pgfphysicalwidth,%
+    resized height=.5\pgfphysicalheight,%
+    center=\pgfpoint{.75\pgfphysicalwidth}{.25\pgfphysicalheight},%
+  }%
+}
+
+\AtBeginDocument{
+  \pgfpagesuselayout{8 on 2, book format} % use the layout we set up above
+}
