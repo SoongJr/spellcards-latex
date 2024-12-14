@@ -52,6 +52,8 @@
   \def\firsttablewidth{#1}
   \def\secondtablewidth{\fpeval{1-#1}}
   % longer attribute names should be added to the left table, shorter ones to the right.
+  % prevent indenting the tables so we have the full width of the text area available:
+  \noindent
   \begin{tabularx}{\firsttablewidth\textwidth-\tabcolsep}[b]{r>{\raggedright\arraybackslash}X}
     \toprule
     \spellattribute{Casting Time}{\castingtime}
@@ -70,7 +72,8 @@
     {\textbf{School:} & \school{} (\descriptor{})} %
     {\textbf{School:} & \school{}                } \\ \bottomrule
   \end{tabularx}
-  \par\vspace{1em} % insert some space before the description begins
+  % insert some space before the description begins
+  \vspace{1em} \\
   % increased font size for the spell description for easier reading in low light
   \LARGE
 }
