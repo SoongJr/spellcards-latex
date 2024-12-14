@@ -7,9 +7,9 @@ on:
   pull_request:
   workflow_dispatch:
 env:
-  file: src/spellcards  # root tex file to compile (without extension)
-                        # If you renamed your root tex file - originally "spellcards.tex" - (e.g. to get a different PDF name),
-                        # simply also adjust the filename here.
+  file: spellcards  # root tex file to compile inside src folder (without extension)
+                    # If you renamed your root tex file - originally "spellcards.tex" - (e.g. to get a different PDF name),
+                    # simply also adjust the filename here.
 jobs:
   list_tex_files:
     # list all .tex files in this repo and save them in a variable that can be used by other jobs as input for their matrix (so they run one job on each tex file)
@@ -79,12 +79,12 @@ jobs:
         # run latexmk on the given file
         uses: dante-ev/latex-action@latest
         with:
-          root_file: ${{ env.file }}.tex
+          root_file: src/${{ env.file }}.tex
           args: -pdf -latexoption=-file-line-error -latexoption=-interaction=nonstopmode -latexoption=-shell-escape
       - name: Upload ${{ env.file }}.pdf
         # upload exactly this generated PDF (will show up at the bottom of each run of this github action)
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.file }}.pdf
-          path: ${{ env.file }}.pdf
+          path: src/out/${{ env.file }}.pdf
           if-no-files-found: error
