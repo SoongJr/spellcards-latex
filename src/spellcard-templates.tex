@@ -54,7 +54,7 @@
   % longer attribute names should be added to the left table, shorter ones to the right.
   % prevent indenting the tables so we have the full width of the text area available:
   \noindent
-  \begin{tabularx}{\firsttablewidth\textwidth-\tabcolsep}[b]{r>{\raggedright\arraybackslash}X}
+  \begin{tabularx}{\firsttablewidth\textwidth}[b]{r>{\raggedright\arraybackslash}X}
     \toprule
     \spellattribute{Casting Time}{\castingtime}
     \spellattribute{Duration}{\duration}
@@ -73,7 +73,7 @@
     {\textbf{School:} & \school{}                } \\ \bottomrule
   \end{tabularx}
   % insert some space before the description begins
-  \vspace{1em} \\
+  \vspace{1ex} \\
   % increased font size for the spell description for easier reading in low light
   \LARGE
 }
