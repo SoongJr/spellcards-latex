@@ -46,7 +46,7 @@ jobs:
         with:
           root_file: ${{ matrix.file }}
           compiler: latexindent
-          args: --local -o formatted.tex    # configuration is read from local files in git repository root. you can adjust here if your file is somewhere else.
+          args: --local=src/.latexindent.yaml -o formatted.tex    # configuration is read from local files in git repository root. you can adjust here if your file is somewhere else.
       - name: Check for correct formatting
         # now compare this temporary file, which is correctly formatted, with the actual file. Any differences will be printed in screen and fail this job.
         uses: dante-ev/latex-action@latest
