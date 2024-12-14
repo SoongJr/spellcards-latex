@@ -160,7 +160,7 @@ while IFS=$'\t' read -r "${headers[@]}"; do
   ) >"$outputFile"
 
   # Now auto-format the resulting file (warn about failures but continue; stderr gets discarded because of excessive warnings)
-  if ! latexindent --cruft="$(dirname "$0")/out/" --local="$(dirname "$0")/src/.latexindent.yaml" \
+  if ! latexindent --cruft="$(dirname "$0")/out/" --local="$(dirname "$0")/../.latexindent.yaml" \
     --overwrite "$outputFile" --silent 2>/dev/null; then
     echo "Warning: Failed to auto-format LaTeX file '$outputFile'" >&2
   fi
