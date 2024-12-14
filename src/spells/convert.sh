@@ -4,10 +4,11 @@ set -euo pipefail
 
 # Function to display usage information
 usage() {
-  echo "Usage: $0 --class <characterClass> [--name <spellName> | --level <spellLevel>] [--overwrite]"
+  echo "Usage: $0 --class <characterClass> [--name <spellName> | --level <spellLevel>] [--source <sourceBook>] [--overwrite]"
   echo "    -c|--class=<characterClass>  The character class to convert spells for"
   echo "    -n|--name=<spellName>        The exact name of the spell to extract from spell_full.tsv"
   echo "    -l|--level=<spellLevel>      The spell level to filter by (NOT the character level!)"
+  echo "    -s|--source=<sourceBook>     The source book to filter by"
   echo "    --overwrite                  Overwrite existing files"
   exit 1
 }
@@ -18,7 +19,7 @@ die() {
 }
 
 # Parse command line arguments using getopt
-options=$(getopt -o c:n:l: --long class:,name:,level:,overwrite -- "$@") || usage
+options=$(getopt -o c:n:l:s: --long class:,name:,level:,source:,overwrite -- "$@") || usage
 
 eval set -- "$options"
 
@@ -26,6 +27,7 @@ eval set -- "$options"
 characterClass=""
 spellName=""
 spellLevel=""
+sourceBook=""
 unset overwrite
 
 # Extract options and their arguments into variables
@@ -41,6 +43,10 @@ while true; do
     ;;
   -l | --level)
     spellLevel="$2"
+    shift 2
+    ;;
+  -s | --source)
+    sourceBook="$2"
     shift 2
     ;;
   --overwrite)
@@ -96,6 +102,7 @@ while IFS=$'\t' read -r "${headers[@]}"; do
   [[ -z "${tsv_range:-}" ]] && die "Error: Missing 'range' column in TSV file '$inputFile'"
   [[ -z "${tsv_area:-}" ]] && die "Error: Missing 'area' column in TSV file '$inputFile'"
   [[ -z "${tsv_duration:-}" ]] && die "Error: Missing 'duration' column in TSV file '$inputFile'"
+  [[ -z "${tsv_source:-}" ]] && die "Error: Missing 'source' column in TSV file '$inputFile'"
   [[ -z "${!characterClassSpellLevelColumn:-}" ]] && die "Error: Missing '${characterClass}' column in TSV file '$inputFile'"
   # double-checking the columns we know is last in the file to ensure all data is assigned correctly:
   [[ -z "${tsv_summoner_unchained:-}" ]] && die "Error: Missing column in TSV file '$inputFile', not all columns for spell ${tsv_name} have a value"
@@ -106,10 +113,11 @@ while IFS=$'\t' read -r "${headers[@]}"; do
   # if tsv_spell_level has the value "NULL", the class does not have access to this spell from the database
   [[ "$tsv_spell_level" != "NULL" ]] || continue
 
-  # Skip spells that do not match the filter requirements specified by the user (either name or level of spell)
+  # Skip spells that do not match the filter requirements specified by the user (either name, level, or source book)
   if [[ 
     (-n "${spellName:-}" && "$spellName" != "$tsv_name") ||
-    (-n "${spellLevel:-}" && "$spellLevel" != "$tsv_spell_level") ]]; then
+    (-n "${spellLevel:-}" && "$spellLevel" != "$tsv_spell_level") ||
+    (-n "${sourceBook:-}" && "$sourceBook" != "$tsv_source") ]]; then
     continue
   fi
 
