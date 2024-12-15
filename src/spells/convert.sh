@@ -97,11 +97,8 @@ while IFS=$'\t' read -r "${headers[@]}"; do
   # Fail if any of the expected columns is missing (this also satisfies the shellcheck SC2154 warning)
   characterClassSpellLevelColumn=tsv_$characterClass
   [[ -z "${tsv_name:-}" ]] && die "Error: Missing 'name' column in TSV file '$inputFile'"
-  [[ -z "${tsv_description_formatted:-}" ]] && die "Error: Missing 'description_formatted' column in TSV file '$inputFile'"
-  [[ -z "${tsv_casting_time:-}" ]] && die "Error: Missing 'casting_time' column in TSV file '$inputFile'"
-  [[ -z "${tsv_range:-}" ]] && die "Error: Missing 'range' column in TSV file '$inputFile'"
-  [[ -z "${tsv_area:-}" ]] && die "Error: Missing 'area' column in TSV file '$inputFile'"
-  [[ -z "${tsv_duration:-}" ]] && die "Error: Missing 'duration' column in TSV file '$inputFile'"
+  [[ -z "${tsv_saving_throw:-}" ]] && die "Error: Missing 'saving_throw' column in TSV file '$inputFile'"
+  [[ -z "${tsv_spell_resistance:-}" ]] && die "Error: Missing 'spell_resistance' column in TSV file '$inputFile'"
   [[ -z "${tsv_source:-}" ]] && die "Error: Missing 'source' column in TSV file '$inputFile'"
   [[ -z "${!characterClassSpellLevelColumn:-}" ]] && die "Error: Missing '${characterClass}' column in TSV file '$inputFile'"
   # double-checking the columns we know is last in the file to ensure all data is assigned correctly:
@@ -130,6 +127,12 @@ while IFS=$'\t' read -r "${headers[@]}"; do
     echo "File '$outputFile' already exists, skipping spell '${tsv_name}' (use --overwrite to replace existing files)"
     continue
   fi
+
+  # Modify some of the columns' content:
+
+  # in saving_throw and spell_resistance, highlight the words "none" and "no" respectively with LaTeX commands
+  tsv_saving_throw=$(echo "$tsv_saving_throw" | sed -E 's/\bnone\b/\\textbf{none}/g')
+  tsv_spell_resistance=$(echo "$tsv_spell_resistance" | sed -E 's/\bno\b/\\textbf{no}/g')
 
   # Convert HTML to LaTeX using pandoc and replace the content of tsv_description_formatted
   if ! tsv_description_formatted=$(echo "$tsv_description_formatted" | pandoc -f html -t latex); then
