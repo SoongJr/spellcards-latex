@@ -1,12 +1,10 @@
 # This dockerfile is used for VS Code dev-containers and GitHub Codespaces. May not work properly for building the PDF directly.
-FROM miktex/miktex:essential AS devcontainer
+FROM miktex/miktex:essential AS base
 
 # Install packages with apt, then clean up temporary apt files
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
-RUN apt-get install -y \
-    git locales pandoc \
-    latexmk libyaml-tiny-perl libfile-homedir-perl; \
+RUN apt-get install -y locales latexmk libyaml-tiny-perl libfile-homedir-perl; \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set locale to US English
@@ -20,12 +18,27 @@ RUN miktexsetup --verbose --shared=yes finish # must be done before changing the
 RUN initexmf --admin --set-config-value [MPM]AutoAdmin=t
 RUN initexmf --admin --set-config-value [MPM]AutoInstall=t
 
+
+FROM base AS devcontainer
+
+# Install some extra packages for development
+RUN apt-get update && apt-get install -y git pandoc; \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Set up a persistent storage for bash history so rebuilding the devcontainer preserves commands
+# devcontainer.json needs to mount a volume to ${HOME}/persisted!
+RUN PERSISTED_FOLDER=${HOME}/persisted \
+    && mkdir -p ${PERSISTED_FOLDER} \
+    && echo "export HISTFILE=${PERSISTED_FOLDER}/.bash_history" >> ${HOME}/.bashrc \
+    && echo "PROMPT_COMMAND='history -a'" >> ${HOME}/.bashrc
+
+
 # # Switch to non-priviliged user, this also tells the Codespace to run as this user
 # USER miktex
 # deliberately staying root as Docker Desktop also runs as root on Windows.
 # We might want the opposite on Linux though... TBD
 
-FROM devcontainer AS latexmk
+FROM base AS latexmk
 
 # Update LaTeX packages to latest version
 RUN miktex --admin packages update-package-database && miktex --admin packages update

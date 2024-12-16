@@ -13,5 +13,8 @@
             ]
         }
     },
-    "postCreateCommand": "miktex --admin packages update-package-database && miktex --admin packages update"
+    "postCreateCommand": "miktex --admin packages update-package-database && miktex --admin packages update",
+    "mounts": [
+        "source=spellcards_bashhistory,target=/root/persisted,type=volume"
+    ]
 }
