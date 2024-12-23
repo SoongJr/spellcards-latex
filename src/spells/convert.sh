@@ -179,6 +179,8 @@ while IFS=$'\t' read -r "${headers[@]}"; do
   # Now that this file has been created, add it to the list of generated files
   generatedFiles+=("$outputFile")
 done < <(printf "%s" "${inputData}")
+# (explicitly unset variables defined in the loop to prevent accidentally using them outside)
+unset "${!tsv_@}" characterClassSpellLevelColumn outputFile
 
 # Warn if there were no files generated for the parameters provided
 if [[ "${#generatedFiles[@]}" -eq 0 ]]; then
@@ -192,5 +194,13 @@ fi
 printf "\nPlease review the generated files, delete the ones you don't want, and fine-tune the rest manually:\n"
 for file in "${generatedFiles[@]}"; do
   printf '  - "%s"\n' "$file"
+  # some new spells might already have been converted for one or more other classes, and probably already optimized for displaying on a spellcard.
+  # notify the user that they should consider using one of those
+  # Determine whether there already exist files for this spell for other classes and remember their paths to print later
+  while IFS= read -r existingFile; do
+    if [[ "$existingFile" != "$file" ]]; then
+      printf '    (see also previously-converted file "%s")\n' "${existingFile}"
+    fi
+  done < <(find "$(dirname "${outputDirBase}")" -type f -name "$(basename "${file}")")
 done
 printf "Once they look good, add an \input{} statement to src/spellcards.tex to actually include them in the document.\n"

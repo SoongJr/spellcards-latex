@@ -33,6 +33,11 @@ spellcards-latex
 The easiest way to do this is by using GitHub Codespaces.
 
 ## TODO: describe process of importing spell data, converting to LaTeX, and general pitfalls (pandoc may decide to use a package that we don't yet include, as it did with longtable)
+To re-create existing spells for a given class (e.g. if either the tsv or convert.sh have changed), you can use this command:  
+```bash
+class=sor # short-hand for the class you want to re-recreate for (sor, wiz, etc.)
+while IFS= read -r spell; do src/spells/convert.sh --overwrite -c $class -n "$spell"; done < <(find src/spells/$class -name "*.tex" -exec bash -c 'filename=$(basename "{}"); echo ${filename%.*}' \;)
+```
 
 ### Recommended Extensions
 
