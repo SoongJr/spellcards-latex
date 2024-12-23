@@ -1,8 +1,8 @@
 # Set the default PDF viewer to VS Code
-$pdf_previewer = 'start code';
+$pdf_previewer = 'code';
 
 # Set the default DVI viewer
-$dvi_previewer = 'start xdvi';
+$dvi_previewer = 'xdvi';
 
 # Open the PDF in default viewer without waiting for further changes in source files
 # Instead using LaTeX Workshop to keep the preview up to date with changes in source
