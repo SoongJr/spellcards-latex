@@ -2,7 +2,8 @@
 \documentclass[%
   a4paper,
   twoside,      % one side is the front, the other the back of cards. With \cleardoublepage we can ensure a spell starts on the front of a new card.
-  DIV=12,       % reduce margins to account for the reduced space on the smaller cards
+  DIV=14,       % reduce margins to account for the reduced space on the smaller cards
+  fontsize=12pt,% increase font size to make the text more readable when scaled down to four cards per A4 page
   BCOR=0mm,     % no binding correction necessary
   % draft=true,   % helps to point out overfull boxes etc.
 ]{scrartcl}
@@ -17,7 +18,7 @@
 
 % include file to make the cards print four on a page, double-sided, to be easily cut and end up sorted:
 % (to address over-/underfull boxes, it can be useful to disable this so it's easier to see which spell you are working on right now)
-\input{cardify}
+% \input{cardify}
 
 % include templates for composing spell cards
 \input{spellcard-templates}

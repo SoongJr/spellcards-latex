@@ -47,7 +47,7 @@
 % so columns such as "spell_level" should be referred to as "\spelllevel{}"
 \newcommand{\spellcardinfo}[1][0.5]{%
   % reduced font size for table so we can fit two next to each other on one card
-  \large
+  \normalsize
   % how much width of the page is offered to the first table is adjustable with optioonal parameter, second table gets the rest:
   \def\firsttablewidth{#1}
   \def\secondtablewidth{\fpeval{1-#1}}
@@ -84,7 +84,7 @@
   % insert some space before the description begins
   \vspace{1ex} \\
   % increased font size for the spell description for easier reading in low light
-  \LARGE
+  \raggedright\Large
 }
 % TODO: display a QR code to the spell's page on d20pfsrd
 
