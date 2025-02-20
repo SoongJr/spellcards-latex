@@ -72,9 +72,9 @@ if [[ -n "$spellLevel" && -n "$spellName" ]]; then
   echo "Error: --name is mutually exclusive with --level" >&2
   usage
 fi
-if [[ -z "$spellLevel" && -z "$spellName" ]]; then
-  echo "Error: Either --name or --level must be specified" >&2
-  usage
+if [[ -z "$spellLevel" && -z "$spellName" && -z "$sourceBook" ]]; then
+  echo "Warning: Without either --name, --level, or --source provided, there may be literally thousands of spells to convert." >&2
+  echo "         Working on it now, but don't expect results any time soon..." >&2
 fi
 
 inputFile="$(dirname "$0")/spell_full.tsv"
