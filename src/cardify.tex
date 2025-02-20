@@ -88,3 +88,6 @@
 \AtBeginDocument{
   \pgfpagesuselayout{8 on 2, book format} % use the layout we set up above
 }
+
+% when being cardified, ensure a new card's front face does not start on the backside of the previous card:
+\renewcommand{\clearcard}{\cleardoublepage}
