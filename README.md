@@ -32,8 +32,41 @@ spellcards-latex
 
 The easiest way to do this is by using GitHub Codespaces.
 
-## TODO: describe process of importing spell data, converting to LaTeX, and general pitfalls (pandoc may decide to use a package that we don't yet include, as it did with longtable)
-To re-create existing spells for a given class (e.g. if either the tsv or convert.sh have changed), you can use this command:  
+### Creating spell cards
+#### Import from database
+The file src/spells/spell_full.tsv is a database of existing spells, exported from a [Google Doc](https://docs.google.com/spreadsheets/d/1cuwb3QSvWDD7GG5McdvyyRBpqycYuKMRsXgyrvxvLFI/edit?usp=sharing)
+
+To create LaTeX-based spell cards from this file, run the script `convert.sh`.  
+It requires that you specify the class of the character this card is intended for, as the spell-level can differ by class and is included on the card itself.  
+
+Here are some examples:
+- `./src/spells/convert.sh --class sor --source "PFRPG Core"`  
+to extract all spells from the core rulebook for this class  
+(not encouraged as it will create hundreds of files for you to manually adjust, but you _can_ do it)
+- `./src/spells/convert.sh --class sor --source "PFRPG Core" --level 4`  
+to extract all spells of the specified spell-level for this class (_not_ character level!)
+- `./src/spells/convert.sh --class sor --name "Ice Storm"`  
+to extract a single spell by name (must be an exact match!)
+
+Technically, the only required parameter is `--class`, but unless you specify additional filters, the script will have to process thousands of spells and take upwards of 10 minutes to do so.  
+The most common uses will probably be to either specify an exact spell name you chose for your character to use, or using at least `--level` to choose new spells from the generated files.  
+But you do you.  
+
+#### Include and adjust the generated result
+Follow the instructions of the script and this general workflow:  
+1. To actually include the generated card in the PDF it needs an `\input{}` statement in spellcards.tex
+1. Once thus included, take a look at linter violations and address them.  
+If pandoc created code that needs additional packages to render the description, you will notice this here.
+1. Finally, take a look at the PDF:
+   1. Some parts of the pandoc-generated description, particularly tables, might not be well-formatted
+   1. If the text only barely spills onto the back of the card, consider altering the description so everything is on the front
+   1. Try to keep spells on a single card.  
+   It is better to heavily abridge the description and have to look up details when needed, than having to juggle four cards for a single spell (cf. Teleport or Permanency)
+   1. Fix hyphenation and under-/overfull boxes
+
+#### Re-creating spells
+This might be required if either the spell_full.tsv or convert.sh have changed.  
+Use this command to recreate all spells for a given class:  
 ```bash
 class=sor # short-hand for the class you want to re-recreate for (sor, wiz, etc.)
 while IFS= read -r spell; do src/spells/convert.sh --overwrite -c $class -n "$spell"; done < <(find src/spells/$class -name "*.tex" -exec bash -c 'filename=$(basename "{}"); echo ${filename%.*}' \;)
