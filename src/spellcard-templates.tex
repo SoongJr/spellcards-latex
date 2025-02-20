@@ -29,7 +29,10 @@
   \endgroup{}
 }{%
   \cleardoublepage% start new spell on a new card's _front_ after this spell is complete
-  \setcounter{page}{1}% reset the page counter so every spell starts with 1
+  % reset counters after each spell so cards are independent of each other:
+  \setcounter{page}{1}
+  \setcounter{table}{0}
+  \setcounter{figure}{0}
 }
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
