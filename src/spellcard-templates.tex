@@ -148,6 +148,22 @@
   \fi
   \stepcounter{qrCode}
 }
+
+% provide a command for printing a reference chart for spell-level markers
+\newcommand{\spellmarkerchart}{%
+  \section*{\Huge look-up card for spell-level marker colors}
+  \vspace{1ex}
+  \raggedright\Large
+  To the right you see the markers for all possible spell levels.\\
+  These are intended to be colored with a highlighter and serve as a reference
+  for which colors you decided to use when printing new cards.
+  \drawspellmarker{1}\drawspellmarker{2}\drawspellmarker{3}\drawspellmarker{4}\drawspellmarker{5}
+  \drawspellmarker{6}\drawspellmarker{7}\drawspellmarker{8}\drawspellmarker{9}
+  \clearcard{}
+  % reset page counter the same way the spellcards environment does:
+  \setcounter{page}{1}
+}
+
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % The description of the spell is written in the spells' file within the spellcards environment, no need for a template here.
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
