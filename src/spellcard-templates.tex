@@ -115,11 +115,11 @@
   % place the first code of each page at the bottom, opposite the page number.
   % a second code would be placed on the same side as the page number (easier to scan), with enough space to avoid overlap.
   \ifthenelse{\equal{\value{qrCode}}{0}}{%
-    \def\qrCodeShift{1cm}% the first qr Code is always placed opposite the page number and needs a smaller offset from the edge of the page
+    \def\qrCodeShift{2cm}% the first qr Code is always placed opposite the page number and needs a smaller offset from the edge of the page
   }{%
     \def\qrCodeShift{4cm}% the second one needs to leave space for the page number
   }%
-  \checkoddpage{}\ifoddpage{}%
+  \checkoddpage\ifoddpage%
     % the page number is on the right side
     \ifthenelse{\equal{\value{qrCode}}{0}}{%
       % we want to print the first code on the left side with a smaller offset
