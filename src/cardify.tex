@@ -4,6 +4,7 @@
 %\url{https://tex.stackexchange.com/q/638802/86}
 %Adapted from \url{http://tex.stackexchange.com/q/279042/86}
 \usepackage{pgfmorepages}
+\usepackage{atbegshi}           % for using \AtBeginShipout, required to draw lines over all pages
 
 \pgfpagesdeclarelayout{8 on 2, book format}
 {%
@@ -87,6 +88,16 @@
 
 \AtBeginDocument{
   \pgfpagesuselayout{8 on 2, book format} % use the layout we set up above
+}
+
+\AtBeginShipout{
+  \AtBeginShipoutUpperLeft{
+    % draw cut lines to show where to cut the paper
+    \begin{tikzpicture}[remember picture, overlay]
+      \draw[gray, dotted] (current page.north west) -- (current page.south west);
+      \draw[gray, dotted] (current page.north west) -- (current page.north east);
+    \end{tikzpicture}
+  }
 }
 
 % when being cardified, ensure a new card's front face does not start on the backside of the previous card:
