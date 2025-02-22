@@ -88,6 +88,29 @@ while IFS= read -r spell; do src/spells/convert.sh --overwrite -c $class -n "$sp
 2. Use the LaTeX Workshop extension to compile the document. This can typically be done by pressing `Ctrl + Alt + B`, using the command palette, or opening the extension tab ("TeX" icon).
 3. The output PDF will be generated in directory `src/out`, open from Explorer tab or from LaTeX Workshop extension tab for additional options.
 
+### Printing and post-processing
+1. In `src/spellcards.tex` ensure you're out of drafting mode and "cardify" is included before creating the PDF
+1. Print the PDF double-sided:
+   - If your printer supports double-sided printing and can deal with the card-stock you use, just use that.
+   - Otherwise, print all odd pages first, then put the stack of print-outs back into the printer so the next print goes onto the backside.  
+     Now print the even pages _in reverse order_
+1. Cut the DIN A4 pages into DIN A6:
+   - If you have access to a paper cutter, just use that.
+   - Otherwise, fold a scrap piece of paper in half along its long edge to get a crease, then place it on top of your print-outs and cut along this crease.  
+     You end up with DIN A5 papers, so repeat the fold-and-cut process once more.  
+     Tipps for better results:
+     - Use a cutting-mat, straight-edge and sharp craft knife. Using scissors will shift the papers while you cut.
+     - Use multiple, light cutting passes instead of a single heavy one. Heavy cuts will also move the papers.
+     - Ensure your blade's tip is still sharp. Consider using a fresh blade even if it seems wasteful. Paper is harsh on metal edges and dulls them quickly.
+1. Sort your cards (at least for spell-level). The cards were supposed to be re-ordered so they would line up sorted after cutting, but that does not appear to work, so you have to sort manually.
+1. Each spell's front face has a marker on the right-hand edge at a specific height for that level.  
+   Take a highlighter/textmarker or similar and color this in to make it easy to flip through a stack of these cards.  
+   Maybe get three different colors and alternate between them.
+
+You may wish to consider printing multiple copies of each card to build "decks", e.g.:  
+All spells that deal damage without allowing spell resistance, all spells that give an advantage in social interactions, spells that are good against physically tough enemies, or against large numbers, or fire-resistant ones.  
+You'll probably end up with one deck of "misc" or seldom-used spells just to keep your "main deck" handleable.
+
 ### Contributing
 
 Feel free to add more spell cards by creating new `.tex` files in the `src/spells` directory. Follow the structure used in `spell1.tex` for consistency.
