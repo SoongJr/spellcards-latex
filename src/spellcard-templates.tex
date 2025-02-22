@@ -18,19 +18,18 @@
   \section*{\Huge\name\hfill\MakeUppercase{\class}~\spelllevel}
 
   % draw a marker on the right side of the page to quickly flip through the cards
-  % and find the spell level you are looking for
-  % No ordinary printer will be capable of actually printing these to the edge,
-  % but maybe we can get pretty close and dedicated users can finish it by hand,
-  % possibly color-coding the spell levels for even easier identification.
+  % and find the spell level you are looking for.
+  % When cardified, this edge will be at the center of a DIN A4 page,
+  % so there is no problem printing "all the way to the edge".
+  % The intention is for the user to color the marker with a highlighter after cutting the pages free.
   \begin{tikzpicture}[remember picture, overlay]
     % based on \spelllevel, determine the height the marker should appear at.
     \pgfmathparse{mod(\spelllevel-1,10)}% there are 9 levels in core books, but other books may have higher spells. Make sure they do not overshoot the page.
     \pgfmathsetmacro{\markerposition}{\fpeval{4/16 + (1/16 * \pgfmathresult)}}% defines where the first marker shows up (center-point), and the spacing between them
-    % print the spelllevel close to the edge of the page, \markerposition from the top
-    % (Note: MY printer can print up to .75 cm towards the edge of the page, you may have to fine-tune the position)
-    \node [xshift=-1cm,yshift=-\markerposition\paperheight] at (current page.north east)[font=\Large]{\textbf{\spelllevel}};
+    % print the spelllevel at the edge of the page, \markerposition from the top
+    \node [font=\Large, xshift=-0.75cm,yshift=-\markerposition\paperheight] at (current page.north east){\textbf{\spelllevel}};
     % draw light-gray lines above and below the spelllevel as guides for the user to apply highlighting (my highlighter's width is 4mm...)
-    \draw[gray, dotted, line width=1pt] (current page.north east) ++(0cm,-\markerposition\paperheight+8mm) -- ++(-1.5cm,0) -- ++(0,-16mm) -- ++(1.5cm,0);
+    \draw[lightgray, dotted, line width=1pt] (current page.north east) ++(0cm,-\markerposition\paperheight+8mm) -- ++(-1.25cm,0) -- ++(0,-16mm) -- ++(1.25cm,0);
   \end{tikzpicture}
   \endgroup{}
 }{%
