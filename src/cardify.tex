@@ -96,10 +96,12 @@
 
 \AtBeginShipout{
   \AtBeginShipoutUpperLeft{
-    % draw cut lines to show where to cut the paper
-    \begin{tikzpicture}[remember picture, overlay]
-      \draw[lightgray, dashed] (current page.north east) -- (current page.south east) -- (current page.south west);
-    \end{tikzpicture}
+    % % draw cut lines to show where to cut the paper
+    % DISABLED: consumer-level printers are not exact enough to cut on these lines (mine was off by 2mm)
+    % Instead, user should either fold a sacrificial paper in half to use a guide, or use a paper cutter (copyshop? at work?)
+    % \begin{tikzpicture}[remember picture, overlay]
+    %   \draw[lightgray, dashed] (current page.north east) -- (current page.south east) -- (current page.south west);
+    % \end{tikzpicture}
   }
 }
 
