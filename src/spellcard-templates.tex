@@ -17,15 +17,21 @@
   % Titlebar for spell (spell name and level)
   \section*{\Huge\name\hfill\MakeUppercase{\class}~\spelllevel}
 
-  % TODO: I would really love to have markers along the right-hand side of the page
-  % whose vertical position tells you at a glance the level of the spell,
-  % like some books mark their chapters, so you can quickly flip through a stack of cards
-  % to get to the the level you are looking for.
+  % draw a marker on the right side of the page to quickly flip through the cards
+  % and find the spell level you are looking for
   % No ordinary printer will be capable of actually printing these to the edge,
-  % but maybe we can get pretty close and dedicated users can finish it by hand.
-  % Currently I envision printing the spell level as close as possible to the edge
-  % and providing a 3D-printable jig or template to stick the card into
-  % and then color over it with a marker to the edge.
+  % but maybe we can get pretty close and dedicated users can finish it by hand,
+  % possibly color-coding the spell levels for even easier identification.
+  \begin{tikzpicture}[remember picture, overlay]
+    % based on \spelllevel, determine the height the marker should appear at.
+    \pgfmathparse{mod(\spelllevel-1,10)}% there are 9 levels in core books, but other books may have higher spells. Make sure they do not overshoot the page.
+    \pgfmathsetmacro{\markerposition}{\fpeval{4/16 + (1/16 * \pgfmathresult)}}% defines where the first marker shows up (center-point), and the spacing between them
+    % print the spelllevel close to the edge of the page, \markerposition from the top
+    % (Note: MY printer can print up to .75 cm towards the edge of the page, you may have to fine-tune the position)
+    \node [xshift=-1cm,yshift=-\markerposition\paperheight] at (current page.north east)[font=\Large]{\textbf{\spelllevel}};
+    % draw light-gray lines above and below the spelllevel as guides for the user to apply highlighting (my highlighter's width is 4mm...)
+    \draw[gray, dotted, line width=1pt] (current page.north east) ++(0cm,-\markerposition\paperheight+8mm) -- ++(-1.5cm,0) -- ++(0,-16mm) -- ++(1.5cm,0);
+  \end{tikzpicture}
   \endgroup{}
 }{%
   \clearcard% start new spell on a fresh page (ensuring its front face is not printed on the back of the previous card)
