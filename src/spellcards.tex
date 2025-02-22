@@ -14,6 +14,9 @@
 \usepackage{booktabs}           % nicer table formatting options
 \usepackage{tabularx}           % for tables that can span the whole page width
 \usepackage{tikz}               % for drawing the spell-level markers
+\usepackage{qrcode}             % for generating QR codes
+\usepackage{atbegshi}           % for hooking into the shipout process (resetting counters on a new page...)
+\usepackage{ifoddpage}          % for checking if a page is odd or even (AKA face is front or back)
 % packages used indirectly by pandoc converting from HTML code:
 \usepackage{longtable}
 

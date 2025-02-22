@@ -65,8 +65,14 @@
   \newcommand{\ruse}{0}
   \newcommand{\draconic}{0}
   \newcommand{\meditative}{0}
+  \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/i/ice-storm/}
+  \newcommand{\urlgerman}{http://prd.5footstep.de/Grundregelwerk/Zauber/<german-spell-name>}
   % print the tabular information at the top of the card:
   \spellcardinfo{}
+  % draw a QR Code pointing at online resources for this spell on the front face:
+  \spellcardqr{\urlenglish}
+  % ATTENTION: URLs for foreign languages cannot be generated and must be provided by you!
+  %            Set \urlgerman above and activate this line if you want to have it: \spellcardqr{\urlgerman}
   % LaTeX-formatted description of the spell, generated from the HTML-formatted description_formatted column:
   Great magical hailstones pound down upon casting this spell, dealing 3d6
   points of bludgeoning damage and 2d6 points of cold damage to every
