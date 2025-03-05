@@ -225,4 +225,8 @@ for file in "${generatedFiles[@]}"; do
     fi
   done < <(find "$(dirname "${outputDirBase}")" -type f -name "$(basename "${file}")")
 done
-printf "Once they look good, add an \input{} statement to src/spellcards.tex to actually include them in the document.\n"
+printf "Once they look good, add an \input{} statement to src/spells/%s.tex to actually include them in the document.\n" "${characterClass}"
+# It is rare that the user wants to print all cards at once, usually they print a couple spells for their level-up.
+# So automatically adding these to the tex file seems like a good idea at first, but will mostly be a pain to deal with.
+printf "If you wish to include all currently available spells for this class, you can use the following command:\n"
+printf "( cd src && find spells/%s -name '*.tex' | sed 's/\.tex$//' | xargs -I{} --delimiter='\\\n' printf '\input{%%s}\\\n' {} ) > src/spells/%s.tex\n" "${characterClass}" "${characterClass}"

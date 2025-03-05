@@ -33,24 +33,9 @@
 % (once you've printed this, you are expected to comment this line)
 \spellmarkerchart{}
 
-% include actual spell cards:
-
-\input{spells/sor/1/Burning Hands}
-
-\input{spells/sor/2/Darkvision}
-
-\input{spells/sor/3/Fireball}
-
-\input{spells/sor/4/Black Tentacles}
-\input{spells/sor/4/Ice Storm}
-\input{spells/sor/4/Invisibility, Greater}
-
-\input{spells/sor/5/Teleport}
-\input{spells/sor/5/Wall Of Force}
-
-\input{spells/sor/6/Chain Lightning}
-\input{spells/sor/6/Disintegrate.tex}
-
-\input{spells/sor/7/Reverse Gravity}
+% include actual spell cards, these class-specific files contain the actual spells to include in the PDF, usually the ones for a character's current level-up.
+% It is rare that all spells are needed at once, but if you do wish to do that, here's the command to run:
+%   class=sor bash -c 'cd src && find "spells/${class}" -name "*.tex" | sed "s/\.tex$//" | xargs -I{} printf "\input{%s}\n" {} > "spells/${class}.tex"'
+\input{spells/sor}
 
 \end{document}
