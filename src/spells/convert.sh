@@ -77,6 +77,23 @@ if [[ -z "$spellLevel" && -z "$spellName" && -z "$sourceBook" ]]; then
   echo "         Working on it now, but don't expect results any time soon..." >&2
 fi
 
+# Function trying to automatically apply some best practices that chktex will complain about to a given LaTeX-formatted text.
+# These actions may not be perfect, but should make them much easier to review and adjust manually.
+apply_latex_fixes() {
+  local latexText="$1"
+  # replacing double quotes with `` and '' (nested quotes get replaced incorrectly, but aren't expected. Unmatched quotes are left unchanged.):
+  latexText=$(echo "$latexText" | sed -E "s/\"([^\"]+)\"/\`\`\1''/g")
+  # text fragments like "10-ft. radius" or "within 30 ft. of the target" require explicitly marking the space as inter-word spacing
+  latexText=$(echo "$latexText" | sed -E "s/([0-9]+[ -]?ft\.) ([a-z])/\1\\\ \2/g")
+  # text fragments like "sq. ft." on the other hand demand a non-breaking space
+  latexText=$(echo "$latexText" | sed -E "s/sq\. ft\./sq.~ft./g")
+  # When a new sentence starts with an emphasized word, LaTeX wants us to explicitly mark the space as inter-sentence spacing
+  latexText=$(echo "$latexText" | sed -E "s/\. \\\emph\{/.\\\@ \\\emph{/g")
+  # also use superscripting for "1st", "2nd", etc.:
+  latexText=$(echo "$latexText" | sed -E "s/(\b[0-9]+)(st|nd|rd|th)\b/\1\\\textsuperscript{\2}/g")
+  echo "$latexText"
+}
+
 inputFile="$(dirname "$0")/spell_full.tsv"
 # all spells are grouped by the class using it, as the information displayed on the spell cards can vary:
 outputDirBase="$(dirname "$0")/$characterClass"
@@ -138,9 +155,14 @@ while IFS=$'\t' read -r "${headers[@]}"; do
   if ! tsv_description_formatted=$(echo "$tsv_description_formatted" | pandoc -f html -t latex); then
     die "Error: Failed to convert HTML to LaTeX for spell '${tsv_name}'" || continue
   fi
-  # Try our best to implement some best practices that chktex will complain about, e.g. replacing double quotes with `` and ''
-  # (nested quotes get replaced incorrectly, but aren't expected. Unmatched quotes are left unchanged.)
-  tsv_description_formatted=$(echo "$tsv_description_formatted" | sed -E "s/\"([^\"]+)\"/\`\`\1''/g")
+
+  # Apply LaTeX formatting to some specific fields we know to contain common issues:
+  tsv_effect=$(apply_latex_fixes "$tsv_effect")
+  tsv_range=$(apply_latex_fixes "$tsv_range")
+  tsv_area=$(apply_latex_fixes "$tsv_area")
+  tsv_targets=$(apply_latex_fixes "$tsv_targets")
+  tsv_mythic_text=$(apply_latex_fixes "$tsv_mythic_text")
+  tsv_description_formatted=$(apply_latex_fixes "$tsv_description_formatted")
 
   # Create additional "columns" with generated content:
 
