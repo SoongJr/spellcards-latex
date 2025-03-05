@@ -3,8 +3,8 @@
 % but the user is encouraged to modify those files to best suit their needs
 % (fit spells on the cards nicely, rephrase ambigious descriptions,
 % include information from other spells for those "works like X" spells, etc.)
-
-
+%
+%
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % environment for formatting a spell card (title-bar, header/footer, etc.)
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -15,34 +15,34 @@
 % so there is no problem printing "all the way to the edge".
 % The intention is for the user to color the marker with a highlighter after cutting the pages free.
 \newcommand{\drawspellmarker}[1]{%
-  \begin{tikzpicture}[remember picture, overlay]
+  \begin{tikzpicture}[remember picture, overlay]%
     % based on \spelllevel (argument 1), determine the height the marker should appear at.
     \pgfmathparse{mod(#1-1,10)}% there are 9 levels in core books, but other books may have higher spells. Make sure they do not overshoot the page.
     \pgfmathsetmacro{\markerposition}{\fpeval{2/16 + (1/16 * \pgfmathresult)}}% defines where the first marker shows up (center-point), and the spacing between them
     % print the spelllevel at the edge of the page, \markerposition from the top
-    \node [font=\Large, xshift=-0.75cm,yshift=-\markerposition\paperheight] at (current page.north east){\textbf{#1}};
+    \node [font=\Large, xshift=-0.75cm,yshift=-\markerposition\paperheight] at (current page.north east){\textbf{#1}};%
     % draw light-gray lines above and below the spelllevel as guides for the user to apply highlighting (my highlighter's width is 4mm...)
-    \draw[lightgray, dotted, line width=1pt] (current page.north east) ++(0cm,-\markerposition\paperheight+8mm) -- ++(-1.25cm,0) -- ++(0,-16mm) -- ++(1.25cm,0);
-  \end{tikzpicture}
-}
+    \draw[lightgray, dotted, line width=1pt] (current page.north east) ++(0cm,-\markerposition\paperheight+8mm) -- ++(-1.25cm,0) -- ++(0,-16mm) -- ++(1.25cm,0);%
+  \end{tikzpicture}%
+}%
 \newenvironment{spellcard}[3]{%
   \begingroup{}   % make macro declarations only affect the content of the "begin" statement
   \def\class{#1}  % character class (wiz, sor, etc.)
   \def\name{#2}   % spell name
   \def\spelllevel{#3}  % spell level for this character class
-
+  %
   % Titlebar for spell (spell name and level)
-  \section*{\Huge\name\hfill\MakeUppercase{\class}~\spelllevel}
-
-  \drawspellmarker{\spelllevel}
-  \endgroup{}
+  \section*{\Huge\name\hfill\MakeUppercase{\class}~\spelllevel}%
+  %
+  \drawspellmarker{\spelllevel}%
+  \endgroup{}%
 }{%
   \clearcard% start new spell on a fresh page (ensuring its front face is not printed on the back of the previous card)
   % reset counters after each spell so cards are independent of each other:
-  \setcounter{page}{1}
-  \setcounter{table}{0}
-  \setcounter{figure}{0}
-}
+  \setcounter{page}{1}%
+  \setcounter{table}{0}%
+  \setcounter{figure}{0}%
+}%
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Tabular information for spell
@@ -50,58 +50,59 @@
 % command to print one attribute of the spell in the spell card table that can be NULL (shall be omitted if that's the case)
 % Note: These cannot be used as the bottom-most line of the table, as they would not print a line after them.
 \newcommand{\spellattribute}[2]{%
-  \ifthenelse{\equal{#2}{NULL}}{}{\textbf{#1:} & #2 \\ \midrule}
-}
+  \ifthenelse{\equal{#2}{NULL}}{}{\textbf{#1:} & #2 \\ \midrule}%
+}%
 % this command is for the last line of each table and cannot be NULL
-\newcommand{\spellattributelast}[2]{\textbf{#1:} & #2 \\ \bottomrule}
-
+\newcommand{\spellattributelast}[2]{\textbf{#1:} & #2 \\ \bottomrule}%
+%
 % Note that TSV headers contain underscores, but LaTeX macros can only contain letters,
 % so columns such as "spell_level" should be referred to as "\spelllevel{}"
 \newcommand{\spellcardinfo}[1][0.5]{%
   % reduced font size for table so we can fit two next to each other on one card
-  \normalsize
+  \normalsize%
   % how much width of the page is offered to the first table is adjustable with optioonal parameter, second table gets the rest:
-  \def\firsttablewidth{#1}
-  \def\secondtablewidth{\fpeval{1-#1}}
+  \def\firsttablewidth{#1}%
+  \def\secondtablewidth{\fpeval{1-#1}}%
   % longer attribute names should be added to the left table, shorter ones to the right.
   % prevent indenting the tables so we have the full width of the text area available:
-  \noindent
-  \begin{tabularx}{\firsttablewidth\textwidth}[b]{r>{\raggedright\arraybackslash}X}
-    \toprule
-    \spellattribute{Casting Time}{\castingtime}
-    \spellattribute{Duration}{\duration}
-    \spellattribute{Saving Throw}{\savingthrow}
-    \spellattributelast{Spell Resist}{\spellresistance}
-  \end{tabularx}
-  \hfill
-  \begin{tabularx}{\secondtablewidth\textwidth-\tabcolsep}[b]{r>{\raggedright\arraybackslash}X}
-    \toprule
-    \spellattribute{Area}{\area}
-    \spellattribute{Range}{\range}
-    \spellattribute{Comp.}{\components}
+  \noindent%
+  \begin{tabularx}{\firsttablewidth\textwidth}[b]{r>{\raggedright\arraybackslash}X}%
+    \toprule%
+    \spellattribute{Casting Time}{\castingtime}%
+    \spellattribute{Duration}{\duration}%
+    \spellattribute{Saving Throw}{\savingthrow}%
+    \spellattributelast{Spell Resist}{\spellresistance}%
+  \end{tabularx}%
+  \hfill%
+  \begin{tabularx}{\secondtablewidth\textwidth-\tabcolsep}[b]{r>{\raggedright\arraybackslash}X}%
+    \toprule%
+    \spellattribute{Area}{\area}%
+    \spellattribute{Range}{\range}%
+    \spellattribute{Comp.}{\components}%
     % evocation school is special as we want to include its descriptor:
     \ifthenelse{\equal{\school}{evocation} \AND\NOT\equal{\descriptor}{NULL}}%
     {\textbf{School:} & \school{} (\descriptor{})} %
-    {\textbf{School:} & \school{}                } \\ \bottomrule
-  \end{tabularx}
+    {\textbf{School:} & \school{}                } \\ \bottomrule%
+  \end{tabularx}%
   % A third table spanning the whole width for extra-long attributes:
-  \ifthenelse{\equal{\targets}{NULL}\AND\equal{\effect}{NULL}}{}{% omit the table if nothing to display
-    \begin{tabularx}{\textwidth}{r>{\raggedright\arraybackslash}X}
-      \spellattribute{Target}{\targets}
-      \spellattribute{Effect}{\effect}
+  \ifthenelse{\equal{\targets}{NULL}\AND\equal{\effect}{NULL}}{% omit the table if nothing to display
+  }{\\
+    \begin{tabularx}{\textwidth}{r>{\raggedright\arraybackslash}X}%
+      \spellattribute{Target}{\targets}%
+      \spellattribute{Effect}{\effect}%
       % if you add more attributes here, adjust the condition above!
-    \end{tabularx}
-  }
+    \end{tabularx}%
+  }%
   % insert some space before the description begins
   \vspace{1ex} \\
   % increased font size for the spell description for easier reading in low light
   \raggedright\Large%
-}
-
+}%
+%
 % provide a command to print a QR code at the bottom of the current page (front face by default, but user may move it to the back manually)
 % drawing multiple QR codes requires a counter:
-\newcounter{qrCode}
-\AtBeginShipout{\stepcounter{qrCode}\setcounter{qrCode}{0}}
+\newcounter{qrCode}%
+\AtBeginShipout{\stepcounter{qrCode}\setcounter{qrCode}{0}}%
 \newcommand{\qrCodeToPrint}{} % define \qrCodeToPrint initially
 \newcommand{\spellcardqr}[1]{%
   % we currently only support two qr codes per page, it gets complicated enough as it is.
@@ -147,23 +148,24 @@
     }%
   \fi%
   \stepcounter{qrCode}%
-}
-
+}%
+%
 % provide a command for printing a reference chart for spell-level markers
 \newcommand{\spellmarkerchart}{%
-  \section*{\Huge look-up card for spell-level marker colors}
-  \vspace{1ex}
-  \raggedright\Large
+  \section*{\Huge look-up card for spell-level marker colors}%
+  \vspace{1ex}%
+  \raggedright\Large%
   To the right you see the markers for all possible spell levels.\\
   These are intended to be colored with a highlighter and serve as a reference
   for which colors you decided to use when printing new cards.
-  \drawspellmarker{1}\drawspellmarker{2}\drawspellmarker{3}\drawspellmarker{4}\drawspellmarker{5}
-  \drawspellmarker{6}\drawspellmarker{7}\drawspellmarker{8}\drawspellmarker{9}
-  \clearcard{}
+  \drawspellmarker{1}\drawspellmarker{2}\drawspellmarker{3}\drawspellmarker{4}\drawspellmarker{5}%
+  \drawspellmarker{6}\drawspellmarker{7}\drawspellmarker{8}\drawspellmarker{9}%
+  \clearcard{}%
   % reset page counter the same way the spellcards environment does:
-  \setcounter{page}{1}
-}
-
+  \setcounter{page}{1}%
+}%
+%
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % The description of the spell is written in the spells' file within the spellcards environment, no need for a template here.
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
