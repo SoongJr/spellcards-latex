@@ -151,6 +151,10 @@ while IFS=$'\t' read -r "${headers[@]}"; do
   tsv_saving_throw=$(echo "$tsv_saving_throw" | sed -E 's/\bnone\b/\\textbf{none}/g')
   tsv_spell_resistance=$(echo "$tsv_spell_resistance" | sed -E 's/\bno\b/\\textbf{no}/g')
 
+  # a missing value ("NULL") in saving_throw or spell_resistance means it is not applicable
+  [[ "$tsv_saving_throw" != "NULL" ]] || tsv_saving_throw="\\emph{N/A}"
+  [[ "$tsv_spell_resistance" != "NULL" ]] || tsv_spell_resistance="\\emph{N/A}"
+
   # Convert HTML to LaTeX using pandoc and replace the content of tsv_description_formatted
   if ! tsv_description_formatted=$(echo "$tsv_description_formatted" | pandoc -f html -t latex); then
     die "Error: Failed to convert HTML to LaTeX for spell '${tsv_name}'" || continue
