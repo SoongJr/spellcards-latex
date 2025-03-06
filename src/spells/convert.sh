@@ -173,13 +173,14 @@ while IFS=$'\t' read -r "${headers[@]}"; do
   # Create a guess at a URL to the English online rules for this spell from the name. The user will have to check whether it's correct:
   # base URL is `https://www.d20pfsrd.com/magic/all-spells/`, followed by the first character of the spell's name,
   # then the entire name with lower-cased and non-alphebethical charatcers replaced with dashes.
-  # The "Greater" variants of spells do not have their own pages and are instead included in the base spell's page, so we remove that and hope for the best.
   englishBaseUrl="https://www.d20pfsrd.com/magic/all-spells"
   # shellcheck disable=SC2034 # variable used by dynamically constructing variable name, so spellcheck can't know
   tsv_url_english="${englishBaseUrl}/$(
     printf "%s" "${tsv_name:0:1}" | tr '[:upper:]' '[:lower:]'
   )/$(
-    printf "%s" "${tsv_name}" | sed 's/, Greater$//' | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '-'
+    # The "Greater" variants of spells do not have their own pages and are instead included in the base spell's page, so we remove that and hope for the best.
+    # The same goes for "levels" of spells, like "Summon Monster III", which needs to direct to the base page.
+    printf "%s" "${tsv_name}" | sed -E 's/(, Greater| [IVX]+)$//' | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '-'
   )/"
   # We cannot determine the same for other languages, but we can at least provide the user with a template:
   germanBaseUrl="http://prd.5footstep.de/Grundregelwerk/Zauber"
