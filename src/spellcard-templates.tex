@@ -120,7 +120,7 @@
   }{%
     \def\qrCodeShift{4cm}% the second one needs to leave space for the page number
   }%
-  \checkoddpage\ifoddpage%
+  \ifodd\value{page}%
     % the page number is on the right side
     \ifthenelse{\equal{\value{qrCode}}{0}}{%
       % we want to print the first code on the left side with a smaller offset
