@@ -96,14 +96,19 @@
 
 \AtBeginShipout{
   \AtBeginShipoutUpperLeft{
-    % % draw cut lines to show where to cut the paper
-    % DISABLED: consumer-level printers are not exact enough to cut on these lines (mine was off by 2mm),
-    %           so the front and back sides of cards would not line up!
-    % Instead, user should either fold a sacrificial paper in half to use a guide, or use a paper cutter (copyshop? at work?)
-    % \begin{tikzpicture}[remember picture, overlay]
-    %   \draw[lightgray, dashed] (current page.north east) -- (current page.south east) -- (current page.south west);
-    % \end{tikzpicture}
-  }
+    % draw cut lines to better show where to cut the paper for perfect level-marker placement.
+    % Because consumer-level printers are not exact (mine was off by 2mm), this requires cutting each page individually!
+    % It also means that the resulting cards will not be the same size; user has to re-align all cards along the marked edges
+    % and cut the excess paper on the other sides. This leaves them slightly below DIN A6 size!
+    % Suggestion: When printing a whole spell book of an existing character,
+    %             disable this section and just cut the whole stack at once down the middle of the physical page.
+    %             If and when you create addictional decks with fewer spells (like "Attack-Deck" and "Social Deck"...),
+    %             use these guides to get optimal results.
+    \ifodd\value{page}%
+      \begin{tikzpicture}[remember picture, overlay]
+        \draw[lightgray, dash pattern=on 10pt off 20pt] (current page.north west) -- (current page.north east) -- (current page.south east) -- (current page.south west);
+      \end{tikzpicture}%
+    \fi }%
 }
 
 % when being cardified, ensure a new card's front face does not start on the backside of the previous card:
