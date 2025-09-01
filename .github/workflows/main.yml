@@ -17,7 +17,7 @@ jobs:
       image: danteev/texlive:latest
     steps:
       - name: Set up Git repository
-        uses: actions/checkout@v4  # Checks-out repository under $GITHUB_WORKSPACE
+        uses: actions/checkout@v5  # Checks-out repository under $GITHUB_WORKSPACE
       - name: Check formatting of *.tex files
         shell: bash        
         run: |
@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Git repository
-        uses: actions/checkout@v4  # Checks-out repository under $GITHUB_WORKSPACE
+        uses: actions/checkout@v5  # Checks-out repository under $GITHUB_WORKSPACE
       - name: Lint ${{ env.file }}.tex
         # run chktex the same way LaTeX-Workshop extension of Visual Studio code would
         uses: dante-ev/latex-action@latest
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Git repository
-        uses: actions/checkout@v4  # Checks-out repository under $GITHUB_WORKSPACE
+        uses: actions/checkout@v5  # Checks-out repository under $GITHUB_WORKSPACE
       - name: Compile ${{ env.file }}.tex
         # run latexmk on the given file
         uses: dante-ev/latex-action@latest
