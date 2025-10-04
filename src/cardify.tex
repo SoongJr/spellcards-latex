@@ -4,85 +4,119 @@
 %\url{https://tex.stackexchange.com/q/638802/86}
 %Adapted from \url{http://tex.stackexchange.com/q/279042/86}
 \usepackage{pgfmorepages}
-\usepackage{atbegshi}           % for using \AtBeginShipout, required to draw lines over all pages
 
-\pgfpagesdeclarelayout{8 on 2, book format}
+\pgfpagesdeclarelayout{8 on 2, card format}
 {%
   \edef\pgfpageoptionheight{\the\paperheight}
   \edef\pgfpageoptionwidth{\the\paperwidth}
-  \def\pgfpageoptionborder{0pt}
-  \def\pgfpageoptionfirstshipout{1}
+  \edef\pgfpageoptionborder{0pt}
+  \edef\pgfpageoptionfirstshipout{3}
 }%
 {%
   \pgfpagesphysicalpageoptions%
   {%
-    logical pages=8,%
+    logical pages=10,%
     physical pages=2,%
     physical height=\pgfpageoptionheight,%
     physical width=\pgfpageoptionwidth,%
-    current logical shipout=\pgfpageoptionfirstshipout%
+    current logical shipout=\pgfpageoptionfirstshipout,%
+    first logical shipout=\pgfpageoptionfirstshipout,%
   }
   \pgfpagesphysicalpage{1}{}
   \pgfpageslogicalpageoptions{1}
+  {% page with the front sides of four cards
+    resized width=\pgfphysicalwidth,%
+    resized height=\pgfphysicalheight,%
+    center=\pgfpoint{.5\pgfphysicalwidth}{.5\pgfphysicalheight},%
+    border code={%
+        \pgfusepath{discard}%
+        % we draw the cutting guides here because they must match up
+        % with the spell-level indicator at the side of the card!
+        \color{gray!50}\pgfsetlinewidth{0.25pt}% faint gray line
+        \pgfsetdash{{10pt}{5pt}}{0pt}% long dashes
+        % horizontal line
+        \pgfpathmoveto{\pgfpoint{-6.5pt}{.5\ht0}}%
+        \pgfpathlineto{\pgfpoint{\wd0}{.5\ht0}}%
+        % vertical line
+        \pgfpathmoveto{\pgfpoint{.5\wd0}{-2.5pt}}%
+        \pgfpathlineto{\pgfpoint{.5\wd0}{\ht0}}%
+        \pgfusepath{stroke}%
+        \color{black}%
+        \pgfsetdash{}{0pt}%
+      },%
+    copy from=1,%
+  }%
+  \pgfpagesphysicalpage{2}{}
+  \pgfpageslogicalpageoptions{2}
+  {% page with the back sides of four cards
+    resized width=\pgfphysicalwidth,%
+    resized height=\pgfphysicalheight,%
+    center=\pgfpoint{.5\pgfphysicalwidth}{.5\pgfphysicalheight},%
+    % not drawing any cutting-guides on the back-side page
+    % because there is no way any lines would line up with the front page.
+    copy from=2,%
+  }%
+  \pgfpagesphysicalpage{1}{}
+  \pgfpageslogicalpageoptions{3}
   {%
-    rotation=0,
+    rotation=0,%
     border shrink=\pgfpageoptionborder,%
     resized width=.5\pgfphysicalwidth,%
     resized height=.5\pgfphysicalheight,%
     center=\pgfpoint{.25\pgfphysicalwidth}{.75\pgfphysicalheight}%
   }%
-  \pgfpageslogicalpageoptions{3}
+  \pgfpageslogicalpageoptions{5}
   {%
-    rotation=180,
+    rotation=180,%
     border shrink=\pgfpageoptionborder,%
     resized width=.5\pgfphysicalwidth,%
     resized height=.5\pgfphysicalheight,%
     center=\pgfpoint{.75\pgfphysicalwidth}{.75\pgfphysicalheight}%
   }%
-  \pgfpageslogicalpageoptions{5}
+  \pgfpageslogicalpageoptions{7}
   {%
-    rotation=0,
+    rotation=0,%
     border shrink=\pgfpageoptionborder,%
     resized width=.5\pgfphysicalwidth,%
     resized height=.5\pgfphysicalheight,%
     center=\pgfpoint{.25\pgfphysicalwidth}{.25\pgfphysicalheight},%
   }%
-  \pgfpageslogicalpageoptions{7}
+  \pgfpageslogicalpageoptions{9}
   {%
-    rotation=180,
+    rotation=180,%
     border shrink=\pgfpageoptionborder,%
     resized width=.5\pgfphysicalwidth,%
     resized height=.5\pgfphysicalheight,%
     center=\pgfpoint{.75\pgfphysicalwidth}{.25\pgfphysicalheight},%
   }%
   \pgfpagesphysicalpage{2}{}
-  \pgfpageslogicalpageoptions{4}
+  \pgfpageslogicalpageoptions{6}
   {%
-    rotation=180,
+    rotation=180,%
     border shrink=\pgfpageoptionborder,%
     resized width=.5\pgfphysicalwidth,%
     resized height=.5\pgfphysicalheight,%
     center=\pgfpoint{.25\pgfphysicalwidth}{.75\pgfphysicalheight}%
   }%
-  \pgfpageslogicalpageoptions{2}
+  \pgfpageslogicalpageoptions{4}
   {%
-    rotation=0,
+    rotation=0,%
     border shrink=\pgfpageoptionborder,%
     resized width=.5\pgfphysicalwidth,%
     resized height=.5\pgfphysicalheight,%
     center=\pgfpoint{.75\pgfphysicalwidth}{.75\pgfphysicalheight}%
   }%
-  \pgfpageslogicalpageoptions{8}
+  \pgfpageslogicalpageoptions{10}
   {%
-    rotation=180,
+    rotation=180,%
     border shrink=\pgfpageoptionborder,%
     resized width=.5\pgfphysicalwidth,%
     resized height=.5\pgfphysicalheight,%
     center=\pgfpoint{.25\pgfphysicalwidth}{.25\pgfphysicalheight},%
   }%
-  \pgfpageslogicalpageoptions{6}
+  \pgfpageslogicalpageoptions{8}
   {%
-    rotation=0,
+    rotation=0,%
     border shrink=\pgfpageoptionborder,%
     resized width=.5\pgfphysicalwidth,%
     resized height=.5\pgfphysicalheight,%
@@ -91,24 +125,7 @@
 }
 
 \AtBeginDocument{
-  \pgfpagesuselayout{8 on 2, book format} % use the layout we set up above
-}
-
-\AtBeginShipout{
-  \AtBeginShipoutUpperLeft{
-    % draw cut lines to better show where to cut the paper for perfect level-marker placement.
-    % Because consumer-level printers are not exact (mine was off by 2mm), this requires cutting each page individually!
-    % It also means that the resulting cards will not be the same size; user has to re-align all cards along the marked edges
-    % and cut the excess paper on the other sides. This leaves them slightly below DIN A6 size!
-    % Suggestion: When printing a whole spell book of an existing character,
-    %             disable this section and just cut the whole stack at once down the middle of the physical page.
-    %             If and when you create addictional decks with fewer spells (like "Attack-Deck" and "Social Deck"...),
-    %             use these guides to get optimal results.
-    \ifodd\value{page}%
-      \begin{tikzpicture}[remember picture, overlay]
-        \draw[lightgray, dash pattern=on 10pt off 20pt] (current page.north west) -- (current page.north east) -- (current page.south east) -- (current page.south west);
-      \end{tikzpicture}%
-    \fi }%
+  \pgfpagesuselayout{8 on 2, card format} % use the layout we set up above
 }
 
 % when being cardified, ensure a new card's front face does not start on the backside of the previous card:
