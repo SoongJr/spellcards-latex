@@ -94,15 +94,19 @@ while IFS= read -r spell; do src/spells/convert.sh --overwrite -c $class -n "$sp
    - If your printer supports double-sided printing and can deal with the card-stock you use, just use that.
    - Otherwise, print all odd pages first, then put the stack of print-outs back into the printer so the next print goes onto the backside.  
      Now print the even pages _in reverse order_
-1. Cut the DIN A4 pages into DIN A6:
-   - If you have access to a paper cutter, just use that.
-   - Otherwise, fold a scrap piece of paper in half along its long edge to get a crease, then place it on top of your print-outs and cut along this crease.  
-     You end up with DIN A5 papers, so repeat the fold-and-cut process once more.  
-     Tipps for better results:
-     - Use a cutting-mat, straight-edge and sharp craft knife. Using scissors will shift the papers while you cut.
-     - Use multiple, light cutting passes instead of a single heavy one. Heavy cuts will also move the papers.
-     - Ensure your blade's tip is still sharp. Consider using a fresh blade even if it seems wasteful. Paper is harsh on metal edges and dulls them quickly.
-1. Sort your cards (at least for spell-level). The cards were supposed to be re-ordered so they would line up sorted after cutting, but that does not appear to work, so you have to sort manually.
+1. Cut the DIN A4 pages into DIN A6:  
+   Unless you have professional equipment, your printer will not be able to produce the tolerances
+   that would be necessary to just cut the printed pages down the center into DIN A6.  
+   For this reason, there are faint guides printed for you to cut along,
+   but the opposite edges (the ones you do not cut this way) now become skewed and need to be re-cut as well.  
+   Depending on how bad your prints turned out, the cards can come out much less than DIN A6 in size!  
+   Tipps for best results:
+   - If your printer's in-tray is open to the environment, try to help it pull in the sheets as straight as possible.
+   - Use a cutting-mat, straight-edge and sharp craft knife. Using scissors will shift the pages if you cut multiple at a time.
+   - Take multiple, light cutting passes instead of a single heavy one. Heavy cuts will also move the papers.
+   - Ensure your blade's tip is still sharp. Consider using a fresh blade even if it seems wasteful. Paper is harsh on metal edges and dulls them quickly.
+1. Sort your cards (at least for spell-level).  
+   (The cards were supposed to be re-ordered so they would line up sorted after cutting, but that does not appear to work, so you have to sort manually.)
 1. Each spell's front face has a marker on the right-hand edge at a specific height for that level.  
    Take a highlighter/textmarker or similar and color this in to make it easy to flip through a stack of these cards.  
    Maybe get three different colors and alternate between them.
