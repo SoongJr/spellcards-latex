@@ -17,12 +17,12 @@
 \newcommand{\drawspellmarker}[1]{%
   \begin{tikzpicture}[remember picture, overlay]%
     % based on \spelllevel (argument 1), determine the height the marker should appear at.
-    \pgfmathparse{mod(#1-1,10)}% there are 9 levels in core books, but other books may have higher spells. Make sure they do not overshoot the page.
-    \pgfmathsetmacro{\markerposition}{\fpeval{2/16 + (1/16 * \pgfmathresult)}}% defines where the first marker shows up (center-point), and the spacing between them
+    \pgfmathparse{mod(#1,10)}% there are 9 levels in core books, but other books may have higher spells. Make sure they do not overshoot the page.
+    \pgfmathsetmacro{\markerposition}{\fpeval{((1/16 * \pgfmathresult)) * \paperheight} + 2.5cm}% defines where the first marker shows up (center-point), and the spacing between them
     % print the spelllevel at the edge of the page, \markerposition from the top
-    \node [font=\Large, xshift=-0.75cm,yshift=-\markerposition\paperheight] at (current page.north east){\textbf{#1}};%
+    \node [font=\Large, xshift=-0.75cm,yshift=-\markerposition] at (current page.north east){\textbf{#1}};%
     % draw light-gray lines above and below the spelllevel as guides for the user to apply highlighting (my highlighter's width is 4mm...)
-    \draw[lightgray, dotted, line width=1pt] (current page.north east) ++(0cm,-\markerposition\paperheight+8mm) -- ++(-1.25cm,0) -- ++(0,-16mm) -- ++(1.25cm,0);%
+    \draw[lightgray, dotted, line width=1pt] (current page.north east) ++(0cm,-\markerposition+8mm) -- ++(-1.25cm,0) -- ++(0,-16mm) -- ++(1.25cm,0);%
   \end{tikzpicture}%
 }%
 \newenvironment{spellcard}[3]{%

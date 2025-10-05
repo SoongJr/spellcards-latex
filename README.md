@@ -94,12 +94,11 @@ while IFS= read -r spell; do src/spells/convert.sh --overwrite -c $class -n "$sp
    - If your printer supports double-sided printing and can deal with the card-stock you use, just use that.
    - Otherwise, print all odd pages first, then put the stack of print-outs back into the printer so the next print goes onto the backside.  
      Now print the even pages _in reverse order_
-1. Cut the DIN A4 pages into DIN A6:  
+1. Cut the DIN A4 pages into cards (somewhere between DIN A6/B7):  
    Unless you have professional equipment, your printer will not be able to produce the tolerances
    that would be necessary to just cut the printed pages down the center into DIN A6.  
-   For this reason, there are faint guides printed for you to cut along,
-   but the opposite edges (the ones you do not cut this way) now become skewed and need to be re-cut as well.  
-   Depending on how bad your prints turned out, the cards can come out much less than DIN A6 in size!  
+   For this reason, there are faint guides printed for you to cut along, both through the middle and along the margins.  
+   If you do not see the outer margins, increase the value for `\printermarginx` in [src/cardify.tex](src/cardify.tex).  
    Tipps for best results:
    - If your printer's in-tray is open to the environment, try to help it pull in the sheets as straight as possible.
    - Use a cutting-mat, straight-edge and sharp craft knife. Using scissors will shift the pages if you cut multiple at a time.

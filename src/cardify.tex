@@ -11,6 +11,11 @@
   \edef\pgfpageoptionwidth{\the\paperwidth}
   \edef\pgfpageoptionborder{0pt}
   \edef\pgfpageoptionfirstshipout{3}
+  % calculate proper sizes and offsets for positioning the cards:
+  \newlength{\printermarginx}\pgfmathsetlength{\printermarginx}{+4.75mm}% adjust this to your printer's unprintable margin
+  \newlength{\printermarginy}\pgfmathsetlength{\printermarginy}{\printermarginx*1.41421356}% must maintain aspect page's ratio
+  \newlength{\resizedwidth}\pgfmathsetlength{\resizedwidth}{.5*\pgfphysicalwidth-\printermarginx}%
+  \newlength{\resizedheight}\pgfmathsetlength{\resizedheight}{.5*\pgfphysicalheight-\printermarginy}%
 }%
 {%
   \pgfpagesphysicalpageoptions%
@@ -40,6 +45,7 @@
         % vertical line
         \pgfpathmoveto{\pgfpoint{.5\wd0}{-2.5pt}}%
         \pgfpathlineto{\pgfpoint{.5\wd0}{\ht0}}%
+        %
         \pgfusepath{stroke}%
         \color{black}%
         \pgfsetdash{}{0pt}%
@@ -56,71 +62,119 @@
     % because there is no way any lines would line up with the front page.
     copy from=2,%
   }%
+  %
   \pgfpagesphysicalpage{1}{}
   \pgfpageslogicalpageoptions{3}
   {%
     rotation=0,%
-    border shrink=\pgfpageoptionborder,%
-    resized width=.5\pgfphysicalwidth,%
-    resized height=.5\pgfphysicalheight,%
-    center=\pgfpoint{.25\pgfphysicalwidth}{.75\pgfphysicalheight}%
+    % each printer has its own individual margins they can print to,
+    % shrinking this page by a printer-dependant value and shifting it
+    % to align with the page's centerlines:
+    resized width=\resizedwidth,%
+    resized height=\resizedheight,%
+    center=\pgfpoint{.25\pgfphysicalwidth+.5\printermarginx}{.75\pgfphysicalheight-.5\printermarginy},%
+    % draw cutting guides opposite the central lines to accomodate printer tolerances,
+    % the user will have to trim the external margins of the cards at these lines.
+    border code={%
+        \pgfusepath{discard}%
+        \color{gray!50}\pgfsetlinewidth{.75pt}% gray line
+        \pgfsetdash{{20pt}{10pt}}{0pt}% long dashes
+        \pgfpathmoveto{\pgfpoint{0pt}{0pt}}%
+        \pgfpathlineto{\pgfpoint{0pt}{\ht0}}%
+        \pgfpathlineto{\pgfpoint{\wd0}{\ht0}}%
+        \pgfusepath{stroke}%
+        \color{black}%
+        \pgfsetdash{}{0pt}%
+      },%
   }%
   \pgfpageslogicalpageoptions{5}
   {%
     rotation=180,%
-    border shrink=\pgfpageoptionborder,%
-    resized width=.5\pgfphysicalwidth,%
-    resized height=.5\pgfphysicalheight,%
-    center=\pgfpoint{.75\pgfphysicalwidth}{.75\pgfphysicalheight}%
+    resized width=\resizedwidth,%
+    resized height=\resizedheight,%
+    center=\pgfpoint{.75\pgfphysicalwidth-.5\printermarginx}{.75\pgfphysicalheight-.5\printermarginy},%
+    border code={%
+        \pgfusepath{discard}%
+        \color{gray!50}\pgfsetlinewidth{.75pt}% gray line
+        \pgfsetdash{{20pt}{10pt}}{0pt}% long dashes
+        \pgfpathmoveto{\pgfpoint{\wd0}{0pt}}%
+        \pgfpathlineto{\pgfpoint{0pt}{0pt}}%
+        \pgfpathlineto{\pgfpoint{0pt}{\ht0}}%
+        \pgfusepath{stroke}%
+        \color{black}%
+        \pgfsetdash{}{0pt}%
+      },%
   }%
   \pgfpageslogicalpageoptions{7}
   {%
     rotation=0,%
-    border shrink=\pgfpageoptionborder,%
-    resized width=.5\pgfphysicalwidth,%
-    resized height=.5\pgfphysicalheight,%
-    center=\pgfpoint{.25\pgfphysicalwidth}{.25\pgfphysicalheight},%
+    resized width=\resizedwidth,%
+    resized height=\resizedheight,%
+    center=\pgfpoint{.25\pgfphysicalwidth+.5\printermarginx}{.25\pgfphysicalheight+.5\printermarginy},%
+    border code={%
+        \pgfusepath{discard}%
+        \color{gray!50}\pgfsetlinewidth{.75pt}% gray line
+        \pgfsetdash{{20pt}{10pt}}{0pt}% long dashes
+        \pgfpathmoveto{\pgfpoint{\wd0}{0pt}}%
+        \pgfpathlineto{\pgfpoint{0pt}{0pt}}%
+        \pgfpathlineto{\pgfpoint{0pt}{\ht0}}%
+        \pgfusepath{stroke}%
+        \color{black}%
+        \pgfsetdash{}{0pt}%
+      },%
   }%
   \pgfpageslogicalpageoptions{9}
   {%
     rotation=180,%
-    border shrink=\pgfpageoptionborder,%
-    resized width=.5\pgfphysicalwidth,%
-    resized height=.5\pgfphysicalheight,%
-    center=\pgfpoint{.75\pgfphysicalwidth}{.25\pgfphysicalheight},%
+    resized width=\resizedwidth,%
+    resized height=\resizedheight,%
+    center=\pgfpoint{.75\pgfphysicalwidth-.5\printermarginx}{.25\pgfphysicalheight+.5\printermarginy},%
+    border code={%
+        \pgfusepath{discard}%
+        \color{gray!50}\pgfsetlinewidth{.75pt}% gray line
+        \pgfsetdash{{20pt}{10pt}}{0pt}% long dashes
+        \pgfpathmoveto{\pgfpoint{0pt}{0pt}}%
+        \pgfpathlineto{\pgfpoint{0pt}{\ht0}}%
+        \pgfpathlineto{\pgfpoint{\wd0}{\ht0}}%
+        \pgfusepath{stroke}%
+        \color{black}%
+        \pgfsetdash{}{0pt}%
+      },%
   }%
+  %
   \pgfpagesphysicalpage{2}{}
   \pgfpageslogicalpageoptions{6}
   {%
     rotation=180,%
+    resized width=\resizedwidth,%
+    resized height=\resizedheight,%
+    center=\pgfpoint{.25\pgfphysicalwidth+.5\printermarginx}{.75\pgfphysicalheight-.5\printermarginy},%
+    % back side gets no cutting guides as they would not line up with the front!
     border shrink=\pgfpageoptionborder,%
-    resized width=.5\pgfphysicalwidth,%
-    resized height=.5\pgfphysicalheight,%
-    center=\pgfpoint{.25\pgfphysicalwidth}{.75\pgfphysicalheight}%
   }%
   \pgfpageslogicalpageoptions{4}
   {%
     rotation=0,%
+    resized width=\resizedwidth,%
+    resized height=\resizedheight,%
+    center=\pgfpoint{.75\pgfphysicalwidth-.5\printermarginx}{.75\pgfphysicalheight-.5\printermarginy},%
     border shrink=\pgfpageoptionborder,%
-    resized width=.5\pgfphysicalwidth,%
-    resized height=.5\pgfphysicalheight,%
-    center=\pgfpoint{.75\pgfphysicalwidth}{.75\pgfphysicalheight}%
   }%
   \pgfpageslogicalpageoptions{10}
   {%
     rotation=180,%
+    resized width=\resizedwidth,%
+    resized height=\resizedheight,%
+    center=\pgfpoint{.25\pgfphysicalwidth+.5\printermarginx}{.25\pgfphysicalheight+.5\printermarginy},%
     border shrink=\pgfpageoptionborder,%
-    resized width=.5\pgfphysicalwidth,%
-    resized height=.5\pgfphysicalheight,%
-    center=\pgfpoint{.25\pgfphysicalwidth}{.25\pgfphysicalheight},%
   }%
   \pgfpageslogicalpageoptions{8}
   {%
     rotation=0,%
+    resized width=\resizedwidth,%
+    resized height=\resizedheight,%
+    center=\pgfpoint{.75\pgfphysicalwidth-.5\printermarginx}{.25\pgfphysicalheight+.5\printermarginy},%
     border shrink=\pgfpageoptionborder,%
-    resized width=.5\pgfphysicalwidth,%
-    resized height=.5\pgfphysicalheight,%
-    center=\pgfpoint{.75\pgfphysicalwidth}{.25\pgfphysicalheight},%
   }%
 }
 

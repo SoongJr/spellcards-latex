@@ -30,13 +30,13 @@
 
 \begin{document}
 
+% print a look-up card with all spell-level markers user can then apply their chosen color scheme to
+% (once you've printed this, you are expected to comment this line)
+\spellmarkerchart{}
+
 % include actual spell cards, these class-specific files contain the actual spells to include in the PDF, usually the ones for a character's current level-up.
 % It is rare that all spells are needed at once, but if you do wish to do that, here's the command to run:
 %   class=sor bash -c 'cd src && find "spells/${class}" -name "*.tex" | sed "s/\.tex$//" | xargs -I{} printf "\input{%s}\n" {} > "spells/${class}.tex"'
 \input{spells/sor}
-
-% print a look-up card with all spell-level markers user can then apply their chosen color scheme to
-% (once you've printed this, you are expected to comment this line)
-% \spellmarkerchart{}
 
 \end{document}
