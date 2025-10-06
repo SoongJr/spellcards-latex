@@ -1,5 +1,7 @@
 # Set the default behavior, in case people don't have core.autocrlf set.
 * text=auto
+# use this commands to find files that fell back to "auto" and should be added to this list:
+# git ls-files --eol | grep 'text=auto' | cut -f2 | sort -u
 
 # Explicitly declare text files you want to always be normalized and converted
 # to native line endings on checkout.
@@ -15,6 +17,7 @@
 *.css text
 *.md text
 *.txt text
+*.toml text
 *.cfg text
 *.sh text
 *.pl text

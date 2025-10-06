@@ -9,7 +9,8 @@
         "vscode": {
             "extensions": [
                 "James-Yu.latex-workshop",
-                "timonwong.shellcheck"
+                "timonwong.shellcheck",
+                "ms-python.python"
             ]
         }
     },

@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "spell-card-generator"
+version = "0.1.0"
+description = "GUI tool for generating LaTeX spell cards from TSV data"
+authors = ["Spell Cards Project"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pandas = "^2.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

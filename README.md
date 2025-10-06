@@ -10,17 +10,22 @@ so we concentrate on printing the cards your character actually knows/uses.
 ```
 spellcards-latex
 ├── src
-│   ├── spellcards.tex        # Main LaTeX document for compiling spell cards
+│   ├── spellcards.tex               # Main LaTeX document for compiling spell cards
+│   ├── spell_card_generator.py      # GUI tool for generating spell cards
 │   └── spells
-│       └── spell1.tex  # LaTeX file for a specific spell card
+│       ├── spell_full.tsv           # Database of spells in TSV format
+│       ├── convert.sh               # Legacy command-line conversion script
+│       └── spell1.tex               # LaTeX file for a specific spell card
 ├── .vscode
-│   ├── extensions.json  # Recommended extensions for VS Code
-│   └── settings.json    # Workspace-specific settings for LaTeX
+│   ├── extensions.json              # Recommended extensions for VS Code
+│   └── settings.json                # Workspace-specific settings for LaTeX
 ├── .devcontainer
-│   └── devcontainer.json # Configures the development environment settings
-│   ├── Dockerfile        # Defines the Docker image with necessary LaTeX packages
-├── .gitignore           # Files and directories to ignore by Git
-└── README.md            # Documentation for the project
+│   └── devcontainer.json            # Configures the development environment settings
+├── Dockerfile                       # Defines the Docker image with necessary packages
+├── pyproject.toml                   # Python project configuration and dependencies
+├── requirements.txt                 # Python requirements (poetry)
+├── .gitignore                       # Files and directories to ignore by Git
+└── README.md                        # Documentation for the project
 ```
 
 ## Getting Started
@@ -28,29 +33,68 @@ spellcards-latex
 ### Prerequisites
 
 - Ensure that MikTeX is installed on your system.
+- Python 3.8+ for the GUI spell card generator
 - Install recommended extensions in VS Code for optimal LaTeX editing.
 
-The easiest way to do this is by using GitHub Codespaces.
+The easiest way to do this is by using GitHub Codespaces or the provided Docker environment, which includes all necessary dependencies.
 
 ### Creating spell cards
-#### Import from database
-The file src/spells/spell_full.tsv is a database of existing spells, exported from a [Google Doc](https://docs.google.com/spreadsheets/d/1cuwb3QSvWDD7GG5McdvyyRBpqycYuKMRsXgyrvxvLFI/edit?usp=sharing)
 
-To create LaTeX-based spell cards from this file, run the script `convert.sh`.  
-It requires that you specify the class of the character this card is intended for, as the spell-level can differ by class and is included on the card itself.  
+The file src/spells/spell_full.tsv is a database of existing spells, exported from a [Google Doc](https://docs.google.com/spreadsheets/d/1cuwb3QSvWDD7GG5McdvyyRBpqycYuKMRsXgyrvxvLFI/edit?usp=sharing)  
+Creating LaTeX-formatted spell cards from this information is supported by tools, but still requires manual modification afterwards.
 
-Here are some examples:
-- `./src/spells/convert.sh --class sor --source "PFRPG Core"`  
-to extract all spells from the core rulebook for this class  
-(not encouraged as it will create hundreds of files for you to manually adjust, but you _can_ do it)
-- `./src/spells/convert.sh --class sor --source "PFRPG Core" --level 4`  
-to extract all spells of the specified spell-level for this class (_not_ character level!)
-- `./src/spells/convert.sh --class sor --name "Ice Storm"`  
-to extract a single spell by name (must be an exact match!)
+#### Using the GUI Tool (Recommended)
 
-Technically, the only required parameter is `--class`, but unless you specify additional filters, the script will have to process thousands of spells and take upwards of 10 minutes to do so.  
-The most common uses will probably be to either specify an exact spell name you chose for your character to use, or using at least `--level` to choose new spells from the generated files.  
-But you do you.  
+We provide a user-friendly GUI application for generating spell cards from the spell database. This tool makes it easy to browse, filter, and select spells for your character.
+
+**Run the GUI application:**
+   ```bash
+   # Option 1: Use the launcher script (recommended)
+   ./run_gui.sh
+   
+   # Option 2: Run directly with poetry
+   pip install -r requirements.txt
+   poetry install
+   poetry run python src/spell_card_generator.py
+   ```
+
+**Using the GUI Tool:**
+
+1. **Select Character Class:** Choose your character's class from the dropdown menu. This will filter the available spells and determine spell levels.
+
+2. **Apply Filters (Optional):**
+   - **Spell Level:** Filter by specific spell level (0-9)
+   - **Source Book:** Filter by source book (e.g., "PFRPG Core")
+   - **Search Name:** Type to search for specific spell names
+
+3. **Select Spells:** Click on spells in the list to select/deselect them. Use the "Select All" and "Deselect All" buttons for bulk operations.
+
+4. **Preview Spells:** Select a spell and click "Preview Spell" to see detailed information before generating the card.
+
+5. **Configure Options:**
+   - **Overwrite existing files:** Check this to replace existing spell card files
+   - **German URL Template:** Customize the German language URL template if needed
+
+6. **Generate Cards:** Click "Generate Spell Cards" to create LaTeX files for your selected spells.
+
+The generated files will be placed in `src/spells/<class>/<level>/` directories and can be manually fine-tuned before including them in your document.
+
+#### Command Line Tool (Legacy)
+
+You can also use the legacy command-line script `convert.sh` if you prefer:
+
+```bash
+# Extract all spells from core rulebook for sorcerer
+./src/spells/convert.sh --class sor --source "PFRPG Core"
+
+# Extract level 4 spells for sorcerer from core rulebook  
+./src/spells/convert.sh --class sor --source "PFRPG Core" --level 4
+
+# Extract a single spell by exact name
+./src/spells/convert.sh --class sor --name "Ice Storm"
+```
+
+The GUI tool is recommended as it provides better usability and prevents common mistakes.  
 
 #### Include and adjust the generated result
 Follow the instructions of the script and this general workflow:  

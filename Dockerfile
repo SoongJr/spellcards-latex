@@ -3,8 +3,7 @@ FROM miktex/miktex:essential AS base
 
 # Install packages with apt, then clean up temporary apt files
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update
-RUN apt-get install -y locales latexmk libyaml-tiny-perl libfile-homedir-perl; \
+RUN apt-get update -y; apt-get install -y locales latexmk libyaml-tiny-perl libfile-homedir-perl && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set locale to US English
@@ -22,7 +21,7 @@ RUN initexmf --admin --set-config-value [MPM]AutoInstall=t
 FROM base AS devcontainer
 
 # Install some extra packages for development
-RUN apt-get update && apt-get install -y git pandoc; \
+RUN apt-get update -y; apt-get install -y git pandoc python3 python3-pip python3-tk && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set up a persistent storage for bash history so rebuilding the devcontainer preserves commands
