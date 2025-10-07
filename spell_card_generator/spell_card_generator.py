@@ -49,14 +49,20 @@ class SpellCardGenerator:
                                font=("TkDefaultFont", 16, "bold"))
         title_label.grid(row=0, column=0, columnspan=3, pady=(0, 20))
         
-        # Create notebook for character class tabs
-        self.notebook = ttk.Notebook(main_frame)
-        self.notebook.grid(row=1, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 10))
-        main_frame.rowconfigure(1, weight=1)
+        # Character class selection frame
+        self.setup_class_selection_frame(main_frame)
         
-        # Initialize tab data structures
-        self.tabs = {}  # Will store tab widgets and data for each class
-        self.current_class = None
+        # Spell content frame (will be populated after class selection)
+        self.content_frame = ttk.Frame(main_frame)
+        self.content_frame.grid(row=2, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 10))
+        main_frame.rowconfigure(2, weight=1)
+        
+        # Initialize data structures
+        self.class_vars = {}  # Boolean variables for each class
+        self.section_vars = {}  # Track which sections are expanded
+        self.section_frames = {}  # Store section frames for show/hide
+        self.current_classes = set()  # Currently selected classes
+        self.spell_data = {}  # Store spell data for each selected class
         
         # Options frame (moved up since tabs will contain the spell lists)
         options_frame = ttk.LabelFrame(main_frame, text="Options", padding="10")
@@ -91,17 +97,277 @@ class SpellCardGenerator:
         self.status_label = ttk.Label(main_frame, textvariable=self.status_var)
         self.status_label.grid(row=5, column=0, columnspan=3)
     
-    def create_class_tab(self, class_name):
-        """Create a tab for a specific character class"""
-        # Create main frame for this tab
-        tab_frame = ttk.Frame(self.notebook)
-        # Create user-friendly tab titles
-        tab_title = {
+    def setup_class_selection_frame(self, parent):
+        """Create collapsible sections for class selection"""
+        # Main class selection frame
+        class_frame = ttk.LabelFrame(parent, text="Select Character Classes", padding="10")
+        class_frame.grid(row=1, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 10))
+        class_frame.columnconfigure(0, weight=1)
+        
+        self.class_selection_frame = class_frame
+        # The actual sections will be created when data is loaded
+    
+    def get_display_name(self, class_name):
+        """Get user-friendly display name for a class"""
+        display_names = {
             'sor': 'Sorcerer',
-            'wiz': 'Wizard', 
-            'summoner_unchained': 'Summoner (Unchained)'
-        }.get(class_name, class_name.title())
-        self.notebook.add(tab_frame, text=tab_title)
+            'wiz': 'Wizard',
+            'summoner_unchained': 'Summoner (Unchained)',
+            'antipaladin': 'Antipaladin',
+            'investigator': 'Investigator',
+            'spiritualist': 'Spiritualist',
+            'mesmerist': 'Mesmerist',
+            'occultist': 'Occultist',
+            'psychic': 'Psychic',
+            'medium': 'Medium'
+        }
+        return display_names.get(class_name, class_name.title())
+    
+    def create_class_sections(self):
+        """Create collapsible sections with character classes in two columns"""
+        if not self.character_classes:
+            return
+        
+        # Define class categories with known classes
+        known_categories = {
+            "Core Classes": ['sor', 'wiz', 'cleric', 'druid', 'ranger', 'bard', 'paladin'],
+            "Base Classes": ['alchemist', 'summoner', 'witch', 'inquisitor', 'oracle', 'antipaladin', 'magus'],
+            "Hybrid Classes": ['bloodrager', 'hunter', 'investigator', 'shaman', 'skald', 'summoner_unchained'],
+            "Occult Classes": ['psychic', 'medium', 'mesmerist', 'occultist', 'spiritualist'],
+        }
+        
+        # Find unknown classes and add them to "Other"
+        known_classes = set()
+        for classes in known_categories.values():
+            known_classes.update(classes)
+        
+        unknown_classes = [cls for cls in self.character_classes if cls not in known_classes]
+        if unknown_classes:
+            known_categories["Other"] = unknown_classes
+        
+        # Filter categories to only include classes that exist in the data
+        categories = {}
+        for category_name, class_list in known_categories.items():
+            existing_classes = [cls for cls in class_list if cls in self.character_classes]
+            if existing_classes:
+                categories[f"{category_name} ({len(existing_classes)})"] = {
+                    'classes': existing_classes,
+                    'expanded': category_name == "Core Classes"  # Only Core Classes start expanded
+                }
+        
+        # Create main container frame for two columns
+        container_frame = ttk.Frame(self.class_selection_frame)
+        container_frame.grid(row=0, column=0, columnspan=4, sticky=(tk.W, tk.E))
+        container_frame.columnconfigure(0, weight=1)
+        container_frame.columnconfigure(1, weight=1)
+        
+        # Split sections into two columns
+        sections_list = list(categories.items())
+        left_sections = sections_list[::2]  # Every even index (0, 2, 4, ...)
+        right_sections = sections_list[1::2]  # Every odd index (1, 3, 5, ...)
+        
+        # Create left column
+        left_frame = ttk.Frame(container_frame)
+        left_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N), padx=(0, 5))
+        left_frame.columnconfigure(0, weight=1)
+        
+        row = 0
+        for section_name, section_data in left_sections:
+            self.create_class_section_in_frame(left_frame, section_name, section_data, row)
+            row += 2
+        
+        # Create right column
+        right_frame = ttk.Frame(container_frame)
+        right_frame.grid(row=0, column=1, sticky=(tk.W, tk.E, tk.N), padx=(5, 0))
+        right_frame.columnconfigure(0, weight=1)
+        
+        row = 0
+        for section_name, section_data in right_sections:
+            self.create_class_section_in_frame(right_frame, section_name, section_data, row)
+            row += 2
+        
+        # Add global selection buttons at the bottom (spans both columns)
+        self.create_global_selection_buttons_two_column(container_frame, max(len(left_sections), len(right_sections)) * 2)
+    
+    def create_class_section_in_frame(self, parent_frame, section_name, section_data, row):
+        """Create a single collapsible section within a specific parent frame"""
+        # Section header frame
+        header_frame = ttk.Frame(parent_frame)
+        header_frame.grid(row=row, column=0, sticky=(tk.W, tk.E), pady=(5, 0))
+        header_frame.columnconfigure(1, weight=1)
+        
+        # Expand/collapse variable
+        expanded_var = tk.BooleanVar(value=section_data['expanded'])
+        self.section_vars[section_name] = expanded_var
+        
+        # Toggle button
+        toggle_btn = ttk.Button(header_frame, text="▼" if section_data['expanded'] else "▶",
+                               width=3, command=lambda: self.toggle_section(section_name))
+        toggle_btn.grid(row=0, column=0, sticky=tk.W)
+        
+        # Section label
+        section_label = ttk.Label(header_frame, text=section_name, font=("TkDefaultFont", 9, "bold"))
+        section_label.grid(row=0, column=1, sticky=tk.W, padx=(5, 5))
+        
+        # Section selection buttons (smaller)
+        ttk.Button(header_frame, text="All", width=3,
+                  command=lambda: self.select_section_classes(section_data['classes'], True)).grid(row=0, column=2, padx=2)
+        ttk.Button(header_frame, text="None", width=5,
+                  command=lambda: self.select_section_classes(section_data['classes'], False)).grid(row=0, column=3, padx=2)
+        
+        # Classes frame (initially shown/hidden based on expanded state)
+        classes_frame = ttk.Frame(parent_frame)
+        if section_data['expanded']:
+            classes_frame.grid(row=row + 1, column=0, sticky=(tk.W, tk.E), padx=15, pady=(0, 5))
+        
+        # Store references for toggle functionality (update to use parent_frame context)
+        section_data['frame'] = classes_frame
+        section_data['toggle_btn'] = toggle_btn
+        section_data['row'] = row + 1
+        section_data['parent_frame'] = parent_frame  # Store parent frame reference
+        self.section_frames[section_name] = section_data
+        
+        # Add checkboxes for classes in this section (single column layout for narrower space)
+        for i, class_name in enumerate(section_data['classes']):
+            display_name = self.get_display_name(class_name)
+            var = tk.BooleanVar()
+            self.class_vars[class_name] = var
+            
+            cb = ttk.Checkbutton(classes_frame, text=display_name, variable=var,
+                               command=lambda cn=class_name: self.on_class_selection_changed(cn))
+            cb.grid(row=i, column=0, sticky=tk.W, padx=5, pady=1)
+    
+    def create_global_selection_buttons(self, row):
+        """Create global selection buttons"""
+        btn_frame = ttk.Frame(self.class_selection_frame)
+        btn_frame.grid(row=row, column=0, columnspan=4, pady=(10, 0))
+        
+        ttk.Button(btn_frame, text="Select All Classes", 
+                  command=self.select_all_classes).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="Deselect All Classes", 
+                  command=self.deselect_all_classes).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="Core Classes Only", 
+                  command=self.select_core_classes).pack(side=tk.LEFT, padx=5)
+
+    def create_global_selection_buttons_two_column(self, container_frame, total_rows):
+        """Create buttons for selecting all/none classes globally in two-column layout"""
+        button_frame = ttk.Frame(container_frame)
+        button_frame.grid(row=total_rows + 1, column=0, columnspan=2, pady=10)
+        button_frame.columnconfigure(0, weight=1)
+        button_frame.columnconfigure(1, weight=1)
+        
+        # Center the buttons
+        inner_frame = ttk.Frame(button_frame)
+        inner_frame.grid(row=0, column=0, columnspan=2)
+        
+        ttk.Button(inner_frame, text="Select All Classes", 
+                  command=self.select_all_classes).pack(side=tk.LEFT, padx=5)
+        ttk.Button(inner_frame, text="Deselect All Classes", 
+                  command=self.deselect_all_classes).pack(side=tk.LEFT, padx=5)
+        ttk.Button(inner_frame, text="Core Classes Only", 
+                  command=self.select_core_classes).pack(side=tk.LEFT, padx=5)
+        ttk.Button(inner_frame, text="Update Spell Lists", 
+                  command=self.update_spell_content).pack(side=tk.LEFT, padx=10)
+    
+    def toggle_section(self, section_name):
+        """Toggle visibility of a class section"""
+        if section_name not in self.section_frames:
+            return
+        
+        section_data = self.section_frames[section_name]
+        expanded = self.section_vars[section_name].get()
+        
+        if expanded:
+            # Hide the section
+            section_data['frame'].grid_remove()
+            section_data['toggle_btn'].config(text="▶")
+            self.section_vars[section_name].set(False)
+        else:
+            # Show the section - use appropriate grid parameters for two-column layout
+            if 'parent_frame' in section_data:
+                # New two-column layout
+                section_data['frame'].grid(row=section_data['row'], column=0, 
+                                         sticky=(tk.W, tk.E), padx=15, pady=(0, 5))
+            else:
+                # Old single-column layout (fallback)
+                section_data['frame'].grid(row=section_data['row'], column=0, columnspan=4, 
+                                         sticky=(tk.W, tk.E), padx=20, pady=(0, 5))
+            section_data['toggle_btn'].config(text="▼")
+            self.section_vars[section_name].set(True)
+    
+    def select_section_classes(self, classes, select):
+        """Select or deselect all classes in a section"""
+        for class_name in classes:
+            if class_name in self.class_vars:
+                self.class_vars[class_name].set(select)
+    
+    def select_all_classes(self):
+        """Select all character classes"""
+        for var in self.class_vars.values():
+            var.set(True)
+    
+    def deselect_all_classes(self):
+        """Deselect all character classes"""
+        for var in self.class_vars.values():
+            var.set(False)
+    
+    def select_core_classes(self):
+        """Select only core classes, deselect others"""
+        core_classes = ['sor', 'wiz', 'cleric', 'druid', 'ranger', 'bard', 'paladin']
+        for class_name, var in self.class_vars.items():
+            var.set(class_name in core_classes)
+    
+    def on_class_selection_changed(self, class_name):
+        """Handle when a class selection changes"""
+        if class_name in self.class_vars:
+            if self.class_vars[class_name].get():
+                self.current_classes.add(class_name)
+            else:
+                self.current_classes.discard(class_name)
+        
+        # Update status
+        count = len(self.current_classes)
+        if count == 0:
+            self.status_var.set("No classes selected")
+        elif count == 1:
+            selected_class = next(iter(self.current_classes))
+            self.status_var.set(f"Selected: {self.get_display_name(selected_class)}")
+        else:
+            self.status_var.set(f"Selected: {count} classes")
+    
+    def update_spell_content(self):
+        """Update the spell content area based on selected classes"""
+        # Clear existing content
+        for widget in self.content_frame.winfo_children():
+            widget.destroy()
+        
+        if not self.current_classes:
+            # Show message when no classes selected
+            no_selection_label = ttk.Label(self.content_frame, 
+                                         text="Please select one or more character classes above, then click 'Update Spell Lists'",
+                                         font=("TkDefaultFont", 12))
+            no_selection_label.pack(expand=True)
+            return
+        
+        # Create spell content for selected classes
+        self.create_spell_content()
+    
+    def create_spell_content(self):
+        """Create spell list content for selected classes"""
+        # Create notebook for selected classes
+        self.spell_notebook = ttk.Notebook(self.content_frame)
+        self.spell_notebook.pack(fill=tk.BOTH, expand=True)
+        
+        # Create tabs for each selected class
+        for class_name in sorted(self.current_classes):
+            self.create_spell_tab(class_name)
+    
+    def create_spell_tab(self, class_name):
+        """Create a spell tab for a specific class"""
+        # Create main frame for this tab
+        tab_frame = ttk.Frame(self.spell_notebook)
+        tab_title = self.get_display_name(class_name)
+        self.spell_notebook.add(tab_frame, text=tab_title)
         
         # Configure grid weights
         tab_frame.columnconfigure(0, weight=1)
@@ -188,8 +454,8 @@ class SpellCardGenerator:
         ttk.Button(buttons_frame, text="Preview Spell", 
                   command=lambda: self.preview_spell(class_name)).grid(row=2, column=0, pady=(0, 20), sticky=(tk.W, tk.E))
         
-        # Store tab data
-        self.tabs[class_name] = {
+        # Store spell data for this class
+        self.spell_data[class_name] = {
             'frame': tab_frame,
             'level_var': level_var,
             'level_combo': level_combo,
@@ -201,8 +467,10 @@ class SpellCardGenerator:
             'filtered_spells': None
         }
         
-        return tab_frame
+        # Setup filters for this class
+        self.setup_class_filters(class_name)
     
+
     def load_spells_data(self):
         """Load spells data from TSV file"""
         try:
@@ -227,19 +495,9 @@ class SpellCardGenerator:
             self.spell_sources = set(self.spells_df['source'].unique())
             self.spell_sources.discard('NULL')
             
-            # Create tabs for each character class
+            # Create collapsible sections for character classes
             if self.character_classes:
-                for class_name in self.character_classes:
-                    self.create_class_tab(class_name)
-                    self.setup_class_filters(class_name)
-                
-                # Set the first tab as active and current class
-                self.current_class = self.character_classes[0]
-                self.notebook.select(0)
-                
-                # Bind tab change event
-                self.notebook.bind('<<NotebookTabChanged>>', self.on_tab_changed)
-                
+                self.create_class_sections()
                 self.status_var.set(f"Loaded {len(self.spells_df)} spells across {len(self.character_classes)} classes")
             else:
                 self.status_var.set("No character classes found in spell data")
@@ -249,11 +507,11 @@ class SpellCardGenerator:
     
     def setup_class_filters(self, class_name):
         """Setup filters for a specific character class"""
-        if self.spells_df is None:
+        if self.spells_df is None or class_name not in self.spell_data:
             return
         
-        # Get tab data
-        tab_data = self.tabs[class_name]
+        # Get spell data
+        class_data = self.spell_data[class_name]
         
         # Filter spells available for selected class
         available_spells = self.spells_df[self.spells_df[class_name] != "NULL"]
@@ -261,68 +519,67 @@ class SpellCardGenerator:
         # Update level filter options
         spell_levels = sorted([level for level in available_spells[class_name].unique() 
                               if level != "NULL"])
-        tab_data['level_combo']['values'] = ["All"] + spell_levels
+        class_data['level_combo']['values'] = ["All"] + spell_levels
         
         # Update source filter options
         sources = sorted(available_spells['source'].unique())
         source_options = ["All"] + [s for s in sources if s != "NULL"]
-        tab_data['source_combo']['values'] = source_options
+        class_data['source_combo']['values'] = source_options
         
         # Apply initial filters
         self.apply_filters(class_name)
     
-    def on_tab_changed(self, event=None):
-        """Handle tab change event"""
-        # Get the currently selected tab
-        selected_tab = self.notebook.select()
-        tab_index = self.notebook.index(selected_tab)
-        
-        if tab_index < len(self.character_classes):
-            self.current_class = self.character_classes[tab_index]
-    
-    def on_class_changed(self, event=None):
-        """Handle character class selection change - now handles tabs"""
-        # This method is kept for compatibility but tab changes are handled by on_tab_changed
-        pass
+    def get_current_class(self):
+        """Get the currently active class from the spell notebook"""
+        if hasattr(self, 'spell_notebook') and self.spell_notebook.winfo_exists():
+            try:
+                selected_tab = self.spell_notebook.select()
+                tab_index = self.spell_notebook.index(selected_tab)
+                selected_classes = sorted(self.current_classes)
+                if tab_index < len(selected_classes):
+                    return selected_classes[tab_index]
+            except tk.TclError:
+                pass
+        return next(iter(self.current_classes)) if self.current_classes else None
 
     def apply_filters(self, class_name=None):
         """Apply filters to spell list for a specific class"""
         if class_name is None:
-            class_name = self.current_class
+            class_name = self.get_current_class()
             
-        if not class_name or self.spells_df is None or class_name not in self.tabs:
+        if not class_name or self.spells_df is None or class_name not in self.spell_data:
             return
         
-        tab_data = self.tabs[class_name]
+        class_data = self.spell_data[class_name]
         filtered_df = self.spells_df[self.spells_df[class_name] != "NULL"].copy()
         
         # Apply level filter
-        if tab_data['level_var'].get() != "All":
-            filtered_df = filtered_df[filtered_df[class_name] == tab_data['level_var'].get()]
+        if class_data['level_var'].get() != "All":
+            filtered_df = filtered_df[filtered_df[class_name] == class_data['level_var'].get()]
         
         # Apply source filter
-        if tab_data['source_var'].get() != "All":
-            filtered_df = filtered_df[filtered_df['source'] == tab_data['source_var'].get()]
+        if class_data['source_var'].get() != "All":
+            filtered_df = filtered_df[filtered_df['source'] == class_data['source_var'].get()]
         
         # Apply name search filter
-        search_text = tab_data['search_var'].get().lower()
+        search_text = class_data['search_var'].get().lower()
         if search_text:
             filtered_df = filtered_df[filtered_df['name'].str.lower().str.contains(search_text, na=False)]
         
-        tab_data['filtered_spells'] = filtered_df
+        class_data['filtered_spells'] = filtered_df
         self.update_spells_list(class_name)
     
     def update_spells_list(self, class_name=None):
         """Update the spells treeview with filtered results for a specific class"""
         if class_name is None:
-            class_name = self.current_class
+            class_name = self.get_current_class()
             
-        if not class_name or class_name not in self.tabs:
+        if not class_name or class_name not in self.spell_data:
             return
             
-        tab_data = self.tabs[class_name]
-        spells_tree = tab_data['spells_tree']
-        filtered_spells = tab_data['filtered_spells']
+        class_data = self.spell_data[class_name]
+        spells_tree = class_data['spells_tree']
+        filtered_spells = class_data['filtered_spells']
         
         # Clear existing items
         for item in spells_tree.get_children():
@@ -341,19 +598,21 @@ class SpellCardGenerator:
                                      spell['source']),
                               tags=("unchecked",))
         
-        # Update status if this is the current class
-        if class_name == self.current_class:
-            self.status_var.set(f"Showing {len(filtered_spells)} {class_name} spells")
+        # Update status
+        current_class = self.get_current_class()
+        if class_name == current_class:
+            display_name = self.get_display_name(class_name)
+            self.status_var.set(f"Showing {len(filtered_spells)} {display_name} spells")
     
     def select_all_spells(self, class_name=None):
         """Select all visible spells for a specific class"""
         if class_name is None:
-            class_name = self.current_class
+            class_name = self.get_current_class()
             
-        if not class_name or class_name not in self.tabs:
+        if not class_name or class_name not in self.spell_data:
             return
             
-        spells_tree = self.tabs[class_name]['spells_tree']
+        spells_tree = self.spell_data[class_name]['spells_tree']
         for item in spells_tree.get_children():
             spells_tree.set(item, "Select", "☑")
             spells_tree.item(item, tags=("checked",))
@@ -361,12 +620,12 @@ class SpellCardGenerator:
     def deselect_all_spells(self, class_name=None):
         """Deselect all spells for a specific class"""
         if class_name is None:
-            class_name = self.current_class
+            class_name = self.get_current_class()
             
-        if not class_name or class_name not in self.tabs:
+        if not class_name or class_name not in self.spell_data:
             return
             
-        spells_tree = self.tabs[class_name]['spells_tree']
+        spells_tree = self.spell_data[class_name]['spells_tree']
         for item in spells_tree.get_children():
             spells_tree.set(item, "Select", "")
             spells_tree.item(item, tags=("unchecked",))
@@ -374,14 +633,14 @@ class SpellCardGenerator:
     def preview_spell(self, class_name=None):
         """Preview selected spell details for a specific class"""
         if class_name is None:
-            class_name = self.current_class
+            class_name = self.get_current_class()
             
-        if not class_name or class_name not in self.tabs:
+        if not class_name or class_name not in self.spell_data:
             return
             
-        tab_data = self.tabs[class_name]
-        spells_tree = tab_data['spells_tree']
-        filtered_spells = tab_data['filtered_spells']
+        class_data = self.spell_data[class_name]
+        spells_tree = class_data['spells_tree']
+        filtered_spells = class_data['filtered_spells']
         
         selection = spells_tree.selection()
         if not selection:
@@ -595,17 +854,18 @@ class SpellCardGenerator:
     
     def generate_cards(self):
         """Generate LaTeX files for selected spells"""
-        if not self.current_class:
-            messagebox.showwarning("Warning", "No character class tab is selected")
+        current_class = self.get_current_class()
+        if not current_class:
+            messagebox.showwarning("Warning", "No character class is selected")
             return
         
-        if self.current_class not in self.tabs:
-            messagebox.showerror("Error", f"Tab data for {self.current_class} not found")
+        if current_class not in self.spell_data:
+            messagebox.showerror("Error", f"Spell data for {current_class} not found")
             return
         
-        # Get selected spells from current tab
-        tab_data = self.tabs[self.current_class]
-        spells_tree = tab_data['spells_tree']
+        # Get selected spells from current class
+        class_data = self.spell_data[current_class]
+        spells_tree = class_data['spells_tree']
         
         selected_spells = []
         for item in spells_tree.get_children():
@@ -617,7 +877,7 @@ class SpellCardGenerator:
             messagebox.showwarning("Warning", "Please select at least one spell")
             return
         
-        character_class = self.current_class
+        character_class = current_class
         overwrite = self.overwrite_var.get()
         
         # Create output directory
@@ -638,8 +898,8 @@ class SpellCardGenerator:
                 self.status_var.set(f"Processing {spell_name}...")
                 self.root.update()
                 
-                # Get spell data from current tab's filtered spells
-                filtered_spells = self.tabs[character_class]['filtered_spells']
+                # Get spell data from current class's filtered spells
+                filtered_spells = self.spell_data[character_class]['filtered_spells']
                 spell_data = filtered_spells[filtered_spells['name'] == spell_name].iloc[0]
                 spell_level = spell_data[character_class]
                 
