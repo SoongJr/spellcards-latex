@@ -158,10 +158,7 @@ class SpellCardGenerator:
     def load_spells_data(self):
         """Load spells data from TSV file"""
         try:
-            tsv_path = Path(__file__).parent / "spells" / "spell_full.tsv"
-            if not tsv_path.exists():
-                tsv_path = Path("src/spells/spell_full.tsv")
-            
+            tsv_path = Path(__file__).parent / "spell_full.tsv"
             if not tsv_path.exists():
                 messagebox.showerror("Error", f"Could not find spell_full.tsv file at {tsv_path}")
                 return
@@ -508,7 +505,7 @@ class SpellCardGenerator:
         overwrite = self.overwrite_var.get()
         
         # Create output directory
-        output_dir = Path("src/spells") / character_class
+        output_dir = Path(__file__).parent.parent / "src/spells" / character_class
         
         generated_files = []
         skipped_files = []

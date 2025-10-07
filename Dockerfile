@@ -21,7 +21,7 @@ RUN initexmf --admin --set-config-value [MPM]AutoInstall=t
 FROM base AS devcontainer
 
 # Install some extra packages for development
-RUN apt-get update -y; apt-get install -y git pandoc python3 python3-pip python3-tk && \
+RUN apt-get update -y; apt-get install -y git pandoc python3 python3-pip python3-venv python3-tk python-is-python3 && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set up a persistent storage for bash history so rebuilding the devcontainer preserves commands

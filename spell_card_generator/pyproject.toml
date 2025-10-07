@@ -1,9 +1,9 @@
 [tool.poetry]
 name = "spell-card-generator"
-version = "0.1.0"
+version = "0.0.0"
 description = "GUI tool for generating LaTeX spell cards from TSV data"
 authors = ["Spell Cards Project"]
-readme = "README.md"
+readme = "../README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"

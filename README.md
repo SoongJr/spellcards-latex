@@ -40,81 +40,31 @@ The easiest way to do this is by using GitHub Codespaces or the provided Docker 
 
 ### Creating spell cards
 
-The file src/spells/spell_full.tsv is a database of existing spells, exported from a [Google Doc](https://docs.google.com/spreadsheets/d/1cuwb3QSvWDD7GG5McdvyyRBpqycYuKMRsXgyrvxvLFI/edit?usp=sharing)  
-Creating LaTeX-formatted spell cards from this information is supported by tools, but still requires manual modification afterwards.
+The file spell_card_generator/spell_full.tsv is a database of existing spells, exported from a [Google Doc](https://docs.google.com/spreadsheets/d/1cuwb3QSvWDD7GG5McdvyyRBpqycYuKMRsXgyrvxvLFI/edit?usp=sharing)  
+Creating LaTeX-formatted spell cards from this information is supported by tooling, but still requires manual modification afterwards.
 
-#### Using the GUI Tool (Recommended)
+#### spell card generator
 
-We provide a user-friendly GUI application for generating spell cards from the spell database. This tool makes it easy to browse, filter, and select spells for your character.
+Folder `spell_card_generator` contains a GUI application for generating spell cards from the spell database.  
+Start it by executing `spell_card_generator/spell_card_generator.sh` from the repository root.
 
-**Run the GUI application:**
-   ```bash
-   # Option 1: Use the launcher script (recommended)
-   ./run_gui.sh
-   
-   # Option 2: Run directly with poetry
-   pip install -r requirements.txt
-   poetry install
-   poetry run python src/spell_card_generator.py
-   ```
-
-**Using the GUI Tool:**
-
-1. **Select Character Class:** Choose your character's class from the dropdown menu. This will filter the available spells and determine spell levels.
-
-2. **Apply Filters (Optional):**
-   - **Spell Level:** Filter by specific spell level (0-9)
-   - **Source Book:** Filter by source book (e.g., "PFRPG Core")
-   - **Search Name:** Type to search for specific spell names
-
-3. **Select Spells:** Click on spells in the list to select/deselect them. Use the "Select All" and "Deselect All" buttons for bulk operations.
-
-4. **Preview Spells:** Select a spell and click "Preview Spell" to see detailed information before generating the card.
-
-5. **Configure Options:**
-   - **Overwrite existing files:** Check this to replace existing spell card files
-   - **German URL Template:** Customize the German language URL template if needed
-
-6. **Generate Cards:** Click "Generate Spell Cards" to create LaTeX files for your selected spells.
-
-The generated files will be placed in `src/spells/<class>/<level>/` directories and can be manually fine-tuned before including them in your document.
-
-#### Command Line Tool (Legacy)
-
-You can also use the legacy command-line script `convert.sh` if you prefer:
-
-```bash
-# Extract all spells from core rulebook for sorcerer
-./src/spells/convert.sh --class sor --source "PFRPG Core"
-
-# Extract level 4 spells for sorcerer from core rulebook  
-./src/spells/convert.sh --class sor --source "PFRPG Core" --level 4
-
-# Extract a single spell by exact name
-./src/spells/convert.sh --class sor --name "Ice Storm"
-```
-
-The GUI tool is recommended as it provides better usability and prevents common mistakes.  
+The generated files will be placed in `src/spells/<class>/<level>/` directories and need to be manually fine-tuned before including them in your document.
 
 #### Include and adjust the generated result
-Follow the instructions of the script and this general workflow:  
-1. To actually include the generated card in the PDF it needs an `\input{}` statement in spellcards.tex
+Follow the instructions of the tool and this general workflow:  
+1. To actually include the generated card in the PDF it needs an `\input{}` statement in spellcards.tex (or one of its included files)
 1. Once thus included, take a look at linter violations and address them.  
-If pandoc created code that needs additional packages to render the description, you will notice this here.
+   If pandoc created code that needs additional packages to render the description, you will notice this here.
 1. Finally, take a look at the PDF:
    1. Some parts of the pandoc-generated description, particularly tables, might not be well-formatted
    1. If the text only barely spills onto the back of the card, consider altering the description so everything is on the front
    1. Try to keep spells on a single card.  
-   It is better to heavily abridge the description and have to look up details when needed, than having to juggle four cards for a single spell (cf. Teleport or Permanency)
+      It is better to heavily abridge the description and have to look up details when needed, than having to juggle four cards for a single spell (cf. Teleport or Permanency)
    1. Fix hyphenation and under-/overfull boxes
 
 #### Re-creating spells
-This might be required if either the spell_full.tsv or convert.sh have changed.  
-Use this command to recreate all spells for a given class:  
-```bash
-class=sor # short-hand for the class you want to re-recreate for (sor, wiz, etc.)
-while IFS= read -r spell; do src/spells/convert.sh --overwrite -c $class -n "$spell"; done < <(find src/spells/$class -name "*.tex" -exec bash -c 'filename=$(basename "{}"); echo ${filename%.*}' \;)
-```
+This might be required if either the spell_full.tsv or spell_card_generator.py have changed.  
+<TODO>
 
 ### Recommended Extensions
 
