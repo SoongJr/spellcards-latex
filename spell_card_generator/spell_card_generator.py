@@ -49,82 +49,18 @@ class SpellCardGenerator:
                                font=("TkDefaultFont", 16, "bold"))
         title_label.grid(row=0, column=0, columnspan=3, pady=(0, 20))
         
-        # Filters frame
-        filters_frame = ttk.LabelFrame(main_frame, text="Filters", padding="10")
-        filters_frame.grid(row=1, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 10))
-        filters_frame.columnconfigure(1, weight=1)
+        # Create notebook for character class tabs
+        self.notebook = ttk.Notebook(main_frame)
+        self.notebook.grid(row=1, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 10))
+        main_frame.rowconfigure(1, weight=1)
         
-        # Character class filter
-        ttk.Label(filters_frame, text="Character Class:").grid(row=0, column=0, sticky=tk.W, padx=(0, 5))
-        self.class_var = tk.StringVar()
-        self.class_combo = ttk.Combobox(filters_frame, textvariable=self.class_var, state="readonly")
-        self.class_combo.grid(row=0, column=1, sticky=(tk.W, tk.E), padx=(0, 10))
-        self.class_combo.bind('<<ComboboxSelected>>', self.on_class_changed)
+        # Initialize tab data structures
+        self.tabs = {}  # Will store tab widgets and data for each class
+        self.current_class = None
         
-        # Spell level filter
-        ttk.Label(filters_frame, text="Spell Level:").grid(row=0, column=2, sticky=tk.W, padx=(10, 5))
-        self.level_var = tk.StringVar(value="All")
-        self.level_combo = ttk.Combobox(filters_frame, textvariable=self.level_var, state="readonly")
-        self.level_combo.grid(row=0, column=3, sticky=(tk.W, tk.E))
-        self.level_combo.bind('<<ComboboxSelected>>', self.apply_filters)
-        
-        # Source book filter
-        ttk.Label(filters_frame, text="Source Book:").grid(row=1, column=0, sticky=tk.W, padx=(0, 5))
-        self.source_var = tk.StringVar(value="PFRPG Core")
-        self.source_combo = ttk.Combobox(filters_frame, textvariable=self.source_var, state="readonly")
-        self.source_combo.grid(row=1, column=1, sticky=(tk.W, tk.E), padx=(0, 10))
-        self.source_combo.bind('<<ComboboxSelected>>', self.apply_filters)
-        
-        # Search by name
-        ttk.Label(filters_frame, text="Search Name:").grid(row=1, column=2, sticky=tk.W, padx=(10, 5))
-        self.search_var = tk.StringVar()
-        self.search_entry = ttk.Entry(filters_frame, textvariable=self.search_var)
-        self.search_entry.grid(row=1, column=3, sticky=(tk.W, tk.E))
-        self.search_entry.bind('<KeyRelease>', self.apply_filters)
-        
-        # Spells list frame
-        list_frame = ttk.Frame(main_frame)
-        list_frame.grid(row=2, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 10))
-        list_frame.columnconfigure(0, weight=1)
-        list_frame.rowconfigure(0, weight=1)
-        main_frame.rowconfigure(2, weight=1)
-        
-        # Spells treeview
-        columns = ("Select", "Name", "Level", "School", "Source")
-        self.spells_tree = ttk.Treeview(list_frame, columns=columns, show="headings", height=15)
-        
-        # Configure columns
-        self.spells_tree.column("Select", width=50, minwidth=50)
-        self.spells_tree.column("Name", width=200, minwidth=150)
-        self.spells_tree.column("Level", width=60, minwidth=50)
-        self.spells_tree.column("School", width=120, minwidth=100)
-        self.spells_tree.column("Source", width=120, minwidth=100)
-        
-        # Column headings
-        self.spells_tree.heading("Select", text="Select")
-        self.spells_tree.heading("Name", text="Name")
-        self.spells_tree.heading("Level", text="Level")
-        self.spells_tree.heading("School", text="School")
-        self.spells_tree.heading("Source", text="Source")
-        
-        self.spells_tree.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
-        
-        # Scrollbar for treeview
-        tree_scrollbar = ttk.Scrollbar(list_frame, orient="vertical", command=self.spells_tree.yview)
-        tree_scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
-        self.spells_tree.configure(yscrollcommand=tree_scrollbar.set)
-        
-        # Selection buttons frame
-        buttons_frame = ttk.Frame(main_frame)
-        buttons_frame.grid(row=2, column=2, sticky=(tk.N, tk.W), padx=(10, 0))
-        
-        ttk.Button(buttons_frame, text="Select All", command=self.select_all_spells).grid(row=0, column=0, pady=(0, 5), sticky=(tk.W, tk.E))
-        ttk.Button(buttons_frame, text="Deselect All", command=self.deselect_all_spells).grid(row=1, column=0, pady=(0, 5), sticky=(tk.W, tk.E))
-        ttk.Button(buttons_frame, text="Preview Spell", command=self.preview_spell).grid(row=2, column=0, pady=(0, 20), sticky=(tk.W, tk.E))
-        
-        # Options frame
+        # Options frame (moved up since tabs will contain the spell lists)
         options_frame = ttk.LabelFrame(main_frame, text="Options", padding="10")
-        options_frame.grid(row=3, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 10))
+        options_frame.grid(row=2, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 10))
         
         # Overwrite checkbox
         self.overwrite_var = tk.BooleanVar()
@@ -139,7 +75,7 @@ class SpellCardGenerator:
         
         # Generate button
         generate_frame = ttk.Frame(main_frame)
-        generate_frame.grid(row=4, column=0, columnspan=3, pady=(0, 10))
+        generate_frame.grid(row=3, column=0, columnspan=3, pady=(0, 10))
         
         self.generate_btn = ttk.Button(generate_frame, text="Generate Spell Cards", 
                                      command=self.generate_cards, style="Accent.TButton")
@@ -148,12 +84,124 @@ class SpellCardGenerator:
         # Progress bar
         self.progress_var = tk.DoubleVar()
         self.progress_bar = ttk.Progressbar(main_frame, variable=self.progress_var, maximum=100)
-        self.progress_bar.grid(row=5, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 10))
+        self.progress_bar.grid(row=4, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 10))
         
         # Status label
         self.status_var = tk.StringVar(value="Ready")
         self.status_label = ttk.Label(main_frame, textvariable=self.status_var)
-        self.status_label.grid(row=6, column=0, columnspan=3)
+        self.status_label.grid(row=5, column=0, columnspan=3)
+    
+    def create_class_tab(self, class_name):
+        """Create a tab for a specific character class"""
+        # Create main frame for this tab
+        tab_frame = ttk.Frame(self.notebook)
+        # Create user-friendly tab titles
+        tab_title = {
+            'sor': 'Sorcerer',
+            'wiz': 'Wizard', 
+            'summoner_unchained': 'Summoner (Unchained)'
+        }.get(class_name, class_name.title())
+        self.notebook.add(tab_frame, text=tab_title)
+        
+        # Configure grid weights
+        tab_frame.columnconfigure(0, weight=1)
+        tab_frame.rowconfigure(1, weight=1)
+        
+        # Filters frame for this class
+        filters_frame = ttk.LabelFrame(tab_frame, text="Filters", padding="10")
+        filters_frame.grid(row=0, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 10))
+        filters_frame.columnconfigure(1, weight=1)
+        
+        # Create variables specific to this class
+        level_var = tk.StringVar(value="All")
+        source_var = tk.StringVar(value="PFRPG Core")
+        search_var = tk.StringVar()
+        
+        # Spell level filter
+        ttk.Label(filters_frame, text="Spell Level:").grid(row=0, column=0, sticky=tk.W, padx=(0, 5))
+        level_combo = ttk.Combobox(filters_frame, textvariable=level_var, state="readonly")
+        level_combo.grid(row=0, column=1, sticky=(tk.W, tk.E), padx=(0, 10))
+        level_combo.bind('<<ComboboxSelected>>', lambda e: self.apply_filters(class_name))
+        
+        # Source book filter
+        ttk.Label(filters_frame, text="Source Book:").grid(row=0, column=2, sticky=tk.W, padx=(10, 5))
+        source_combo = ttk.Combobox(filters_frame, textvariable=source_var, state="readonly")
+        source_combo.grid(row=0, column=3, sticky=(tk.W, tk.E))
+        source_combo.bind('<<ComboboxSelected>>', lambda e: self.apply_filters(class_name))
+        
+        # Search by name
+        ttk.Label(filters_frame, text="Search Name:").grid(row=1, column=0, sticky=tk.W, padx=(0, 5))
+        search_entry = ttk.Entry(filters_frame, textvariable=search_var)
+        search_entry.grid(row=1, column=1, sticky=(tk.W, tk.E), padx=(0, 10))
+        search_entry.bind('<KeyRelease>', lambda e: self.apply_filters(class_name))
+        
+        # Content frame for spells list and buttons
+        content_frame = ttk.Frame(tab_frame)
+        content_frame.grid(row=1, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 10))
+        content_frame.columnconfigure(0, weight=1)
+        content_frame.rowconfigure(0, weight=1)
+        
+        # Spells list frame
+        list_frame = ttk.Frame(content_frame)
+        list_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=(0, 10))
+        list_frame.columnconfigure(0, weight=1)
+        list_frame.rowconfigure(0, weight=1)
+        
+        # Spells treeview
+        columns = ("Select", "Name", "Level", "School", "Source")
+        spells_tree = ttk.Treeview(list_frame, columns=columns, show="headings", height=15)
+        
+        # Configure columns
+        spells_tree.column("Select", width=50, minwidth=50)
+        spells_tree.column("Name", width=200, minwidth=150)
+        spells_tree.column("Level", width=60, minwidth=50)
+        spells_tree.column("School", width=120, minwidth=100)
+        spells_tree.column("Source", width=120, minwidth=100)
+        
+        # Column headings
+        spells_tree.heading("Select", text="Select")
+        spells_tree.heading("Name", text="Name")
+        spells_tree.heading("Level", text="Level")
+        spells_tree.heading("School", text="School")
+        spells_tree.heading("Source", text="Source")
+        
+        spells_tree.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        
+        # Scrollbar for treeview
+        tree_scrollbar = ttk.Scrollbar(list_frame, orient="vertical", command=spells_tree.yview)
+        tree_scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
+        spells_tree.configure(yscrollcommand=tree_scrollbar.set)
+        
+        # Bind click event for spell selection
+        def on_tree_click(event):
+            self.toggle_spell_selection(event, spells_tree)
+        spells_tree.bind('<Button-1>', on_tree_click)
+        
+        # Selection buttons frame
+        buttons_frame = ttk.Frame(content_frame)
+        buttons_frame.grid(row=0, column=1, sticky=(tk.N, tk.W))
+        
+        ttk.Button(buttons_frame, text="Select All", 
+                  command=lambda: self.select_all_spells(class_name)).grid(row=0, column=0, pady=(0, 5), sticky=(tk.W, tk.E))
+        ttk.Button(buttons_frame, text="Deselect All", 
+                  command=lambda: self.deselect_all_spells(class_name)).grid(row=1, column=0, pady=(0, 5), sticky=(tk.W, tk.E))
+        ttk.Button(buttons_frame, text="Preview Spell", 
+                  command=lambda: self.preview_spell(class_name)).grid(row=2, column=0, pady=(0, 20), sticky=(tk.W, tk.E))
+        
+        # Store tab data
+        self.tabs[class_name] = {
+            'frame': tab_frame,
+            'level_var': level_var,
+            'level_combo': level_combo,
+            'source_var': source_var,
+            'source_combo': source_combo,
+            'search_var': search_var,
+            'search_entry': search_entry,
+            'spells_tree': spells_tree,
+            'filtered_spells': None
+        }
+        
+        return tab_frame
     
     def load_spells_data(self):
         """Load spells data from TSV file"""
@@ -174,117 +222,178 @@ class SpellCardGenerator:
                            'skald', 'investigator', 'hunter', 'summoner_unchained']
             
             self.character_classes = [col for col in class_columns if col in self.spells_df.columns]
-            self.class_combo['values'] = self.character_classes
             
             # Extract spell sources
             self.spell_sources = set(self.spells_df['source'].unique())
             self.spell_sources.discard('NULL')
             
-            self.status_var.set(f"Loaded {len(self.spells_df)} spells")
+            # Create tabs for each character class
+            if self.character_classes:
+                for class_name in self.character_classes:
+                    self.create_class_tab(class_name)
+                    self.setup_class_filters(class_name)
+                
+                # Set the first tab as active and current class
+                self.current_class = self.character_classes[0]
+                self.notebook.select(0)
+                
+                # Bind tab change event
+                self.notebook.bind('<<NotebookTabChanged>>', self.on_tab_changed)
+                
+                self.status_var.set(f"Loaded {len(self.spells_df)} spells across {len(self.character_classes)} classes")
+            else:
+                self.status_var.set("No character classes found in spell data")
             
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load spells data: {e}")
     
-    def on_class_changed(self, event=None):
-        """Handle character class selection change"""
-        if not self.class_var.get() or self.spells_df is None:
+    def setup_class_filters(self, class_name):
+        """Setup filters for a specific character class"""
+        if self.spells_df is None:
             return
         
+        # Get tab data
+        tab_data = self.tabs[class_name]
+        
         # Filter spells available for selected class
-        class_col = self.class_var.get()
-        available_spells = self.spells_df[self.spells_df[class_col] != "NULL"]
+        available_spells = self.spells_df[self.spells_df[class_name] != "NULL"]
         
         # Update level filter options
-        spell_levels = sorted([level for level in available_spells[class_col].unique() 
+        spell_levels = sorted([level for level in available_spells[class_name].unique() 
                               if level != "NULL"])
-        self.level_combo['values'] = ["All"] + spell_levels
+        tab_data['level_combo']['values'] = ["All"] + spell_levels
         
         # Update source filter options
         sources = sorted(available_spells['source'].unique())
         source_options = ["All"] + [s for s in sources if s != "NULL"]
-        self.source_combo['values'] = source_options
+        tab_data['source_combo']['values'] = source_options
         
-        # Set default to "PFRPG Core" if it exists in the sources, otherwise keep current selection
-        if "PFRPG Core" in source_options and self.source_var.get() == "PFRPG Core":
-            # Keep the default selection
-            pass
-        elif self.source_var.get() not in source_options:
-            # Reset to "All" if current selection is not available
-            self.source_var.set("All")
-        
-        self.apply_filters()
+        # Apply initial filters
+        self.apply_filters(class_name)
     
-    def apply_filters(self, event=None):
-        """Apply filters to spell list"""
-        if not self.class_var.get() or self.spells_df is None:
+    def on_tab_changed(self, event=None):
+        """Handle tab change event"""
+        # Get the currently selected tab
+        selected_tab = self.notebook.select()
+        tab_index = self.notebook.index(selected_tab)
+        
+        if tab_index < len(self.character_classes):
+            self.current_class = self.character_classes[tab_index]
+    
+    def on_class_changed(self, event=None):
+        """Handle character class selection change - now handles tabs"""
+        # This method is kept for compatibility but tab changes are handled by on_tab_changed
+        pass
+
+    def apply_filters(self, class_name=None):
+        """Apply filters to spell list for a specific class"""
+        if class_name is None:
+            class_name = self.current_class
+            
+        if not class_name or self.spells_df is None or class_name not in self.tabs:
             return
         
-        class_col = self.class_var.get()
-        filtered_df = self.spells_df[self.spells_df[class_col] != "NULL"].copy()
+        tab_data = self.tabs[class_name]
+        filtered_df = self.spells_df[self.spells_df[class_name] != "NULL"].copy()
         
         # Apply level filter
-        if self.level_var.get() != "All":
-            filtered_df = filtered_df[filtered_df[class_col] == self.level_var.get()]
+        if tab_data['level_var'].get() != "All":
+            filtered_df = filtered_df[filtered_df[class_name] == tab_data['level_var'].get()]
         
         # Apply source filter
-        if self.source_var.get() != "All":
-            filtered_df = filtered_df[filtered_df['source'] == self.source_var.get()]
+        if tab_data['source_var'].get() != "All":
+            filtered_df = filtered_df[filtered_df['source'] == tab_data['source_var'].get()]
         
         # Apply name search filter
-        search_text = self.search_var.get().lower()
+        search_text = tab_data['search_var'].get().lower()
         if search_text:
             filtered_df = filtered_df[filtered_df['name'].str.lower().str.contains(search_text, na=False)]
         
-        self.filtered_spells = filtered_df
-        self.update_spells_list()
+        tab_data['filtered_spells'] = filtered_df
+        self.update_spells_list(class_name)
     
-    def update_spells_list(self):
-        """Update the spells treeview with filtered results"""
-        # Clear existing items
-        for item in self.spells_tree.get_children():
-            self.spells_tree.delete(item)
+    def update_spells_list(self, class_name=None):
+        """Update the spells treeview with filtered results for a specific class"""
+        if class_name is None:
+            class_name = self.current_class
+            
+        if not class_name or class_name not in self.tabs:
+            return
+            
+        tab_data = self.tabs[class_name]
+        spells_tree = tab_data['spells_tree']
+        filtered_spells = tab_data['filtered_spells']
         
-        if self.filtered_spells is None:
+        # Clear existing items
+        for item in spells_tree.get_children():
+            spells_tree.delete(item)
+        
+        if filtered_spells is None:
             return
         
         # Add filtered spells to treeview
-        class_col = self.class_var.get()
-        for _, spell in self.filtered_spells.iterrows():
-            self.spells_tree.insert("", "end", 
-                                   values=("", 
-                                          spell['name'], 
-                                          spell[class_col], 
-                                          spell['school'], 
-                                          spell['source']),
-                                   tags=("unchecked",))
+        for _, spell in filtered_spells.iterrows():
+            spells_tree.insert("", "end", 
+                              values=("", 
+                                     spell['name'], 
+                                     spell[class_name], 
+                                     spell['school'], 
+                                     spell['source']),
+                              tags=("unchecked",))
         
-        self.status_var.set(f"Showing {len(self.filtered_spells)} spells")
+        # Update status if this is the current class
+        if class_name == self.current_class:
+            self.status_var.set(f"Showing {len(filtered_spells)} {class_name} spells")
     
-    def select_all_spells(self):
-        """Select all visible spells"""
-        for item in self.spells_tree.get_children():
-            self.spells_tree.set(item, "Select", "☑")
-            self.spells_tree.item(item, tags=("checked",))
+    def select_all_spells(self, class_name=None):
+        """Select all visible spells for a specific class"""
+        if class_name is None:
+            class_name = self.current_class
+            
+        if not class_name or class_name not in self.tabs:
+            return
+            
+        spells_tree = self.tabs[class_name]['spells_tree']
+        for item in spells_tree.get_children():
+            spells_tree.set(item, "Select", "☑")
+            spells_tree.item(item, tags=("checked",))
     
-    def deselect_all_spells(self):
-        """Deselect all spells"""
-        for item in self.spells_tree.get_children():
-            self.spells_tree.set(item, "Select", "")
-            self.spells_tree.item(item, tags=("unchecked",))
+    def deselect_all_spells(self, class_name=None):
+        """Deselect all spells for a specific class"""
+        if class_name is None:
+            class_name = self.current_class
+            
+        if not class_name or class_name not in self.tabs:
+            return
+            
+        spells_tree = self.tabs[class_name]['spells_tree']
+        for item in spells_tree.get_children():
+            spells_tree.set(item, "Select", "")
+            spells_tree.item(item, tags=("unchecked",))
     
-    def preview_spell(self):
-        """Preview selected spell details"""
-        selection = self.spells_tree.selection()
+    def preview_spell(self, class_name=None):
+        """Preview selected spell details for a specific class"""
+        if class_name is None:
+            class_name = self.current_class
+            
+        if not class_name or class_name not in self.tabs:
+            return
+            
+        tab_data = self.tabs[class_name]
+        spells_tree = tab_data['spells_tree']
+        filtered_spells = tab_data['filtered_spells']
+        
+        selection = spells_tree.selection()
         if not selection:
             messagebox.showwarning("Warning", "Please select a spell to preview")
             return
         
         # Get spell name from selection
         item = selection[0]
-        spell_name = self.spells_tree.item(item)['values'][1]  # Name is now in column 1
+        spell_name = spells_tree.item(item)['values'][1]  # Name is now in column 1
         
         # Find spell in dataframe
-        spell_data = self.filtered_spells[self.filtered_spells['name'] == spell_name].iloc[0]
+        spell_data = filtered_spells[filtered_spells['name'] == spell_name].iloc[0]
         
         # Create preview window
         preview_window = tk.Toplevel(self.root)
@@ -298,7 +407,7 @@ class SpellCardGenerator:
         # Format spell information
         preview_text = f"Name: {spell_data['name']}\n"
         preview_text += f"School: {spell_data['school']}\n"
-        preview_text += f"Level: {spell_data[self.class_var.get()]}\n"
+        preview_text += f"Level: {spell_data[class_name]}\n"
         preview_text += f"Casting Time: {spell_data['casting_time']}\n"
         preview_text += f"Components: {spell_data['components']}\n"
         preview_text += f"Range: {spell_data['range']}\n"
@@ -310,17 +419,17 @@ class SpellCardGenerator:
         text_widget.insert(tk.END, preview_text)
         text_widget.config(state=tk.DISABLED)
     
-    def toggle_spell_selection(self, event):
-        """Toggle spell selection on click"""
-        item = self.spells_tree.identify('item', event.x, event.y)
+    def toggle_spell_selection(self, event, spells_tree):
+        """Toggle spell selection on click for a specific tree"""
+        item = spells_tree.identify('item', event.x, event.y)
         if item:
-            current_tags = self.spells_tree.item(item, 'tags')
+            current_tags = spells_tree.item(item, 'tags')
             if 'checked' in current_tags:
-                self.spells_tree.set(item, "Select", "")
-                self.spells_tree.item(item, tags=("unchecked",))
+                spells_tree.set(item, "Select", "")
+                spells_tree.item(item, tags=("unchecked",))
             else:
-                self.spells_tree.set(item, "Select", "☑")
-                self.spells_tree.item(item, tags=("checked",))
+                spells_tree.set(item, "Select", "☑")
+                spells_tree.item(item, tags=("checked",))
     
     def apply_latex_fixes(self, text: str) -> str:
         """Apply LaTeX formatting fixes"""
@@ -486,22 +595,29 @@ class SpellCardGenerator:
     
     def generate_cards(self):
         """Generate LaTeX files for selected spells"""
-        if not self.class_var.get():
-            messagebox.showwarning("Warning", "Please select a character class")
+        if not self.current_class:
+            messagebox.showwarning("Warning", "No character class tab is selected")
             return
         
-        # Get selected spells
+        if self.current_class not in self.tabs:
+            messagebox.showerror("Error", f"Tab data for {self.current_class} not found")
+            return
+        
+        # Get selected spells from current tab
+        tab_data = self.tabs[self.current_class]
+        spells_tree = tab_data['spells_tree']
+        
         selected_spells = []
-        for item in self.spells_tree.get_children():
-            if 'checked' in self.spells_tree.item(item, 'tags'):
-                spell_name = self.spells_tree.item(item)['values'][1]  # Name is now in column 1
+        for item in spells_tree.get_children():
+            if 'checked' in spells_tree.item(item, 'tags'):
+                spell_name = spells_tree.item(item)['values'][1]  # Name is now in column 1
                 selected_spells.append(spell_name)
         
         if not selected_spells:
             messagebox.showwarning("Warning", "Please select at least one spell")
             return
         
-        character_class = self.class_var.get()
+        character_class = self.current_class
         overwrite = self.overwrite_var.get()
         
         # Create output directory
@@ -522,8 +638,9 @@ class SpellCardGenerator:
                 self.status_var.set(f"Processing {spell_name}...")
                 self.root.update()
                 
-                # Get spell data
-                spell_data = self.filtered_spells[self.filtered_spells['name'] == spell_name].iloc[0]
+                # Get spell data from current tab's filtered spells
+                filtered_spells = self.tabs[character_class]['filtered_spells']
+                spell_data = filtered_spells[filtered_spells['name'] == spell_name].iloc[0]
                 spell_level = spell_data[character_class]
                 
                 # Create output file path
@@ -570,14 +687,7 @@ class SpellCardGenerator:
 def main():
     """Main function to run the application"""
     root = tk.Tk()
-    
-    # Bind click event to toggle selection
-    def on_tree_click(event):
-        app.toggle_spell_selection(event)
-    
     app = SpellCardGenerator(root)
-    app.spells_tree.bind('<Button-1>', on_tree_click)
-    
     root.mainloop()
 
 
