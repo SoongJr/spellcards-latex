@@ -205,15 +205,19 @@ class SpellCardGenerator:
                                width=3, command=lambda: self.toggle_section(section_name))
         toggle_btn.grid(row=0, column=0, sticky=tk.W)
         
+        # Tri-state checkbox for section selection (moved to left of label)
+        section_select_var = tk.BooleanVar()
+        section_cb = ttk.Checkbutton(header_frame, variable=section_select_var,
+                                   command=lambda: self.toggle_section_selection(section_name))
+        section_cb.grid(row=0, column=1, sticky=tk.W, padx=(5, 5))
+        
         # Section label
         section_label = ttk.Label(header_frame, text=section_name, font=("TkDefaultFont", 9, "bold"))
-        section_label.grid(row=0, column=1, sticky=tk.W, padx=(5, 5))
+        section_label.grid(row=0, column=2, sticky=tk.W, padx=(0, 5))
         
-        # Section selection buttons (smaller)
-        ttk.Button(header_frame, text="All", width=3,
-                  command=lambda: self.select_section_classes(section_data['classes'], True)).grid(row=0, column=2, padx=2)
-        ttk.Button(header_frame, text="None", width=5,
-                  command=lambda: self.select_section_classes(section_data['classes'], False)).grid(row=0, column=3, padx=2)
+        # Store the section checkbox variable and widget
+        section_data['select_var'] = section_select_var
+        section_data['select_cb'] = section_cb
         
         # Classes frame (initially shown/hidden based on expanded state)
         classes_frame = ttk.Frame(parent_frame)
@@ -236,6 +240,9 @@ class SpellCardGenerator:
             cb = ttk.Checkbutton(classes_frame, text=display_name, variable=var,
                                command=lambda cn=class_name: self.on_class_selection_changed(cn))
             cb.grid(row=i, column=0, sticky=tk.W, padx=5, pady=1)
+        
+        # Initialize the section checkbox state after creating all class checkboxes
+        self.update_section_checkbox_state(section_data['classes'])
     
     def create_global_selection_buttons(self, row):
         """Create global selection buttons"""
@@ -300,22 +307,125 @@ class SpellCardGenerator:
         for class_name in classes:
             if class_name in self.class_vars:
                 self.class_vars[class_name].set(select)
+                # Update current_classes set to match
+                if select:
+                    self.current_classes.add(class_name)
+                else:
+                    self.current_classes.discard(class_name)
+        
+        # Update the section's tri-state checkbox
+        self.update_section_checkbox_state(classes)
+        
+        # Update status display
+        count = len(self.current_classes)
+        if count == 0:
+            self.status_var.set("No classes selected")
+        elif count == 1:
+            selected_class = next(iter(self.current_classes))
+            self.status_var.set(f"Selected: {self.get_display_name(selected_class)}")
+        else:
+            self.status_var.set(f"Selected: {count} classes")
+    
+    def toggle_section_selection(self, section_name):
+        """Toggle selection state for all classes in a section using tri-state logic"""
+        if section_name not in self.section_frames:
+            return
+        
+        section_data = self.section_frames[section_name]
+        classes = section_data['classes']
+        
+        # Check current actual state (not the checkbox state, but the actual selections)
+        selected_count = sum(1 for cls in classes if cls in self.class_vars and self.class_vars[cls].get())
+        total_count = len(classes)
+        
+        if selected_count == 0:
+            # Currently none selected -> select all
+            self.select_section_classes(classes, True)
+        elif selected_count == total_count:
+            # Currently all selected -> deselect all
+            self.select_section_classes(classes, False)
+        else:
+            # Currently some selected (indeterminate) -> select all
+            self.select_section_classes(classes, True)
+    
+    def update_section_checkbox_state(self, classes):
+        """Update the tri-state checkbox based on current class selections"""
+        # Find which section these classes belong to
+        for section_name, section_data in self.section_frames.items():
+            if set(classes) == set(section_data['classes']):
+                selected_count = sum(1 for cls in classes if cls in self.class_vars and self.class_vars[cls].get())
+                total_count = len(classes)
+                
+                # Use after_idle to ensure the GUI has time to process the state change
+                def update_state():
+                    if selected_count == 0:
+                        # None selected - unchecked state
+                        section_data['select_var'].set(False)
+                        section_data['select_cb'].state(['!alternate'])
+                    elif selected_count == total_count:
+                        # All selected - checked state
+                        section_data['select_var'].set(True)
+                        section_data['select_cb'].state(['!alternate'])
+                    else:
+                        # Some selected - indeterminate state
+                        section_data['select_var'].set(True)
+                        section_data['select_cb'].state(['alternate'])
+                
+                self.root.after_idle(update_state)
+                break
     
     def select_all_classes(self):
         """Select all character classes"""
-        for var in self.class_vars.values():
+        for class_name, var in self.class_vars.items():
             var.set(True)
+            self.current_classes.add(class_name)
+        
+        # Update all section checkboxes
+        for section_name, section_data in self.section_frames.items():
+            self.update_section_checkbox_state(section_data['classes'])
+        
+        # Update status display
+        count = len(self.current_classes)
+        self.status_var.set(f"Selected: {count} classes")
     
     def deselect_all_classes(self):
         """Deselect all character classes"""
-        for var in self.class_vars.values():
+        for class_name, var in self.class_vars.items():
             var.set(False)
+            self.current_classes.discard(class_name)
+        
+        # Update all section checkboxes
+        for section_name, section_data in self.section_frames.items():
+            self.update_section_checkbox_state(section_data['classes'])
+        
+        # Update status display
+        self.status_var.set("No classes selected")
     
     def select_core_classes(self):
         """Select only core classes, deselect others"""
         core_classes = ['sor', 'wiz', 'cleric', 'druid', 'ranger', 'bard', 'paladin']
+        self.current_classes.clear()
+        
         for class_name, var in self.class_vars.items():
-            var.set(class_name in core_classes)
+            if class_name in core_classes:
+                var.set(True)
+                self.current_classes.add(class_name)
+            else:
+                var.set(False)
+        
+        # Update all section checkboxes
+        for section_name, section_data in self.section_frames.items():
+            self.update_section_checkbox_state(section_data['classes'])
+        
+        # Update status display
+        count = len(self.current_classes)
+        if count == 0:
+            self.status_var.set("No classes selected")
+        elif count == 1:
+            selected_class = next(iter(self.current_classes))
+            self.status_var.set(f"Selected: {self.get_display_name(selected_class)}")
+        else:
+            self.status_var.set(f"Selected: {count} classes")
     
     def on_class_selection_changed(self, class_name):
         """Handle when a class selection changes"""
@@ -324,6 +434,9 @@ class SpellCardGenerator:
                 self.current_classes.add(class_name)
             else:
                 self.current_classes.discard(class_name)
+        
+        # Update the section checkbox state for the section containing this class
+        self.update_section_checkbox_for_class(class_name)
         
         # Update status
         count = len(self.current_classes)
@@ -334,6 +447,14 @@ class SpellCardGenerator:
             self.status_var.set(f"Selected: {self.get_display_name(selected_class)}")
         else:
             self.status_var.set(f"Selected: {count} classes")
+    
+    def update_section_checkbox_for_class(self, class_name):
+        """Update section checkbox when an individual class selection changes"""
+        # Find the section containing this class
+        for section_name, section_data in self.section_frames.items():
+            if class_name in section_data['classes']:
+                self.update_section_checkbox_state(section_data['classes'])
+                break
     
     def update_spell_content(self):
         """Update the spell content area based on selected classes"""
