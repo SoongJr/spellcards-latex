@@ -15,7 +15,12 @@
             ]
         }
     },
-    "postCreateCommand": "miktex --admin packages update-package-database && miktex --admin packages update",
+    "postCreateCommand": {
+        "miktex part": "miktex --admin packages update-package-database && miktex --admin packages update"
+    },
+    "postStartCommand": {
+        "git part": "git config --global pull.rebase true && git config --global rebase.autoStash true"
+    },
     "mounts": [
         "source=spellcards_bashhistory,target=/root/persisted,type=volume"
     ]
