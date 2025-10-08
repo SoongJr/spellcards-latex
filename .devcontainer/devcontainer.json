@@ -10,7 +10,8 @@
             "extensions": [
                 "James-Yu.latex-workshop",
                 "timonwong.shellcheck",
-                "ms-python.python"
+                "ms-python.python",
+                "ms-python.black-formatter"
             ]
         }
     },

@@ -1,39 +1,55 @@
 """Configuration constants and settings."""
 
+
 class CharacterClasses:
     """Character class definitions and categorization."""
-    
-    CORE = ['sor', 'wiz', 'cleric', 'druid', 'ranger', 'bard', 'paladin']
-    BASE = ['alchemist', 'summoner', 'witch', 'inquisitor', 'oracle', 'antipaladin', 'magus']
-    HYBRID = ['bloodrager', 'hunter', 'investigator', 'shaman', 'skald', 'summoner_unchained']
-    OCCULT = ['psychic', 'medium', 'mesmerist', 'occultist', 'spiritualist']
+
+    CORE = ["sor", "wiz", "cleric", "druid", "ranger", "bard", "paladin"]
+    BASE = [
+        "alchemist",
+        "summoner",
+        "witch",
+        "inquisitor",
+        "oracle",
+        "antipaladin",
+        "magus",
+    ]
+    HYBRID = [
+        "bloodrager",
+        "hunter",
+        "investigator",
+        "shaman",
+        "skald",
+        "summoner_unchained",
+    ]
+    OCCULT = ["psychic", "medium", "mesmerist", "occultist", "spiritualist"]
 
     DISPLAY_NAMES = {
-        'sor': 'Sorcerer',
-        'wiz': 'Wizard',
-        'summoner_unchained': 'Summoner (Unchained)',
-        'antipaladin': 'Antipaladin',
-        'investigator': 'Investigator',
-        'spiritualist': 'Spiritualist',
-        'mesmerist': 'Mesmerist',
-        'occultist': 'Occultist',
-        'psychic': 'Psychic',
-        'medium': 'Medium',
-        'cleric': 'Cleric',
-        'druid': 'Druid',
-        'ranger': 'Ranger',
-        'bard': 'Bard',
-        'paladin': 'Paladin',
-        'alchemist': 'Alchemist',
-        'summoner': 'Summoner',
-        'witch': 'Witch',
-        'inquisitor': 'Inquisitor',
-        'oracle': 'Oracle',
-        'magus': 'Magus',
-        'bloodrager': 'Bloodrager',
-        'hunter': 'Hunter',
-        'shaman': 'Shaman',
-        'skald': 'Skald'
+        "sor": "Sorcerer",
+        "wiz": "Wizard",
+        "summoner_unchained": "Summoner (Unchained)",
+        "antipaladin": "Antipaladin",
+        "investigator": "Investigator",
+        "spiritualist": "Spiritualist",
+        "mesmerist": "Mesmerist",
+        "occultist": "Occultist",
+        "psychic": "Psychic",
+        "medium": "Medium",
+        "cleric": "Cleric",
+        "druid": "Druid",
+        "ranger": "Ranger",
+        "bard": "Bard",
+        "paladin": "Paladin",
+        "alchemist": "Alchemist",
+        "summoner": "Summoner",
+        "witch": "Witch",
+        "inquisitor": "Inquisitor",
+        "oracle": "Oracle",
+        "magus": "Magus",
+        "bloodrager": "Bloodrager",
+        "hunter": "Hunter",
+        "shaman": "Shaman",
+        "skald": "Skald",
     }
 
     CATEGORIES = {
@@ -43,9 +59,10 @@ class CharacterClasses:
         "Occult Classes": OCCULT,
     }
 
+
 class SpellColumns:
     """Column names in the spell database."""
-    
+
     NAME = "name"
     SCHOOL = "school"
     SUBSCHOOL = "subschool"
@@ -84,7 +101,7 @@ class SpellColumns:
     RUSE = "ruse"
     DRACONIC = "draconic"
     MEDITATIVE = "meditative"
-    
+
     # Descriptor columns
     ACID = "acid"
     AIR = "air"
@@ -112,40 +129,44 @@ class SpellColumns:
     SONIC = "sonic"
     WATER = "water"
 
+
 class Config:
     """Application configuration constants."""
-    
+
     SPELL_DATA_FILE = "spell_full.tsv"
     OUTPUT_DIR_TEMPLATE = "src/spells/{class_name}"
-    DEFAULT_GERMAN_URL = "http://prd.5footstep.de/Grundregelwerk/Zauber/<german-spell-name>"
+    DEFAULT_GERMAN_URL = (
+        "http://prd.5footstep.de/Grundregelwerk/Zauber/<german-spell-name>"
+    )
     ENGLISH_URL_BASE = "https://www.d20pfsrd.com/magic/all-spells"
     NULL_VALUE = "NULL"
-    
+
+
 class UIConfig:
     """UI-specific configuration."""
-    
+
     WINDOW_TITLE = "Spell Card Generator"
     WINDOW_SIZE = "1200x800"
     TREE_HEIGHT = 15
     MAIN_PADDING = "10"
-    
+
     # Tree view columns
     TREE_COLUMNS = ("Select", "Name", "Level", "School", "Source")
     TREE_COLUMN_WIDTHS = {
         "Select": 50,
-        "Name": 200, 
+        "Name": 200,
         "Level": 60,
         "School": 120,
-        "Source": 120
+        "Source": 120,
     }
     TREE_COLUMN_MIN_WIDTHS = {
         "Select": 50,
         "Name": 150,
-        "Level": 50, 
+        "Level": 50,
         "School": 100,
-        "Source": 100
+        "Source": 100,
     }
-    
+
     # Icons
     EXPAND_ICON = "▼"
     COLLAPSE_ICON = "▶"

@@ -18,6 +18,7 @@
 *.md text
 *.txt text
 *.toml text
+*.lock text
 *.cfg text
 *.sh text
 *.pl text

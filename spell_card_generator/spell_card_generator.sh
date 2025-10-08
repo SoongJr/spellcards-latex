@@ -32,7 +32,7 @@ fi
 
 # Ensure dependencies are up to date
 echo "Installing/updating dependencies..."
-poetry -C "${scriptFolder}" install --no-root
+poetry -C "${scriptFolder}" install --without=dev
 
 # Launch the GUI application
 echo "Starting Spell Card Generator..."

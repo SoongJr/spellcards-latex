@@ -4,5 +4,7 @@
         "timonwong.shellcheck",
         "foxundermoon.shell-format",
         "mads-hartmann.bash-ide-vscode",
+        "ms-python.python",
+        "ms-python.black-formatter",
     ]
 }

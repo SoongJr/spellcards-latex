@@ -6,224 +6,246 @@ from pathlib import Path
 from typing import Callable, Optional, List, Tuple
 import pandas as pd
 
-from config.constants import Config, SpellColumns
+from config.constants import Config
 from utils.exceptions import GenerationError
 from utils.validators import Validators
 
+
 class LaTeXGenerator:
     """Handles LaTeX spell card generation."""
-    
+
     def __init__(self):
         self.progress_callback: Optional[Callable[[int, int, str], None]] = None
-    
+
     def generate_cards(
         self,
-        selected_spells: List[Tuple[str, str, pd.Series]],  # (class_name, spell_name, spell_data)
+        selected_spells: List[
+            Tuple[str, str, pd.Series]
+        ],  # (class_name, spell_name, spell_data)
         overwrite: bool = False,
         german_url_template: str = Config.DEFAULT_GERMAN_URL,
-        progress_callback: Optional[Callable[[int, int, str], None]] = None
+        progress_callback: Optional[Callable[[int, int, str], None]] = None,
     ) -> Tuple[List[str], List[str]]:
         """
         Generate LaTeX files for selected spells.
-        
+
         Returns:
             Tuple of (generated_files, skipped_files)
         """
         self.progress_callback = progress_callback
         generated_files = []
         skipped_files = []
-        
+
         try:
             total_spells = len(selected_spells)
-            
+
             for i, (class_name, spell_name, spell_data) in enumerate(selected_spells):
                 # Update progress
                 if self.progress_callback:
-                    progress = (i / total_spells) * 100
-                    self.progress_callback(i, total_spells, f"Processing {spell_name}...")
-                
+                    self.progress_callback(
+                        i, total_spells, f"Processing {spell_name}..."
+                    )
+
                 try:
-                    output_file = self._get_output_file_path(class_name, spell_name, spell_data)
-                    
+                    output_file = self._get_output_file_path(
+                        class_name, spell_name, spell_data
+                    )
+
                     # Check if file exists
                     if output_file.exists() and not overwrite:
                         skipped_files.append(str(output_file))
                         continue
-                    
+
                     # Generate LaTeX content
                     latex_content = self.generate_spell_latex(
                         spell_data, class_name, german_url_template
                     )
-                    
+
                     # Write file
                     output_file.parent.mkdir(parents=True, exist_ok=True)
-                    with open(output_file, 'w', encoding='utf-8') as f:
+                    with open(output_file, "w", encoding="utf-8") as f:
                         f.write(latex_content)
-                    
+
                     generated_files.append(str(output_file))
-                    
+
                 except Exception as e:
-                    raise GenerationError(f"Failed to generate spell card for {spell_name}: {e}")
-            
+                    raise GenerationError(
+                        f"Failed to generate spell card for {spell_name}: {e}"
+                    )
+
             # Complete progress
             if self.progress_callback:
-                self.progress_callback(total_spells, total_spells, "Generation complete")
-            
+                self.progress_callback(
+                    total_spells, total_spells, "Generation complete"
+                )
+
             return generated_files, skipped_files
-            
+
         except Exception as e:
             if not isinstance(e, GenerationError):
                 raise GenerationError(f"Spell card generation failed: {e}")
             raise
-    
-    def _get_output_file_path(self, class_name: str, spell_name: str, spell_data: pd.Series) -> Path:
+
+    def _get_output_file_path(
+        self, class_name: str, spell_name: str, spell_data: pd.Series
+    ) -> Path:
         """Get the output file path for a spell."""
         # Get base directory (assuming we're in spell_card_generator/)
         base_dir = Path(__file__).parent.parent.parent
-        
+
         # Create output directory path
         spell_level = spell_data[class_name]
         output_dir = base_dir / "src" / "spells" / class_name / spell_level
-        
+
         # Sanitize filename
         safe_name = Validators.sanitize_filename(spell_name)
         output_file = output_dir / f"{safe_name}.tex"
-        
+
         return output_file
-    
+
     def generate_spell_latex(
-        self, 
-        spell_data: pd.Series, 
+        self,
+        spell_data: pd.Series,
         character_class: str,
-        german_url_template: str = Config.DEFAULT_GERMAN_URL
+        german_url_template: str = Config.DEFAULT_GERMAN_URL,
     ) -> str:
         """Generate LaTeX code for a single spell."""
         try:
             # Get spell level for the selected class
             spell_level = spell_data[character_class]
-            
+
             # Apply LaTeX fixes to relevant fields
             processed_data = self._process_spell_data(spell_data)
-            
+
             # Generate URLs
-            english_url = self._generate_english_url(spell_data['name'])
+            english_url = self._generate_english_url(spell_data["name"])
             german_url = german_url_template  # User can modify this manually
-            
+
             # Generate LaTeX content
             latex_content = self._generate_latex_template(
                 processed_data, character_class, spell_level, english_url, german_url
             )
-            
+
             return latex_content
-            
+
         except Exception as e:
             raise GenerationError(f"Failed to generate LaTeX for spell: {e}")
-    
+
     def _process_spell_data(self, spell_data: pd.Series) -> pd.Series:
         """Process spell data and apply LaTeX fixes."""
         processed = spell_data.copy()
-        
+
         # Apply LaTeX fixes to relevant fields
-        fields_to_fix = ['effect', 'range', 'area', 'targets', 'mythic_text']
+        fields_to_fix = ["effect", "range", "area", "targets", "mythic_text"]
         for field in fields_to_fix:
             if field in processed and processed[field] != Config.NULL_VALUE:
                 processed[field] = self._apply_latex_fixes(processed[field])
-        
+
         # Fix saving throw and spell resistance formatting
-        processed['saving_throw'] = self._format_saving_throw(processed.get('saving_throw', ''))
-        processed['spell_resistance'] = self._format_spell_resistance(processed.get('spell_resistance', ''))
-        
-        # Process description
-        processed['description_formatted'] = self._process_description(
-            processed.get('description_formatted', ''),
-            processed.get('description', '')
+        processed["saving_throw"] = self._format_saving_throw(
+            processed.get("saving_throw", "")
         )
-        
+        processed["spell_resistance"] = self._format_spell_resistance(
+            processed.get("spell_resistance", "")
+        )
+
+        # Process description
+        processed["description_formatted"] = self._process_description(
+            processed.get("description_formatted", ""), processed.get("description", "")
+        )
+
         return processed
-    
+
     def _apply_latex_fixes(self, text: str) -> str:
         """Apply LaTeX formatting fixes."""
         if not text or text == Config.NULL_VALUE:
             return text
-        
+
         # Replace double quotes with LaTeX quotes
-        text = re.sub(r'"([^"]+)"', r'``\\1\'\'', text)
-        
+        text = re.sub(r'"([^"]+)"', r"``\\1\'\'", text)
+
         # Fix spacing for measurements
-        text = re.sub(r'(\\d+[ -]?ft\\.) ([a-z])', r'\\1\\\\ \\2', text)
-        text = re.sub(r'sq\\. ft\\.', r'sq.~ft.', text)
-        
+        text = re.sub(r"(\\d+[ -]?ft\\.) ([a-z])", r"\\1\\\\ \\2", text)
+        text = re.sub(r"sq\\. ft\\.", r"sq.~ft.", text)
+
         # Fix spacing after periods before emphasized text
-        text = re.sub(r'\\. \\\\emph\\{', r'.\\@ \\\\emph{', text)
-        
+        text = re.sub(r"\\. \\\\emph\\{", r".\\@ \\\\emph{", text)
+
         # Superscript ordinals
-        text = re.sub(r'(\\b\\d+)(st|nd|rd|th)\\b', r'\\1\\\\textsuperscript{\\2}', text)
-        
+        text = re.sub(
+            r"(\\b\\d+)(st|nd|rd|th)\\b", r"\\1\\\\textsuperscript{\\2}", text
+        )
+
         return text
-    
+
     def _format_saving_throw(self, saving_throw: str) -> str:
         """Format saving throw for LaTeX."""
         if not saving_throw or saving_throw == Config.NULL_VALUE:
             return "\\\\emph{N/A}"
-        
-        return re.sub(r'\\bnone\\b', r'\\\\textbf{none}', saving_throw)
-    
+
+        return re.sub(r"\\bnone\\b", r"\\\\textbf{none}", saving_throw)
+
     def _format_spell_resistance(self, spell_resistance: str) -> str:
         """Format spell resistance for LaTeX."""
         if not spell_resistance or spell_resistance == Config.NULL_VALUE:
             return "\\\\emph{N/A}"
-        
-        return re.sub(r'\\bno\\b', r'\\\\textbf{no}', spell_resistance)
-    
-    def _process_description(self, description_formatted: str, description_fallback: str) -> str:
+
+        return re.sub(r"\\bno\\b", r"\\\\textbf{no}", spell_resistance)
+
+    def _process_description(
+        self, description_formatted: str, description_fallback: str
+    ) -> str:
         """Process spell description, converting HTML to LaTeX if possible."""
         if description_formatted and description_formatted != Config.NULL_VALUE:
             try:
                 # Use pandoc to convert HTML to LaTeX
                 process = subprocess.run(
-                    ['pandoc', '-f', 'html', '-t', 'latex'],
+                    ["pandoc", "-f", "html", "-t", "latex"],
                     input=description_formatted,
                     capture_output=True,
                     text=True,
-                    check=True
+                    check=True,
                 )
                 processed = process.stdout
                 return self._apply_latex_fixes(processed)
             except (subprocess.CalledProcessError, FileNotFoundError):
                 # Fallback to plain text description if pandoc fails
                 pass
-        
+
         return description_fallback or ""
-    
+
     def _generate_english_url(self, spell_name: str) -> str:
         """Generate English D20PFSRD URL for spell."""
         first_char = spell_name[0].lower()
-        
+
         # Clean spell name for URL
-        clean_name = re.sub(r'(, Greater| [IVX]+)$', '', spell_name)
+        clean_name = re.sub(r"(, Greater| [IVX]+)$", "", spell_name)
         clean_name = clean_name.lower()
-        clean_name = re.sub(r'[^a-z0-9]', '-', clean_name)
-        clean_name = re.sub(r'-+', '-', clean_name).strip('-')
-        
+        clean_name = re.sub(r"[^a-z0-9]", "-", clean_name)
+        clean_name = re.sub(r"-+", "-", clean_name).strip("-")
+
         return f"{Config.ENGLISH_URL_BASE}/{first_char}/{clean_name}/"
-    
+
     def _generate_latex_template(
         self,
         spell_data: pd.Series,
         character_class: str,
         spell_level: str,
         english_url: str,
-        german_url: str
+        german_url: str,
     ) -> str:
         """Generate the complete LaTeX template for a spell."""
-        
+
         # Helper function to get field value or empty string
         def get_field(field_name: str) -> str:
-            value = spell_data.get(field_name, '')
-            return value if value != Config.NULL_VALUE else ''
-        
-        return f"""% file content generated by spell_card_generator.py, meant to be fine-tuned manually (especially the description).
+            value = spell_data.get(field_name, "")
+            return value if value != Config.NULL_VALUE else ""
 
+        return f"""%%%
+%%% file content generated by spell_card_generator.py,
+%%% meant to be fine-tuned manually (especially the description).
+%%%
+%
 % open a new spellcards environment
 \\begin{{spellcard}}{{{character_class}}}{{{get_field('name')}}}{{{spell_level}}}
   % make the data from TSV accessible for to the LaTeX part:
@@ -295,10 +317,15 @@ class LaTeXGenerator:
   \\spellcardinfo{{}}
   % draw a QR Code pointing at online resources for this spell on the front face:
   \\spellcardqr{{\\urlenglish}}
-  % ATTENTION: URLs for foreign languages cannot be generated and must be provided by you!
-  %            Set \\urlgerman above and activate this line if you want to have it: \\spellcardqr{{\\urlgerman}}
-  % LaTeX-formatted description of the spell, generated from the HTML-formatted description_formatted column:
+  % ATTENTION:
+  %    URLs for foreign languages cannot be generated and must be provided by you!
+  %    Set \\urlgerman above and activate this line if you want to have it:
+  % \\spellcardqr{{\\urlgerman}}
+  %
+  % Now follows a LaTeX-formatted description of the spell,
+  % generated from the HTML-formatted description_formatted column:
+  %
   {get_field('description_formatted')}
-
+  %
 \\end{{spellcard}}
 """

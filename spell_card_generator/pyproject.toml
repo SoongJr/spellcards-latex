@@ -1,17 +1,23 @@
 [tool.poetry]
 name = "spell-card-generator"
-version = "0.0.0"
+package-mode = false
 description = "GUI tool for generating LaTeX spell cards from TSV data"
 authors = ["Spell Cards Project"]
 readme = "../README.md"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 pandas = "^2.0.0"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.0.0"
+pylint = "^3.3.9"
+flake8 = "^7.3.0"
+black = "^25.9.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pylint.format]
+# this config is "Black-compatible", see https://black.readthedocs.io/en/latest/guides/using_black_with_other_tools.html
+max-line-length = "88"

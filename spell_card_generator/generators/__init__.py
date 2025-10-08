@@ -2,4 +2,4 @@
 
 from .latex_generator import LaTeXGenerator
 
-__all__ = ['LaTeXGenerator']
+__all__ = ["LaTeXGenerator"]

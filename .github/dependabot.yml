@@ -10,3 +10,22 @@ updates:
     schedule:
       # Check for updates to GitHub Actions every week
       interval: "monthly"
+    # group all action updates into a single PR
+    groups:
+      actions: 
+        patterns:
+          - "*"
+# update poetry dependencies in spell_card_generator (using pip ecosystem)
+  - package-ecosystem: "pip"
+    directory: "/spell_card_generator"
+    schedule:
+      interval: "monthly"
+    # this is a personal project, so I won't be actively monitoring dependencies.
+    # Just provide a single PR for me to look at whenever I come back to it by grouping all dependencies together:
+    allow:
+      - dependency-type: "all"
+    # group all poetry updates into a single PR
+    groups:
+      poetry-dependencies: 
+        patterns:
+          - "*"
