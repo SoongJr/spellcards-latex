@@ -44,18 +44,13 @@ class SpellCardGenerator:
         self.root.rowconfigure(0, weight=1)
         main_frame.columnconfigure(1, weight=1)
         
-        # Title
-        title_label = ttk.Label(main_frame, text="Spell Card Generator", 
-                               font=("TkDefaultFont", 16, "bold"))
-        title_label.grid(row=0, column=0, columnspan=3, pady=(0, 20))
-        
         # Character class selection frame
         self.setup_class_selection_frame(main_frame)
         
         # Spell content frame (will be populated after class selection)
         self.content_frame = ttk.Frame(main_frame)
-        self.content_frame.grid(row=2, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 10))
-        main_frame.rowconfigure(2, weight=1)
+        self.content_frame.grid(row=1, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 10))
+        main_frame.rowconfigure(1, weight=1)
         
         # Initialize data structures
         self.class_vars = {}  # Boolean variables for each class
@@ -101,7 +96,7 @@ class SpellCardGenerator:
         """Create collapsible sections for class selection"""
         # Main class selection frame
         class_frame = ttk.LabelFrame(parent, text="Select Character Classes", padding="10")
-        class_frame.grid(row=1, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 10))
+        class_frame.grid(row=0, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 10))
         class_frame.columnconfigure(0, weight=1)
         
         self.class_selection_frame = class_frame
@@ -205,15 +200,15 @@ class SpellCardGenerator:
                                width=3, command=lambda: self.toggle_section(section_name))
         toggle_btn.grid(row=0, column=0, sticky=tk.W)
         
-        # Tri-state checkbox for section selection (moved to left of label)
+        # Tri-state checkbox for section selection (moved to left of label, both in same column)
         section_select_var = tk.BooleanVar()
         section_cb = ttk.Checkbutton(header_frame, variable=section_select_var,
-                                   command=lambda: self.toggle_section_selection(section_name))
-        section_cb.grid(row=0, column=1, sticky=tk.W, padx=(5, 5))
+                       command=lambda: self.toggle_section_selection(section_name))
+        section_cb.grid(row=0, column=1, sticky=tk.W, padx=(5, 0))
         
-        # Section label
+        # Section label (placed to the right of the checkbox, in the same column)
         section_label = ttk.Label(header_frame, text=section_name, font=("TkDefaultFont", 9, "bold"))
-        section_label.grid(row=0, column=2, sticky=tk.W, padx=(0, 5))
+        section_label.grid(row=0, column=1, columnspan=2, sticky=tk.W, padx=(20, 5))
         
         # Store the section checkbox variable and widget
         section_data['select_var'] = section_select_var
@@ -273,8 +268,6 @@ class SpellCardGenerator:
                   command=self.deselect_all_classes).pack(side=tk.LEFT, padx=5)
         ttk.Button(inner_frame, text="Core Classes Only", 
                   command=self.select_core_classes).pack(side=tk.LEFT, padx=5)
-        ttk.Button(inner_frame, text="Update Spell Lists", 
-                  command=self.update_spell_content).pack(side=tk.LEFT, padx=10)
     
     def toggle_section(self, section_name):
         """Toggle visibility of a class section"""
@@ -325,6 +318,9 @@ class SpellCardGenerator:
             self.status_var.set(f"Selected: {self.get_display_name(selected_class)}")
         else:
             self.status_var.set(f"Selected: {count} classes")
+        
+        # Automatically update spell content when section selection changes
+        self.update_spell_content()
     
     def toggle_section_selection(self, section_name):
         """Toggle selection state for all classes in a section using tri-state logic"""
@@ -387,6 +383,9 @@ class SpellCardGenerator:
         # Update status display
         count = len(self.current_classes)
         self.status_var.set(f"Selected: {count} classes")
+        
+        # Automatically update spell content
+        self.update_spell_content()
     
     def deselect_all_classes(self):
         """Deselect all character classes"""
@@ -400,6 +399,9 @@ class SpellCardGenerator:
         
         # Update status display
         self.status_var.set("No classes selected")
+        
+        # Automatically update spell content
+        self.update_spell_content()
     
     def select_core_classes(self):
         """Select only core classes, deselect others"""
@@ -426,6 +428,9 @@ class SpellCardGenerator:
             self.status_var.set(f"Selected: {self.get_display_name(selected_class)}")
         else:
             self.status_var.set(f"Selected: {count} classes")
+        
+        # Automatically update spell content
+        self.update_spell_content()
     
     def on_class_selection_changed(self, class_name):
         """Handle when a class selection changes"""
@@ -447,6 +452,9 @@ class SpellCardGenerator:
             self.status_var.set(f"Selected: {self.get_display_name(selected_class)}")
         else:
             self.status_var.set(f"Selected: {count} classes")
+        
+        # Automatically update spell content when class selection changes
+        self.update_spell_content()
     
     def update_section_checkbox_for_class(self, class_name):
         """Update section checkbox when an individual class selection changes"""
@@ -465,7 +473,7 @@ class SpellCardGenerator:
         if not self.current_classes:
             # Show message when no classes selected
             no_selection_label = ttk.Label(self.content_frame, 
-                                         text="Please select one or more character classes above, then click 'Update Spell Lists'",
+                                         text="Please select one or more character classes above to view spell lists",
                                          font=("TkDefaultFont", 12))
             no_selection_label.pack(expand=True)
             return
