@@ -9,9 +9,9 @@ so we concentrate on printing the cards your character actually knows/uses.
 
 ```
 spellcards-latex
+├── spell_card_generator             # Folder containing a GUI tool for generating spell cards
 ├── src
 │   ├── spellcards.tex               # Main LaTeX document for compiling spell cards
-│   ├── spell_card_generator.py      # GUI tool for generating spell cards
 │   └── spells
 │       ├── spell_full.tsv           # Database of spells in TSV format
 │       ├── convert.sh               # Legacy command-line conversion script
