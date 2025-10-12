@@ -19,14 +19,15 @@ class SpellTabManager:
         parent_frame: ttk.Frame,
         data_loader: SpellDataLoader,
         spell_filter: SpellFilter,
+        spell_selection_callback=None,
     ):
         self.parent_frame = parent_frame
         self.data_loader = data_loader
         self.spell_filter = spell_filter
+        self.spell_selection_callback = spell_selection_callback
 
         # State management
         self.spell_data: Dict[str, ClassTabState] = {}
-        self.spell_notebook: Optional[ttk.Notebook] = None
         self.current_classes: Set[str] = set()
 
     def update_tabs(self, selected_classes: Set[str]):
@@ -40,44 +41,29 @@ class SpellTabManager:
         self.spell_data.clear()
 
         if not selected_classes:
-            # Show message when no classes selected
-            no_selection_label = ttk.Label(
-                self.parent_frame,
-                text="Please select one or more character classes to view spell lists",
-                font=("TkDefaultFont", 12),
-            )
-            no_selection_label.pack(expand=True)
+            # This shouldn't happen with the new single-class selection UI
+            # but we keep it as a fallback
             return
 
-        # Create spell content for selected classes
-        self._create_spell_content()
+        # Create content for single class (get the first and only class)
+        selected_class = next(iter(selected_classes))
+        self._create_spell_content_for_class(selected_class)
 
-    def _create_spell_content(self):
-        """Create spell list content for selected classes."""
-        # Create notebook for selected classes
-        self.spell_notebook = ttk.Notebook(self.parent_frame)
-        self.spell_notebook.pack(fill=tk.BOTH, expand=True)
-
-        # Create tabs for each selected class
-        for class_name in sorted(self.current_classes):
-            self._create_spell_tab(class_name)
-
-    def _create_spell_tab(self, class_name: str):
-        """Create a spell tab for a specific class."""
-        # Create main frame for this tab
-        tab_frame = ttk.Frame(self.spell_notebook)
-        tab_title = CharacterClasses.DISPLAY_NAMES.get(class_name, class_name.title())
-        self.spell_notebook.add(tab_frame, text=tab_title)
+    def _create_spell_content_for_class(self, class_name: str):
+        """Create spell content for a specific class."""
+        # Create main frame directly in parent frame using grid to match main layout
+        content_frame = ttk.Frame(self.parent_frame)
+        content_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
 
         # Configure grid weights
-        tab_frame.columnconfigure(0, weight=1)
-        tab_frame.rowconfigure(1, weight=1)
+        content_frame.columnconfigure(0, weight=1)
+        content_frame.rowconfigure(1, weight=1)  # Spell list area gets most space
 
         # Create filter controls
-        filters_frame = self._create_filters_frame(tab_frame, class_name)
+        filters_frame = self._create_filters_frame(content_frame, class_name)
 
         # Create spell list
-        spells_tree = self._create_spells_list(tab_frame, class_name)
+        spells_tree = self._create_spells_list(content_frame, class_name)
 
         # Create class tab state
         level_var, source_var, search_var = self._get_filter_variables(filters_frame)
@@ -86,7 +72,7 @@ class SpellTabManager:
         )
 
         self.spell_data[class_name] = ClassTabState(
-            frame=tab_frame,
+            frame=content_frame,
             level_var=level_var,
             source_var=source_var,
             search_var=search_var,
@@ -340,6 +326,10 @@ class SpellTabManager:
                 spells_tree.set(item, "Select", UIConfig.CHECKED_ICON)
                 spells_tree.item(item, tags=("checked",))
 
+            # Notify callback about selection change
+            if self.spell_selection_callback:
+                self.spell_selection_callback()
+
     def _select_all_spells(self, class_name: str):
         """Select all visible spells for a specific class."""
         if class_name not in self.spell_data:
@@ -350,6 +340,10 @@ class SpellTabManager:
             spells_tree.set(item, "Select", UIConfig.CHECKED_ICON)
             spells_tree.item(item, tags=("checked",))
 
+        # Notify callback about selection change
+        if self.spell_selection_callback:
+            self.spell_selection_callback()
+
     def _deselect_all_spells(self, class_name: str):
         """Deselect all spells for a specific class."""
         if class_name not in self.spell_data:
@@ -359,6 +353,10 @@ class SpellTabManager:
         for item in spells_tree.get_children():
             spells_tree.set(item, "Select", UIConfig.UNCHECKED_ICON)
             spells_tree.item(item, tags=("unchecked",))
+
+        # Notify callback about selection change
+        if self.spell_selection_callback:
+            self.spell_selection_callback()
 
     def _preview_spell(self, class_name: str):
         """Preview selected spell details."""
@@ -439,15 +437,5 @@ class SpellTabManager:
         return selected_spells
 
     def get_current_class(self) -> Optional[str]:
-        """Get the currently active class from the spell notebook."""
-        if self.spell_notebook and hasattr(self.spell_notebook, "select"):
-            try:
-                selected_tab = self.spell_notebook.select()
-                if selected_tab:
-                    tab_index = self.spell_notebook.index(selected_tab)
-                    selected_classes = sorted(self.current_classes)
-                    if tab_index < len(selected_classes):
-                        return selected_classes[tab_index]
-            except tk.TclError:
-                pass
+        """Get the currently selected class."""
         return next(iter(self.current_classes)) if self.current_classes else None

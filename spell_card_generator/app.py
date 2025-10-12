@@ -3,10 +3,11 @@
 import tkinter as tk
 from pathlib import Path
 from tkinter import ttk
-from typing import Set
+from typing import Optional
 
 from spell_card_generator.ui.main_window import MainWindow
-from spell_card_generator.ui.class_selection import ClassSelectionManager
+from spell_card_generator.ui.single_class_selection import SingleClassSelectionManager
+from spell_card_generator.ui.class_placeholder import ClassSelectionPlaceholder
 from spell_card_generator.ui.spell_tabs import SpellTabManager
 from spell_card_generator.ui.dialogs import DialogManager
 from spell_card_generator.data.loader import SpellDataLoader
@@ -29,51 +30,42 @@ class SpellCardGeneratorApp:
         self.latex_generator = LaTeXGenerator()
 
         # Initialize UI managers
-        self.class_manager = ClassSelectionManager(
+        self.class_manager = SingleClassSelectionManager(
             self.main_window.class_frame, self.on_class_selection_changed
         )
 
+        # Placeholder for when no class is selected
+        self.class_placeholder = ClassSelectionPlaceholder(
+            self.main_window.content_frame
+        )
+
         self.spell_tab_manager = SpellTabManager(
-            self.main_window.content_frame, self.data_loader, self.spell_filter
+            self.main_window.content_frame,
+            self.data_loader,
+            self.spell_filter,
+            spell_selection_callback=self.on_spell_selection_changed,
         )
 
         self.dialog_manager = DialogManager(root)
 
+        # Track current application state
+        self.current_selected_class: Optional[str] = None
+
         # Initialize application
-        self._setup_options_ui()
         self._setup_controls_ui()
         self._load_initial_data()
 
-    def _setup_options_ui(self):
-        """Setup the options frame."""
-        # Overwrite checkbox
-        self.overwrite_var = tk.BooleanVar()
-        ttk.Checkbutton(
-            self.main_window.options_frame,
-            text="Overwrite existing files",
-            variable=self.overwrite_var,
-        ).grid(row=0, column=0, sticky=tk.W)
-
-        # German URL entry
-        ttk.Label(self.main_window.options_frame, text="German URL Template:").grid(
-            row=1, column=0, sticky=tk.W, pady=(10, 0)
-        )
-
-        self.german_url_var = tk.StringVar(value=Config.DEFAULT_GERMAN_URL)
-        ttk.Entry(
-            self.main_window.options_frame, textvariable=self.german_url_var, width=80
-        ).grid(row=2, column=0, sticky=(tk.W, tk.E), pady=(5, 0))
-
     def _setup_controls_ui(self):
         """Setup control buttons and progress bar."""
-        # Generate button
+        # Generate button - initially hidden
         self.generate_btn = ttk.Button(
             self.main_window.control_frame,
             text="Generate Spell Cards",
             command=self.generate_cards,
             style="Accent.TButton",
+            state="disabled",
         )
-        self.generate_btn.pack()
+        # Don't pack initially - will be shown when class is selected
 
         # Progress bar
         self.progress_var = tk.DoubleVar()
@@ -93,32 +85,73 @@ class SpellCardGeneratorApp:
         """Load initial spell data."""
         try:
             spells_df = self.data_loader.load_data()
-            self.class_manager.setup_class_sections(self.data_loader.character_classes)
+            self.class_manager.setup_class_tree(self.data_loader.character_classes)
+
+            # Show placeholder initially since no class is selected
+            self.class_placeholder.show()
+
             self.status_var.set(
                 f"Loaded {len(spells_df)} spells across "
-                f"{len(self.data_loader.character_classes)} classes"
+                f"{len(self.data_loader.character_classes)} classes - Please select a class"
             )
         except SpellCardError as e:
             self.dialog_manager.show_error("Error", str(e))
 
-    def on_class_selection_changed(self, selected_classes: Set[str]):
+    def on_class_selection_changed(self, selected_class: Optional[str] = None):
         """Handle class selection changes."""
-        self.spell_tab_manager.update_tabs(selected_classes)
+        self.current_selected_class = selected_class
 
-        # Update status
-        count = len(selected_classes)
-        if count == 0:
-            self.status_var.set("No classes selected")
-        elif count == 1:
-            class_name = next(iter(selected_classes))
-            display_name = self.class_manager.get_display_name(class_name)
-            self.status_var.set(f"Selected: {display_name}")
+        if selected_class:
+            # Show spell tabs for the selected class
+            self.class_placeholder.hide()
+            self.spell_tab_manager.update_tabs({selected_class})
+
+            # Show Generate button when class is selected
+            self.generate_btn.pack(pady=(10, 0))
+            # Start disabled until spells are selected
+            self.generate_btn.configure(state="disabled")
+
+            # Update status
+            display_name = self.class_manager._get_display_name(selected_class)
+            self.status_var.set(
+                f"Selected: {display_name} - Select spells to generate cards"
+            )
         else:
-            self.status_var.set(f"Selected: {count} classes")
+            # No class selected - show placeholder and hide Generate button
+            self.spell_tab_manager.update_tabs(set())
+            self.class_placeholder.show()
+            self.generate_btn.pack_forget()
+            self.status_var.set("No class selected")
+
+    def on_spell_selection_changed(self):
+        """Handle spell selection changes to enable/disable Generate button."""
+        if not self.current_selected_class:
+            return
+
+        selected_spells = self.spell_tab_manager.get_selected_spells()
+        if selected_spells:
+            self.generate_btn.configure(state="normal")
+            self.status_var.set(
+                f"Selected: {len(selected_spells)} spells - Ready to generate"
+            )
+        else:
+            self.generate_btn.configure(state="disabled")
+            display_name = self.class_manager._get_display_name(
+                self.current_selected_class
+            )
+            self.status_var.set(
+                f"Selected: {display_name} - Select spells to generate cards"
+            )
 
     def generate_cards(self):
         """Generate LaTeX spell cards."""
         try:
+            if not self.current_selected_class:
+                self.dialog_manager.show_warning(
+                    "Warning", "Please select a character class first"
+                )
+                return
+
             selected_spells = self.spell_tab_manager.get_selected_spells()
             if not selected_spells:
                 self.dialog_manager.show_warning(
@@ -126,11 +159,11 @@ class SpellCardGeneratorApp:
                 )
                 return
 
-            # Generate cards with progress updates
+            # Generate cards with progress updates - use default options for now
             generated_files, skipped_files = self.latex_generator.generate_cards(
                 selected_spells,
-                self.overwrite_var.get(),
-                self.german_url_var.get(),
+                overwrite=False,  # Will be configurable in the sidebar wizard
+                german_url_template=Config.DEFAULT_GERMAN_URL,
                 progress_callback=self._update_progress,
             )
 
