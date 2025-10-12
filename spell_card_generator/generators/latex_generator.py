@@ -232,7 +232,7 @@ class LaTeXGenerator:
         character_class: str,
         spell_level: str,
         english_url: str,
-        german_url: str,
+        secondary_url: str,
     ) -> str:
         """Generate the complete LaTeX template for a spell."""
 
