@@ -154,7 +154,13 @@ class SpellCardGeneratorApp:
         except SpellCardError as e:
             self.dialog_manager.show_error("Error", str(e))
             self.status_var.set("Error occurred")
-        except Exception as e:
+        except (OSError, IOError, MemoryError) as e:
+            self.dialog_manager.show_error(
+                "System Error", f"A system error occurred: {e}"
+            )
+            self.status_var.set("System error occurred")
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            # Final safety net to prevent GUI crashes
             self.dialog_manager.show_error(
                 "Unexpected Error", f"An unexpected error occurred: {e}"
             )

@@ -46,7 +46,7 @@ class SpellFilter:
             return filtered
 
         except Exception as e:
-            raise FilterError(f"Failed to filter spells: {e}")
+            raise FilterError(f"Failed to filter spells: {e}") from e
 
     @staticmethod
     def get_available_levels(spells_df: pd.DataFrame, class_name: str) -> List[str]:
@@ -66,7 +66,7 @@ class SpellFilter:
             return ["All"] + levels
 
         except Exception as e:
-            raise FilterError(f"Failed to get available levels: {e}")
+            raise FilterError(f"Failed to get available levels: {e}") from e
 
     @staticmethod
     def get_available_sources(spells_df: pd.DataFrame, class_name: str) -> List[str]:
@@ -86,4 +86,4 @@ class SpellFilter:
             return ["All"] + sources
 
         except Exception as e:
-            raise FilterError(f"Failed to get available sources: {e}")
+            raise FilterError(f"Failed to get available sources: {e}") from e

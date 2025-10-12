@@ -71,7 +71,7 @@ class LaTeXGenerator:
                 except Exception as e:
                     raise GenerationError(
                         f"Failed to generate spell card for {spell_name}: {e}"
-                    )
+                    ) from e
 
             # Complete progress
             if self.progress_callback:
@@ -83,7 +83,7 @@ class LaTeXGenerator:
 
         except Exception as e:
             if not isinstance(e, GenerationError):
-                raise GenerationError(f"Spell card generation failed: {e}")
+                raise GenerationError(f"Spell card generation failed: {e}") from e
             raise
 
     def _get_output_file_path(
@@ -129,7 +129,7 @@ class LaTeXGenerator:
             return latex_content
 
         except Exception as e:
-            raise GenerationError(f"Failed to generate LaTeX for spell: {e}")
+            raise GenerationError(f"Failed to generate LaTeX for spell: {e}") from e
 
     def _process_spell_data(self, spell_data: pd.Series) -> pd.Series:
         """Process spell data and apply LaTeX fixes."""

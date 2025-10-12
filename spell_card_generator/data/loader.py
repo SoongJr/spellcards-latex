@@ -35,7 +35,7 @@ class SpellDataLoader:
             return self.spells_df
 
         except Exception as e:
-            raise DataLoadError(f"Failed to load spell data: {e}")
+            raise DataLoadError(f"Failed to load spell data: {e}") from e
 
     def _extract_character_classes(self):
         """Extract available character classes from data."""
