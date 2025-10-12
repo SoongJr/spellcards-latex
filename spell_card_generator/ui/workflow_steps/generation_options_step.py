@@ -23,7 +23,6 @@ class GenerationOptionsStep(BaseWorkflowStep):
         self.on_options_changed = on_options_changed
 
         # UI variables
-        self.overwrite_var: Optional[tk.BooleanVar] = None
         self.output_dir_var: Optional[tk.StringVar] = None
 
     def create_step_content(self):
@@ -37,7 +36,6 @@ class GenerationOptionsStep(BaseWorkflowStep):
         title_label.pack(pady=(0, 20))
 
         # Create options sections
-        self._create_overwrite_section()
         self._create_output_directory_section()
         self._create_format_options_section()
 
@@ -46,31 +44,6 @@ class GenerationOptionsStep(BaseWorkflowStep):
 
         # Validate step
         self._validate_step()
-
-    def _create_overwrite_section(self):
-        """Create overwrite options section."""
-        overwrite_frame = ttk.LabelFrame(
-            self.content_frame, text="File Handling", padding=10
-        )
-        overwrite_frame.pack(fill=tk.X, pady=(0, 15))
-
-        self.overwrite_var = tk.BooleanVar(value=workflow_state.overwrite_existing)
-
-        overwrite_check = ttk.Checkbutton(
-            overwrite_frame,
-            text="Overwrite existing spell card files",
-            variable=self.overwrite_var,
-            command=self._on_overwrite_changed,
-        )
-        overwrite_check.pack(anchor=tk.W)
-
-        help_label = ttk.Label(
-            overwrite_frame,
-            text="If unchecked, existing files will be skipped during generation.",
-            font=("TkDefaultFont", 8),
-            foreground="gray",
-        )
-        help_label.pack(anchor=tk.W, padx=(20, 0), pady=(2, 0))
 
     def _create_output_directory_section(self):
         """Create output directory selection section."""
@@ -150,18 +123,8 @@ class GenerationOptionsStep(BaseWorkflowStep):
             if self.on_options_changed:
                 self.on_options_changed()
 
-    def _on_overwrite_changed(self):
-        """Handle overwrite option change."""
-        workflow_state.overwrite_existing = self.overwrite_var.get()
-        self._validate_step()
-
-        if self.on_options_changed:
-            self.on_options_changed()
-
     def _load_current_values(self):
         """Load current values from workflow state."""
-        if self.overwrite_var:
-            self.overwrite_var.set(workflow_state.overwrite_existing)
         if self.output_dir_var:
             self.output_dir_var.set(workflow_state.output_directory or "")
 

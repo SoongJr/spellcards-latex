@@ -87,7 +87,7 @@ class BaseWorkflowStep(ABC):
         button_container.grid(row=0, column=0, sticky=tk.E)
 
         # Previous button (left in container)
-        if self.step_index > 0:  # Don't show Previous on first step
+        if workflow_state.can_navigate_previous():
             self.previous_button = ttk.Button(
                 button_container,
                 text="Previous",
@@ -98,7 +98,7 @@ class BaseWorkflowStep(ABC):
             self.previous_button.grid(row=0, column=0, padx=(0, 5))
 
         # Next button (right in container)
-        if self.step_index < 5:  # Don't show Next on last step
+        if workflow_state.can_navigate_next():
             self.next_button = ttk.Button(
                 button_container,
                 text="Next",
@@ -106,7 +106,7 @@ class BaseWorkflowStep(ABC):
             )
             # Set underline for 'N' character (position 0)
             self.next_button.configure(underline=0)
-            next_col = 1 if self.step_index > 0 else 0
+            next_col = 1 if workflow_state.can_navigate_previous() else 0
             self.next_button.grid(row=0, column=next_col, padx=5)
 
     def _setup_keyboard_shortcuts(self):
@@ -119,18 +119,41 @@ class BaseWorkflowStep(ABC):
 
     def _go_previous(self):
         """Navigate to previous step."""
-        if self.step_index > 0 and self.navigation_callback:
-            self.navigation_callback(self.step_index - 1)
+        # Try using the new navigation system first
+        if workflow_state.navigate_previous():
+            if self.navigation_callback:
+                self.navigation_callback(workflow_state.current_step)
+        # Fallback to legacy logic for compatibility
+        elif self.step_index > 0 and self.navigation_callback:
+            # Check if this step has custom previous step logic
+            if hasattr(self, "get_previous_step_index"):
+                previous_step = self.get_previous_step_index()
+            else:
+                previous_step = self.step_index - 1
+            self.navigation_callback(previous_step)
 
     def _go_next(self):
         """Navigate to next step."""
-        self._navigate_to_next_step()
+        # Try using the new navigation system first
+        if workflow_state.navigate_next():
+            if self.navigation_callback:
+                self.navigation_callback(workflow_state.current_step)
+        else:
+            # Fallback to legacy logic
+            self._navigate_to_next_step()
 
     def _navigate_to_next_step(self):
         """Common navigation logic for going to next step."""
-        if self.step_index < 5:  # Total of 6 steps (0-5)
+        if self.step_index < 5:  # Maximum step index
+            # Check if this step has custom next step logic
+            if hasattr(self, "get_next_step_index"):
+                next_step = self.get_next_step_index()
+            elif self.step_index == 1:  # From spell selection
+                next_step = workflow_state.get_next_step_after_spells()
+            else:
+                next_step = self.step_index + 1
+
             # Check if we can navigate to next step
-            next_step = self.step_index + 1
             if workflow_state.can_navigate_to_step(next_step):
                 if self.navigation_callback:
                     self.navigation_callback(next_step)
@@ -154,7 +177,10 @@ class BaseWorkflowStep(ABC):
         """Update navigation button states based on workflow state."""
         # Update Next button state
         if self.next_button:
-            next_step = self.step_index + 1
+            if self.step_index == 1:  # From spell selection
+                next_step = workflow_state.get_next_step_after_spells()
+            else:
+                next_step = self.step_index + 1
             can_proceed = workflow_state.can_navigate_to_step(next_step)
             self.next_button.config(state="normal" if can_proceed else "disabled")
 

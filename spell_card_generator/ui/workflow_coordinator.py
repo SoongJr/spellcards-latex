@@ -19,15 +19,16 @@ from spell_card_generator.ui.workflow_steps.spell_selection_step import (
 from spell_card_generator.ui.workflow_steps.generation_options_step import (
     GenerationOptionsStep,
 )
+from spell_card_generator.ui.workflow_steps.overwrite_cards_step import (
+    OverwriteCardsStep,
+)
 from spell_card_generator.ui.workflow_steps.documentation_urls_step import (
     DocumentationURLsStep,
-)
-from spell_card_generator.ui.workflow_steps.secondary_language_step import (
-    SecondaryLanguageStep,
 )
 from spell_card_generator.ui.workflow_steps.preview_generate_step import (
     PreviewGenerateStep,
 )
+from spell_card_generator.utils.file_scanner import FileScanner
 
 
 class WorkflowCoordinator:
@@ -76,14 +77,6 @@ class WorkflowCoordinator:
         # Show initial step (Class Selection)
         self._show_step(0)
 
-    def _on_step_changed(self, step_index: int):
-        """Handle step navigation."""
-        self._show_step(step_index)
-
-        # Update sidebar state
-        if self.sidebar:
-            self.sidebar.refresh_navigation()
-
     def _show_step(self, step_index: int):
         """Show a specific workflow step with minimal UI flashing."""
         # Disable UI updates temporarily to prevent flashing
@@ -130,28 +123,28 @@ class WorkflowCoordinator:
                 navigation_callback=self._on_step_changed,
                 on_selection_changed=self._on_selection_changed,
             )
-        if step_index == 2:  # Generation Options
+        if step_index == 2:  # Overwrite Cards (conditional)
+            return OverwriteCardsStep(
+                self.content_frame,
+                step_index,
+                navigation_callback=self._on_step_changed,
+                on_overwrite_changed=self._on_overwrite_changed,
+            )
+        if step_index == 3:  # Generation Options (shifted)
             return GenerationOptionsStep(
                 self.content_frame,
                 step_index,
                 navigation_callback=self._on_step_changed,
                 on_options_changed=self._on_options_changed,
             )
-        if step_index == 3:  # Documentation URLs
+        if step_index == 4:  # Documentation & Language URLs (consolidated)
             return DocumentationURLsStep(
                 self.content_frame,
                 step_index,
                 navigation_callback=self._on_step_changed,
                 on_urls_changed=self._on_urls_changed,
             )
-        if step_index == 4:  # Secondary Language
-            return SecondaryLanguageStep(
-                self.content_frame,
-                step_index,
-                navigation_callback=self._on_step_changed,
-                on_language_changed=self._on_language_changed,
-            )
-        if step_index == 5:  # Preview & Generate
+        if step_index == 5:  # Preview & Generate (shifted)
             return PreviewGenerateStep(
                 self.content_frame,
                 step_index,
@@ -168,6 +161,57 @@ class WorkflowCoordinator:
 
     def _on_selection_changed(self):
         """Handle spell selection changes."""
+        # Detect conflicts when spells are selected
+        self._detect_conflicts()
+
+        # Update sidebar state
+        if self.sidebar:
+            self.sidebar.refresh_navigation()
+
+    def _detect_conflicts(self):
+        """Detect conflicts with existing spell card files."""
+        if not self.workflow_state.selected_spells:
+            # No spells selected, clear conflicts
+            self.workflow_state.update_conflicts({})
+            return
+
+        # Scan for existing cards
+        existing_cards = FileScanner.detect_existing_cards(
+            self.workflow_state.selected_spells
+        )
+
+        # Update workflow state with conflicts
+        self.workflow_state.update_conflicts(existing_cards)
+
+        # Clear overwrite step instance if conflicts state changed
+        if 2 in self.step_instances:
+            # Remove cached instance so it gets recreated with new data
+            if hasattr(self.step_instances[2], "destroy"):
+                self.step_instances[2].destroy()
+            del self.step_instances[2]
+
+    def _on_step_changed(self, step_index: int):
+        """Handle step navigation with smart conflict handling."""
+        # If navigating from spell selection (step 1) to next step
+        if (
+            step_index > 1
+            and self.current_step
+            and hasattr(self.current_step, "step_index")
+        ):
+            if getattr(self.current_step, "step_index", -1) == 1:
+                # Coming from spell selection, use smart navigation
+                next_step = self.workflow_state.get_next_step_after_spells()
+                if next_step != step_index:
+                    step_index = next_step
+
+        self._show_step(step_index)
+
+        # Update sidebar state
+        if self.sidebar:
+            self.sidebar.refresh_navigation()
+
+    def _on_overwrite_changed(self):
+        """Handle overwrite decision changes."""
         # Update sidebar state
         if self.sidebar:
             self.sidebar.refresh_navigation()

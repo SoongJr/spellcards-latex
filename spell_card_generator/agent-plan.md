@@ -81,6 +81,7 @@
    - Ensure all existing tests pass
    - Add/Update tests for refactored code
    - Run linting and formatting tools to confirm compliance
+   - Add typechecking with mypy
 
 11. **Code Coverage and Testing Setup**
    - Add pytest and coverage.py to pyproject.toml dependencies  
@@ -659,58 +660,64 @@ Step 8 fundamentally improved the application's usability by aligning the UI wit
 5. ✅ **Critical bug fixes** for double-click and selection functionality
 6. ✅ **Multi-modal interaction** - mouse, keyboard, and button navigation
 
-## Step 9 Phase 6: Overwrite Cards Detection and Management - PLANNED
+## Step 9 Phase 6: Overwrite Cards Detection and Management - COMPLETED
 
-### Major Feature Requirements:
+### Major Achievements:
 
 **✅ Existing Card Detection:**
+- **Created `utils/file_scanner.py`** - Comprehensive file detection utility
 - **Scan selected spells** against existing .tex files in `src/spells/{class}/{level}/` directories
 - **Identify conflicts** - which selected spells already have generated .tex files
 - **Dynamic step activation** - if no conflicts exist, skip overwrite step entirely
-- **Smart navigation** - go directly from Spell Selection (Step 1) to Documentation URLs (Step 3)
+- **Smart navigation** - go directly from Spell Selection (Step 1) to Generation Options (Step 3)
 
 **✅ Conflict Resolution Interface:**
-- **List existing cards** - show spell names, file paths, and modification dates
+- **Created `ui/workflow_steps/overwrite_cards_step.py`** - Full overwrite management UI
+- **List existing cards** - show spell names, file paths, modification dates, and secondary language detection
 - **Per-spell overwrite control** - individual checkboxes for each conflicting spell
 - **Bulk actions** - "Select All", "Select None", "Invert Selection" buttons
-- **File preview** - option to preview existing card content before deciding to overwrite
+- **File preview** - popup dialog to preview existing card content before deciding to overwrite
 - **Skip vs Overwrite** - clear distinction between skipping generation and replacing files
 
 **✅ Secondary Language Preservation:**
-- **Detect existing config** - check if existing .tex files have German URL or QR code data
+- **Intelligent analysis** - detect existing German URLs, QR codes, and language configuration
 - **Preservation checkbox** - "Preserve existing secondary language configuration"
-- **Smart defaults** - if preserving, skip Secondary Language step for those spells
-- **Partial regeneration** - some spells overwritten completely, others preserve language data
+- **Visual indicators** - tree view shows which cards have secondary language content
+- **Smart conflict summary** - displays statistics about conflicts and language content
 
 **✅ Workflow Integration:**
-- **Step numbering adjustment** - Overwrite becomes Step 2, other steps shift accordingly
-- **Conditional step visibility** - Overwrite step only appears when conflicts detected
-- **State management** - track which spells to overwrite vs skip in workflow_state
-- **Navigation logic** - proper step validation and next/previous button behavior
+- **Dynamic sidebar** - overwrite step only appears when conflicts detected
+- **Smart navigation** - proper step transitions based on conflict state
+- **State management** - track overwrite decisions and preservation settings in workflow_state
+- **Navigation logic** - updated Previous/Next button behavior for conditional step
 
-### Technical Implementation Plan:
+### Technical Implementation Details:
 
 **File Detection System:**
-- Create `utils/file_scanner.py` - scan filesystem for existing .tex files
-- Method: `detect_existing_cards(selected_spells, character_class) -> Dict[str, Path]`
-- Integration with `LatexGenerator._get_output_file_path()` for path consistency
+- **Created `utils/file_scanner.py`** - Comprehensive filesystem scanning utility
+- **Method: `detect_existing_cards()`** - Scans for existing .tex files matching selected spells
+- **Method: `analyze_existing_card()`** - Analyzes file content for secondary language detection
+- **Integration with `LatexGenerator._get_output_file_path()`** - Ensures path consistency
 
 **Overwrite Management Step:**
-- Create `ui/workflow_steps/overwrite_cards_step.py` - new workflow step
-- Treeview interface showing conflicting spells with checkboxes
-- File modification dates and sizes for user context
-- Preview functionality to show existing card content
+- **Created `ui/workflow_steps/overwrite_cards_step.py`** - Full-featured overwrite management UI
+- **TreeView interface** - Shows conflicting spells with checkboxes, file info, and German content detection
+- **File preview functionality** - Popup dialogs to preview existing card content
+- **Bulk operations** - Select All, Select None, Invert Selection buttons
+- **Summary statistics** - Shows total conflicts, files with German content, total size
 
 **Workflow State Extensions:**
-- Add `overwrite_decisions: Dict[str, bool]` - per-spell overwrite decisions
-- Add `preserve_secondary_language: bool` - global preservation setting
-- Add `existing_cards: Dict[str, Path]` - cache of detected existing files
-- Step validation based on user decisions
+- **Added `overwrite_decisions: Dict[str, bool]`** - Per-spell overwrite decisions
+- **Added `preserve_secondary_language: bool`** - Global preservation setting
+- **Added `existing_cards: Dict[str, Path]`** - Cache of detected existing files
+- **Added `conflicts_detected: bool`** - Flag for conditional step visibility
+- **Method: `get_next_step_after_spells()`** - Smart navigation logic
 
 **Navigation Logic Updates:**
-- Update `WorkflowCoordinator` to conditionally show/hide overwrite step
-- Smart step transitions: Spell Selection → (Overwrite if conflicts) → Documentation URLs
-- Step numbering remains consistent in UI but internal logic handles skipped steps
+- **Updated `WorkflowCoordinator`** - Includes conflict detection and conditional step creation
+- **Updated `ModernSidebar`** - Dynamic step visibility based on conflict state
+- **Updated `BaseWorkflowStep`** - Smart navigation that skips overwrite step when no conflicts
+- **Step transitions:** Spell Selection → (Overwrite if conflicts) → Generation Options
 
 ### User Experience Flow:
 
@@ -748,23 +755,22 @@ Step 8 fundamentally improved the application's usability by aligning the UI wit
 6. ✅ **Smart navigation flow** with dynamic step transitions
 
 ### Phase 7 - Final Implementation:
-- Complete Documentation URLs step (custom URL templates)
-- Complete Secondary Language step (QR codes, multi-language)  
+- Complete consolidated Documentation & Language URLs step (per-spell English and secondary language URL inputs)
 - Complete Preview & Generate step (comprehensive summary and generation)
-- Add URL validation and advanced input feedback
+- Add URL validation and advanced input feedback for both URL types
 - Polish animations and transitions
 - Integration testing with overwrite functionality
 
 ## Progress Tracking
 
-- **Completed Steps:** 1-9 (Phase 5) - **Navigation and UX milestone achieved!**
+- **Completed Steps:** 1-9 (Phase 6) - **Overwrite Cards Detection and Management milestone achieved!**
 - **Current Pylint Score:** 9.77/10 (maintained high quality through major refactor)
-- **Major Features Complete:** Import structure, code quality, single-class UI, sidebar workflow system, enhanced navigation
-- **Architecture:** Professional multi-step workflow with state management, navigation, and persistent selections
-- **Next Major Feature:** Overwrite Cards Detection and Management (Phase 6)
+- **Major Features Complete:** Import structure, code quality, single-class UI, sidebar workflow system, enhanced navigation, intelligent conflict management
+- **Architecture:** Professional multi-step workflow with state management, navigation, persistent selections, and conditional step visibility
+- **Next Major Feature:** Consolidated Documentation & Language URLs (Phase 7)
 
 ## Next Steps
 - **Step 9 Phase 6:** Implement overwrite cards detection and management system
-- **Step 9 Phase 7:** Complete remaining workflow steps (Documentation URLs, Secondary Language, Preview)
+- **Step 9 Phase 7:** Complete remaining workflow steps (Consolidated Documentation & Language URLs, Preview)
 - **Step 10:** Testing and Validation for comprehensive test coverage
 - **Production Ready:** Core application now has professional UI, robust architecture, and polished UX

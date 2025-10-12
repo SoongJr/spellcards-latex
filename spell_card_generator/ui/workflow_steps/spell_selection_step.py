@@ -83,12 +83,12 @@ class SpellSelectionStep(BaseWorkflowStep):
             double_click_callback=self._on_double_click,
         )
 
+        # Restore previously selected spells BEFORE updating tabs
+        self._restore_spell_selections()
+
         # Load spells for the selected class
         if workflow_state.selected_class:
             self.spell_tab_manager.update_tabs({workflow_state.selected_class})
-
-            # Restore previously selected spells if any
-            self._restore_spell_selections()
 
     def _create_class_selection_prompt(self):
         """Create prompt to select character class first."""

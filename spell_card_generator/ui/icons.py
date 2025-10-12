@@ -11,19 +11,19 @@ class IconFont:
 
     # Icon mappings using Unicode symbols that are widely supported
     ICONS = {
-        "class": "👤",  # User/person for class selection
-        "spell": "🎯",  # Target for spell selection
-        "settings": "⚙",  # Gear for settings/options
-        "link": "🔗",  # Chain link for URLs
-        "globe": "🌐",  # Globe for language/international
-        "generate": "✨",  # Sparkles for generation/magic
-        "expand": "▶",  # Right arrow for expand
-        "collapse": "◀",  # Left arrow for collapse
-        "check": "✓",  # Checkmark
-        "warning": "⚠",  # Warning triangle
-        "info": "ℹ",  # Information symbol
-        "folder": "📁",  # Folder icon
-        "file": "📄",  # Document icon
+        "class": "\U0001f464",  # 👤 User/person for class selection
+        "spell": "\U0001f3af",  # 🎯 Target for spell selection
+        "settings": "\u2699",  # ⚙ Gear for settings/options
+        "link": "\U0001f517",  # 🔗 Chain link for URLs
+        "globe": "\U0001f310",  # 🌐 Globe for language/international
+        "generate": "\u2728",  # ✨ Sparkles for generation/magic
+        "expand": "\u25b6",  # ▶ Right arrow for expand
+        "collapse": "\u25c0",  # ◀ Left arrow for collapse
+        "check": "\u2713",  # ✓ Checkmark
+        "warning": "\u26a0",  # ⚠ Warning triangle
+        "info": "\u2139",  # ℹ Information symbol
+        "folder": "\U0001f4c1",  # 📁 Folder icon
+        "file": "\U0001f4c4",  # 📄 Document icon
     }
 
     # Fallback text icons if symbols don't render

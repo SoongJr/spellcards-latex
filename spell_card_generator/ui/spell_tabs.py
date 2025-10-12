@@ -9,6 +9,7 @@ from spell_card_generator.config.constants import UIConfig
 from spell_card_generator.models.spell import ClassTabState
 from spell_card_generator.data.loader import SpellDataLoader
 from spell_card_generator.data.filter import SpellFilter
+from spell_card_generator.ui.workflow_state import workflow_state
 
 
 class SpellTabManager:
@@ -101,10 +102,16 @@ class SpellTabManager:
         filters_frame.pack(fill=tk.X, pady=(0, 10))
         filters_frame.columnconfigure(1, weight=1)
 
-        # Create variables
-        level_var = tk.StringVar(value="All")
-        source_var = tk.StringVar(value="All")
-        search_var = tk.StringVar()
+        # Create variables with restored state from workflow
+        level_var = tk.StringVar(
+            value=workflow_state.get_spell_filter_state("level_filter", "All")
+        )
+        source_var = tk.StringVar(
+            value=workflow_state.get_spell_filter_state("source_filter", "All")
+        )
+        search_var = tk.StringVar(
+            value=workflow_state.get_spell_filter_state("search_term", "")
+        )
 
         # Spell level filter
         ttk.Label(filters_frame, text="Spell Level:").grid(
@@ -280,6 +287,17 @@ class SpellTabManager:
             return
 
         class_data = self.spell_data[class_name]
+
+        # Save current filter state to workflow state
+        workflow_state.set_spell_filter_state(
+            "level_filter", class_data.level_var.get()
+        )
+        workflow_state.set_spell_filter_state(
+            "source_filter", class_data.source_var.get()
+        )
+        workflow_state.set_spell_filter_state(
+            "search_term", class_data.search_var.get()
+        )
 
         # Apply filters  # pylint: disable=protected-access
         filtered_df = self.spell_filter.filter_spells(
