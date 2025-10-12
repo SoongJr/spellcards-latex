@@ -312,15 +312,12 @@ class LaTeXGenerator:
   \\newcommand{{\\draconic}}{{{get_field('draconic')}}}
   \\newcommand{{\\meditative}}{{{get_field('meditative')}}}
   \\newcommand{{\\urlenglish}}{{{english_url}}}
-  \\newcommand{{\\urlgerman}}{{{german_url}}}
+  \\newcommand{{\\urlsecondary}}{{{secondary_url}}}
   % print the tabular information at the top of the card:
   \\spellcardinfo{{}}
   % draw a QR Code pointing at online resources for this spell on the front face:
   \\spellcardqr{{\\urlenglish}}
-  % ATTENTION:
-  %    URLs for foreign languages cannot be generated and must be provided by you!
-  %    Set \\urlgerman above and activate this line if you want to have it:
-  % \\spellcardqr{{\\urlgerman}}
+  % \\spellcardqr{{\\urlsecondary}}
   %
   % Now follows a LaTeX-formatted description of the spell,
   % generated from the HTML-formatted description_formatted column:
