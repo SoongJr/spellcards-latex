@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Callable, Optional
 
-from spell_card_generator.config.constants import CharacterClasses, UIConfig
+from spell_card_generator.config.constants import CharacterClasses
 from spell_card_generator.utils.class_categorization import categorize_character_classes
 
 
@@ -100,7 +100,7 @@ class SingleClassSelectionManager:
                     category_id, tk.END, text=display_name, tags=(class_name,)
                 )
 
-    def _on_tree_selection(self, event):
+    def _on_tree_selection(self, event):  # pylint: disable=unused-argument
         """Handle treeview selection changes."""
         selection = self.tree.selection()
         if not selection:

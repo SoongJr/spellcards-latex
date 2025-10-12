@@ -47,7 +47,7 @@ cd ${WORKSPACE:-.}/spell_card_generator && source .venv/bin/activate && [command
 ### Development Guidelines
 
 #### Code Quality Standards
-- **Pylint Score**: MUST maintain 9.77/10 or higher
+- **Pylint Score**: MUST maintain 10.00/10 and not return non-zero exit code
 - **Import Style**: Use absolute imports only (`from spell_card_generator.module import ...`)
 - **Type Hints**: Required for all function parameters and return values
 - **Exception Handling**: Use proper exception chaining (`raise CustomError(...) from e`)
@@ -87,7 +87,7 @@ cd ${WORKSPACE:-.}/spell_card_generator && poetry run pylint .
 - ❌ Use relative imports (always use absolute)
 
 #### Architecture & Code Quality
-- ❌ Reduce Pylint score below 9.77/10
+- ❌ Cause Pylint to exit non-zero
 - ❌ Create duplicate UI elements
 
 #### UI/UX
@@ -126,7 +126,7 @@ poetry add [package]
 poetry run black .
 
 # Check code quality
-poetry run pylint spell_card_generator
+poetry run pylint .
 ```
 
 Remember: This project has reached a certain level of code quality and professional architecture.

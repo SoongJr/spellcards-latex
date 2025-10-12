@@ -153,14 +153,14 @@ class UIConfig:
     # Tree view columns
     TREE_COLUMNS = ("Select", "Name", "Level", "School", "Source")
     TREE_COLUMN_WIDTHS = {
-        "Select": 50,
+        "Select": 60,
         "Name": 200,
         "Level": 60,
         "School": 120,
         "Source": 120,
     }
     TREE_COLUMN_MIN_WIDTHS = {
-        "Select": 50,
+        "Select": 60,
         "Name": 150,
         "Level": 50,
         "School": 100,
@@ -170,5 +170,5 @@ class UIConfig:
     # Icons
     EXPAND_ICON = "▼"
     COLLAPSE_ICON = "▶"
-    CHECKED_ICON = "☑"
-    UNCHECKED_ICON = ""
+    CHECKED_ICON = "[X]"
+    UNCHECKED_ICON = "[ ]"

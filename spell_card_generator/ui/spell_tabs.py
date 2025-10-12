@@ -5,7 +5,7 @@ from tkinter import ttk, scrolledtext
 from typing import Dict, Set, Optional, List, Tuple
 import pandas as pd
 
-from spell_card_generator.config.constants import UIConfig, CharacterClasses
+from spell_card_generator.config.constants import UIConfig
 from spell_card_generator.models.spell import ClassTabState
 from spell_card_generator.data.loader import SpellDataLoader
 from spell_card_generator.data.filter import SpellFilter
@@ -20,15 +20,20 @@ class SpellTabManager:
         data_loader: SpellDataLoader,
         spell_filter: SpellFilter,
         spell_selection_callback=None,
+        double_click_callback=None,
     ):
         self.parent_frame = parent_frame
         self.data_loader = data_loader
         self.spell_filter = spell_filter
         self.spell_selection_callback = spell_selection_callback
+        self.double_click_callback = double_click_callback
 
         # State management
         self.spell_data: Dict[str, ClassTabState] = {}
         self.current_classes: Set[str] = set()
+
+        # Persistent spell selection state (spell_name -> is_selected)
+        self.selected_spells_state: Dict[str, bool] = {}
 
     def update_tabs(self, selected_classes: Set[str]):
         """Update tabs based on selected classes."""
@@ -51,18 +56,18 @@ class SpellTabManager:
 
     def _create_spell_content_for_class(self, class_name: str):
         """Create spell content for a specific class."""
-        # Create main frame directly in parent frame using grid to match main layout
+        # Configure parent frame to expand properly
+        self.parent_frame.rowconfigure(0, weight=1)
+        self.parent_frame.columnconfigure(0, weight=1)
+
+        # Create main frame directly in parent frame using pack for better resizing
         content_frame = ttk.Frame(self.parent_frame)
-        content_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        content_frame.pack(fill=tk.BOTH, expand=True)
 
-        # Configure grid weights
-        content_frame.columnconfigure(0, weight=1)
-        content_frame.rowconfigure(1, weight=1)  # Spell list area gets most space
-
-        # Create filter controls
+        # Create filter controls (fixed height at top)
         filters_frame = self._create_filters_frame(content_frame, class_name)
 
-        # Create spell list
+        # Create spell list (expandable area below filters)
         spells_tree = self._create_spells_list(content_frame, class_name)
 
         # Create class tab state
@@ -93,9 +98,7 @@ class SpellTabManager:
         filters_frame = ttk.LabelFrame(
             parent_frame, text="Filters", padding=UIConfig.MAIN_PADDING
         )
-        filters_frame.grid(
-            row=0, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 10)
-        )
+        filters_frame.pack(fill=tk.X, pady=(0, 10))
         filters_frame.columnconfigure(1, weight=1)
 
         # Create variables
@@ -135,7 +138,7 @@ class SpellTabManager:
         search_entry.grid(row=1, column=1, sticky=(tk.W, tk.E), padx=(0, 10))
         search_entry.bind("<KeyRelease>", lambda e: self._apply_filters(class_name))
 
-        # Store references in the frame for later retrieval
+        # Store references in the frame for later retrieval  # pylint: disable=protected-access
         filters_frame._level_var = level_var
         filters_frame._source_var = source_var
         filters_frame._search_var = search_var
@@ -149,19 +152,13 @@ class SpellTabManager:
         self, parent_frame: ttk.Frame, class_name: str
     ) -> ttk.Treeview:
         """Create spells list for a class tab."""
-        # Content frame for spells list and buttons
+        # Content frame for spells list and buttons - this should expand
         content_frame = ttk.Frame(parent_frame)
-        content_frame.grid(
-            row=1, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 10)
-        )
-        content_frame.columnconfigure(0, weight=1)
-        content_frame.rowconfigure(0, weight=1)
+        content_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
 
-        # Spells list frame
+        # Spells list frame (left side, expandable)
         list_frame = ttk.Frame(content_frame)
-        list_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=(0, 10))
-        list_frame.columnconfigure(0, weight=1)
-        list_frame.rowconfigure(0, weight=1)
+        list_frame.pack(fill=tk.BOTH, expand=True, side=tk.LEFT, padx=(0, 10))
 
         # Spells treeview
         spells_tree = ttk.Treeview(
@@ -173,65 +170,85 @@ class SpellTabManager:
 
         # Configure columns
         for col in UIConfig.TREE_COLUMNS:
+            # Center align the Select column for better checkbox visibility
+            anchor = "center" if col == "Select" else "w"
             spells_tree.column(
                 col,
                 width=UIConfig.TREE_COLUMN_WIDTHS[col],
                 minwidth=UIConfig.TREE_COLUMN_MIN_WIDTHS[col],
+                anchor=anchor,
             )
             spells_tree.heading(col, text=col)
 
-        spells_tree.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        spells_tree.pack(fill=tk.BOTH, expand=True, side=tk.LEFT)
 
         # Scrollbar for treeview
         tree_scrollbar = ttk.Scrollbar(
             list_frame, orient="vertical", command=spells_tree.yview
         )
-        tree_scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
+        tree_scrollbar.pack(fill=tk.Y, side=tk.RIGHT)
         spells_tree.configure(yscrollcommand=tree_scrollbar.set)
 
-        # Bind click event for spell selection
+        # Bind click event for spell selection (only in Select column)
+        spells_tree.bind("<Button-1>", lambda e: self._on_tree_click(e, spells_tree))
+
+        # Bind keyboard events
         spells_tree.bind(
-            "<Button-1>", lambda e: self._toggle_spell_selection(e, spells_tree)
+            "<KeyPress-space>", lambda e: self._toggle_selected_spells(spells_tree)
+        )
+        spells_tree.bind(
+            "<Return>", lambda e: self._toggle_selected_spells(spells_tree)
         )
 
-        # Selection buttons frame
+        # Allow the treeview to get focus for keyboard events
+        spells_tree.bind("<Button-1>", lambda e: spells_tree.focus_set(), add="+")
+
+        # Enable extended selection mode for multi-row selection
+        spells_tree.configure(selectmode="extended")
+
+        # Bind double-click event to toggle selection instead of navigation
+        spells_tree.bind(
+            "<Double-1>", lambda e: self._on_double_click_toggle(e, spells_tree)
+        )
+
+        # Selection buttons frame (right side, fixed width)
         buttons_frame = ttk.Frame(content_frame)
-        buttons_frame.grid(row=0, column=1, sticky=(tk.N, tk.W))
+        buttons_frame.pack(fill=tk.Y, side=tk.RIGHT, anchor=tk.N)
 
         ttk.Button(
             buttons_frame,
             text="Select All",
             command=lambda: self._select_all_spells(class_name),
-        ).grid(row=0, column=0, pady=(0, 5), sticky=(tk.W, tk.E))
+        ).pack(pady=(0, 5), fill=tk.X)
 
         ttk.Button(
             buttons_frame,
             text="Deselect All",
             command=lambda: self._deselect_all_spells(class_name),
-        ).grid(row=1, column=0, pady=(0, 5), sticky=(tk.W, tk.E))
+        ).pack(pady=(0, 5), fill=tk.X)
 
         ttk.Button(
             buttons_frame,
             text="Preview Spell",
             command=lambda: self._preview_spell(class_name),
-        ).grid(row=2, column=0, pady=(0, 20), sticky=(tk.W, tk.E))
+        ).pack(pady=(0, 20), fill=tk.X)
 
         return spells_tree
 
     def _get_filter_variables(self, filters_frame: ttk.LabelFrame):
         """Get filter variables from filters frame."""
         return (
-            filters_frame._level_var,
-            filters_frame._source_var,
-            filters_frame._search_var,
+            filters_frame._level_var,  # pylint: disable=protected-access
+            filters_frame._source_var,  # pylint: disable=protected-access
+            filters_frame._search_var,  # pylint: disable=protected-access
         )
 
     def _get_filter_widgets(self, filters_frame: ttk.LabelFrame):
         """Get filter widgets from filters frame."""
         return (
-            filters_frame._level_combo,
-            filters_frame._source_combo,
-            filters_frame._search_entry,
+            filters_frame._level_combo,  # pylint: disable=protected-access
+            filters_frame._source_combo,  # pylint: disable=protected-access
+            filters_frame._search_entry,  # pylint: disable=protected-access
         )
 
     def _setup_class_filters(self, class_name: str):
@@ -248,6 +265,7 @@ class SpellTabManager:
         class_data.level_combo["values"] = levels
 
         # Update source filter options
+        # pylint: disable=protected-access
         sources = self.spell_filter.get_available_sources(
             self.data_loader.spells_df, class_name
         )
@@ -263,7 +281,7 @@ class SpellTabManager:
 
         class_data = self.spell_data[class_name]
 
-        # Apply filters
+        # Apply filters  # pylint: disable=protected-access
         filtered_df = self.spell_filter.filter_spells(
             self.data_loader.spells_df,
             class_name,
@@ -301,34 +319,77 @@ class SpellTabManager:
 
         # Add filtered spells to treeview
         for _, spell in filtered_spells.iterrows():
-            spells_tree.insert(
+            spell_name = spell["name"]
+
+            # Check if this spell was previously selected
+            is_selected = self.selected_spells_state.get(spell_name, False)
+
+            item = spells_tree.insert(
                 "",
                 "end",
                 values=(
-                    UIConfig.UNCHECKED_ICON,
-                    spell["name"],
+                    UIConfig.CHECKED_ICON if is_selected else UIConfig.UNCHECKED_ICON,
+                    spell_name,
                     spell[class_name],
                     spell["school"],
                     spell["source"],
                 ),
-                tags=("unchecked",),
+                tags=("checked" if is_selected else "unchecked",),
             )
 
-    def _toggle_spell_selection(self, event, spells_tree: ttk.Treeview):
-        """Toggle spell selection on click."""
+    def _on_tree_click(self, event, spells_tree: ttk.Treeview):
+        """Handle tree click - only toggle selection if clicking in Select column."""
+        item = spells_tree.identify("item", event.x, event.y)
+        column = spells_tree.identify("column", event.x, event.y)
+
+        if item and column == "#1":  # Select column is #1
+            self._toggle_spell_selection_for_item(item, spells_tree)
+        # Other clicks just select the row for highlighting
+
+    def _toggle_spell_selection_for_item(self, item, spells_tree: ttk.Treeview):
+        """Toggle spell selection for a specific item."""
+        spell_name = spells_tree.item(item)["values"][1]  # Name is in column 1
+
+        # Update persistent state
+        current_state = self.selected_spells_state.get(spell_name, False)
+        self.selected_spells_state[spell_name] = not current_state
+
+        # Update UI
+        if self.selected_spells_state[spell_name]:
+            spells_tree.set(item, "Select", UIConfig.CHECKED_ICON)
+            spells_tree.item(item, tags=("checked",))
+        else:
+            spells_tree.set(item, "Select", UIConfig.UNCHECKED_ICON)
+            spells_tree.item(item, tags=("unchecked",))
+
+        # Notify callback about selection change
+        if self.spell_selection_callback:
+            self.spell_selection_callback()
+
+    def _toggle_selected_spells(self, spells_tree: ttk.Treeview):
+        """Toggle selection for all highlighted/selected items (Space/Enter key)."""
+        selection = spells_tree.selection()
+        if not selection:
+            # If no items are selected, try to select the item with focus
+            focus_item = spells_tree.focus()
+            if focus_item:
+                selection = (focus_item,)
+            else:
+                return
+
+        for item in selection:
+            self._toggle_spell_selection_for_item(item, spells_tree)
+
+    def _on_double_click_toggle(self, event, spells_tree: ttk.Treeview):
+        """Handle double-click to toggle spell selection."""
         item = spells_tree.identify("item", event.x, event.y)
         if item:
-            current_tags = spells_tree.item(item, "tags")
-            if "checked" in current_tags:
-                spells_tree.set(item, "Select", UIConfig.UNCHECKED_ICON)
-                spells_tree.item(item, tags=("unchecked",))
-            else:
-                spells_tree.set(item, "Select", UIConfig.CHECKED_ICON)
-                spells_tree.item(item, tags=("checked",))
+            self._toggle_spell_selection_for_item(item, spells_tree)
 
-            # Notify callback about selection change
-            if self.spell_selection_callback:
-                self.spell_selection_callback()
+    def _on_double_click(self, event):  # pylint: disable=unused-argument
+        """Handle double-click on spell list (legacy method for navigation)."""
+        if self.double_click_callback:
+            self.double_click_callback()
 
     def _select_all_spells(self, class_name: str):
         """Select all visible spells for a specific class."""
@@ -337,6 +398,8 @@ class SpellTabManager:
 
         spells_tree = self.spell_data[class_name].spells_tree
         for item in spells_tree.get_children():
+            spell_name = spells_tree.item(item)["values"][1]
+            self.selected_spells_state[spell_name] = True
             spells_tree.set(item, "Select", UIConfig.CHECKED_ICON)
             spells_tree.item(item, tags=("checked",))
 
@@ -351,6 +414,8 @@ class SpellTabManager:
 
         spells_tree = self.spell_data[class_name].spells_tree
         for item in spells_tree.get_children():
+            spell_name = spells_tree.item(item)["values"][1]
+            self.selected_spells_state[spell_name] = False
             spells_tree.set(item, "Select", UIConfig.UNCHECKED_ICON)
             spells_tree.item(item, tags=("unchecked",))
 
@@ -412,27 +477,24 @@ class SpellTabManager:
         text_widget.config(state=tk.DISABLED)
 
     def get_selected_spells(self) -> List[Tuple[str, str, pd.Series]]:
-        """Get all selected spells across all tabs."""
+        """Get all selected spells based on persistent selection state."""
         selected_spells = []
 
-        for class_name, class_data in self.spell_data.items():
-            spells_tree = class_data.spells_tree
-            filtered_spells = class_data.filtered_spells
+        # Get the current class (we're using single class selection now)
+        current_class = self.get_current_class()
+        if not current_class:
+            return selected_spells
 
-            if filtered_spells is None or filtered_spells.empty:
-                continue
+        # Get all spells for this class from the data loader
+        all_spells = self.data_loader.get_spells_for_class(current_class)
 
-            for item in spells_tree.get_children():
-                if "checked" in spells_tree.item(item, "tags"):
-                    spell_name = spells_tree.item(item)["values"][
-                        1
-                    ]  # Name is in column 1
-                    spell_matches = filtered_spells[
-                        filtered_spells["name"] == spell_name
-                    ]
-                    if not spell_matches.empty:
-                        spell_data = spell_matches.iloc[0]
-                        selected_spells.append((class_name, spell_name, spell_data))
+        # Filter based on persistent selection state
+        for spell_name, is_selected in self.selected_spells_state.items():
+            if is_selected:
+                spell_matches = all_spells[all_spells["name"] == spell_name]
+                if not spell_matches.empty:
+                    spell_data = spell_matches.iloc[0]
+                    selected_spells.append((current_class, spell_name, spell_data))
 
         return selected_spells
 

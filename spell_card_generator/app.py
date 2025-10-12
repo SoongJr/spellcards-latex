@@ -5,15 +5,13 @@ from pathlib import Path
 from tkinter import ttk
 from typing import Optional
 
-from spell_card_generator.ui.main_window import MainWindow
-from spell_card_generator.ui.single_class_selection import SingleClassSelectionManager
-from spell_card_generator.ui.class_placeholder import ClassSelectionPlaceholder
-from spell_card_generator.ui.spell_tabs import SpellTabManager
+# UI is now managed by the workflow coordinator
+from spell_card_generator.ui.workflow_coordinator import WorkflowCoordinator
 from spell_card_generator.ui.dialogs import DialogManager
+from spell_card_generator.ui.icons import init_icons
 from spell_card_generator.data.loader import SpellDataLoader
 from spell_card_generator.data.filter import SpellFilter
 from spell_card_generator.generators.latex_generator import LaTeXGenerator
-from spell_card_generator.config.constants import Config
 from spell_card_generator.utils.exceptions import SpellCardError
 
 
@@ -22,126 +20,83 @@ class SpellCardGeneratorApp:
 
     def __init__(self, root: tk.Tk):
         self.root = root
+        self.root.title("Spell Card Generator")
 
-        # Initialize components
-        self.main_window = MainWindow(root)
+        # Set reasonable default window size to prevent startup sizing issues
+        self.root.geometry("900x600")  # Good default size for the application
+        self.root.minsize(900, 600)  # Minimum size to ensure usability
+
+        # Initialize icon system first
+        init_icons(root)
+
+        # Initialize components (main window layout is now handled by workflow coordinator)
         self.data_loader = SpellDataLoader()
         self.spell_filter = SpellFilter()
         self.latex_generator = LaTeXGenerator()
 
-        # Initialize UI managers
-        self.class_manager = SingleClassSelectionManager(
-            self.main_window.class_frame, self.on_class_selection_changed
-        )
+        # Create main content frame (before status bar)
+        self.main_frame = ttk.Frame(self.root)
+        self.main_frame.pack(fill=tk.BOTH, expand=True)
 
-        # Placeholder for when no class is selected
-        self.class_placeholder = ClassSelectionPlaceholder(
-            self.main_window.content_frame
-        )
-
-        self.spell_tab_manager = SpellTabManager(
-            self.main_window.content_frame,
-            self.data_loader,
-            self.spell_filter,
-            spell_selection_callback=self.on_spell_selection_changed,
-        )
+        # Create status bar at bottom
+        self._setup_status_bar()
 
         self.dialog_manager = DialogManager(root)
 
         # Track current application state
         self.current_selected_class: Optional[str] = None
 
-        # Initialize application
-        self._setup_controls_ui()
+        # Initialize application - LOAD DATA FIRST
         self._load_initial_data()
 
-    def _setup_controls_ui(self):
-        """Setup control buttons and progress bar."""
-        # Generate button - initially hidden
-        self.generate_btn = ttk.Button(
-            self.main_window.control_frame,
-            text="Generate Spell Cards",
-            command=self.generate_cards,
-            style="Accent.TButton",
-            state="disabled",
+        # Initialize workflow coordinator AFTER data is loaded
+        # Class selection is now part of the workflow
+        self.workflow_coordinator = WorkflowCoordinator(
+            self.main_frame,  # Use main_frame instead of root
+            self.data_loader,
+            self.spell_filter,
+            on_generate_callback=self.generate_cards,
         )
-        # Don't pack initially - will be shown when class is selected
+
+    def _setup_status_bar(self):
+        """Setup status bar at bottom of window."""
+        # Status frame at bottom
+        status_frame = ttk.Frame(self.root)
+        status_frame.pack(fill=tk.X, side=tk.BOTTOM, padx=5, pady=2)
 
         # Progress bar
         self.progress_var = tk.DoubleVar()
         self.progress_bar = ttk.Progressbar(
-            self.main_window.progress_frame, variable=self.progress_var, maximum=100
+            status_frame, variable=self.progress_var, maximum=100, length=200
         )
-        self.progress_bar.pack(fill=tk.X)
+        self.progress_bar.pack(side=tk.RIGHT, padx=(10, 0))
 
         # Status label
         self.status_var = tk.StringVar(value="Ready")
-        self.status_label = ttk.Label(
-            self.main_window.status_frame, textvariable=self.status_var
-        )
-        self.status_label.pack()
+        self.status_label = ttk.Label(status_frame, textvariable=self.status_var)
+        self.status_label.pack(side=tk.LEFT)
 
     def _load_initial_data(self):
         """Load initial spell data."""
         try:
             spells_df = self.data_loader.load_data()
-            self.class_manager.setup_class_tree(self.data_loader.character_classes)
 
-            # Show placeholder initially since no class is selected
-            self.class_placeholder.show()
-
+            # Workflow coordinator handles class setup internally
             self.status_var.set(
                 f"Loaded {len(spells_df)} spells across "
-                f"{len(self.data_loader.character_classes)} classes - Please select a class"
+                f"{len(self.data_loader.character_classes)} classes - Begin with class selection"
             )
         except SpellCardError as e:
             self.dialog_manager.show_error("Error", str(e))
 
     def on_class_selection_changed(self, selected_class: Optional[str] = None):
-        """Handle class selection changes."""
+        """Handle class selection changes (legacy method - now handled by workflow)."""
+        # Class selection is now handled within the workflow coordinator
         self.current_selected_class = selected_class
 
-        if selected_class:
-            # Show spell tabs for the selected class
-            self.class_placeholder.hide()
-            self.spell_tab_manager.update_tabs({selected_class})
-
-            # Show Generate button when class is selected
-            self.generate_btn.pack(pady=(10, 0))
-            # Start disabled until spells are selected
-            self.generate_btn.configure(state="disabled")
-
-            # Update status
-            display_name = self.class_manager._get_display_name(selected_class)
-            self.status_var.set(
-                f"Selected: {display_name} - Select spells to generate cards"
-            )
-        else:
-            # No class selected - show placeholder and hide Generate button
-            self.spell_tab_manager.update_tabs(set())
-            self.class_placeholder.show()
-            self.generate_btn.pack_forget()
-            self.status_var.set("No class selected")
-
     def on_spell_selection_changed(self):
-        """Handle spell selection changes to enable/disable Generate button."""
-        if not self.current_selected_class:
-            return
-
-        selected_spells = self.spell_tab_manager.get_selected_spells()
-        if selected_spells:
-            self.generate_btn.configure(state="normal")
-            self.status_var.set(
-                f"Selected: {len(selected_spells)} spells - Ready to generate"
-            )
-        else:
-            self.generate_btn.configure(state="disabled")
-            display_name = self.class_manager._get_display_name(
-                self.current_selected_class
-            )
-            self.status_var.set(
-                f"Selected: {display_name} - Select spells to generate cards"
-            )
+        """Handle spell selection changes (legacy method - workflow now handles this)."""
+        # This method is kept for compatibility but workflow coordinator handles the logic
 
     def generate_cards(self):
         """Generate LaTeX spell cards."""
@@ -152,18 +107,19 @@ class SpellCardGeneratorApp:
                 )
                 return
 
-            selected_spells = self.spell_tab_manager.get_selected_spells()
+            # Get selected spells from workflow coordinator
+            selected_spells = self.workflow_coordinator.get_selected_spells()
             if not selected_spells:
                 self.dialog_manager.show_warning(
                     "Warning", "Please select at least one spell"
                 )
                 return
 
-            # Generate cards with progress updates - use default options for now
+            # Generate cards with workflow state options
             generated_files, skipped_files = self.latex_generator.generate_cards(
                 selected_spells,
-                overwrite=False,  # Will be configurable in the sidebar wizard
-                german_url_template=Config.DEFAULT_GERMAN_URL,
+                overwrite=self.workflow_coordinator.workflow_state.overwrite_existing,
+                german_url_template=self.workflow_coordinator.workflow_state.german_url_template,
                 progress_callback=self._update_progress,
             )
 
