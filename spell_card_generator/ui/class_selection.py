@@ -4,8 +4,8 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Callable, Set, Dict
 
-from config.constants import CharacterClasses, UIConfig
-from models.spell import SectionData
+from spell_card_generator.config.constants import CharacterClasses, UIConfig
+from spell_card_generator.models.spell import SectionData
 
 
 class ClassSelectionManager:

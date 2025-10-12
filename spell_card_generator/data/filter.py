@@ -3,12 +3,8 @@
 from typing import Optional, List
 import pandas as pd
 
-try:
-    from ..config.constants import Config
-    from ..utils.exceptions import FilterError
-except ImportError:
-    from config.constants import Config
-    from utils.exceptions import FilterError
+from spell_card_generator.config.constants import Config
+from spell_card_generator.utils.exceptions import FilterError
 
 
 class SpellFilter:

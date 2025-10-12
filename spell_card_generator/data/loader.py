@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import Set, List, Optional
 import pandas as pd
 
-from config.constants import Config, CharacterClasses
-from utils.exceptions import DataLoadError
+from spell_card_generator.config.constants import Config, CharacterClasses
+from spell_card_generator.utils.exceptions import DataLoadError
 
 
 class SpellDataLoader:

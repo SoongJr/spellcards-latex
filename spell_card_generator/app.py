@@ -4,15 +4,15 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Set
 
-from ui.main_window import MainWindow
-from ui.class_selection import ClassSelectionManager
-from ui.spell_tabs import SpellTabManager
-from ui.dialogs import DialogManager
-from data.loader import SpellDataLoader
-from data.filter import SpellFilter
-from generators.latex_generator import LaTeXGenerator
-from config.constants import Config
-from utils.exceptions import SpellCardError
+from spell_card_generator.ui.main_window import MainWindow
+from spell_card_generator.ui.class_selection import ClassSelectionManager
+from spell_card_generator.ui.spell_tabs import SpellTabManager
+from spell_card_generator.ui.dialogs import DialogManager
+from spell_card_generator.data.loader import SpellDataLoader
+from spell_card_generator.data.filter import SpellFilter
+from spell_card_generator.generators.latex_generator import LaTeXGenerator
+from spell_card_generator.config.constants import Config
+from spell_card_generator.utils.exceptions import SpellCardError
 
 
 class SpellCardGeneratorApp:

@@ -5,10 +5,10 @@ from tkinter import ttk
 from typing import Dict, Set, Optional, List, Tuple
 import pandas as pd
 
-from config.constants import UIConfig, CharacterClasses
-from models.spell import ClassTabState
-from data.loader import SpellDataLoader
-from data.filter import SpellFilter
+from spell_card_generator.config.constants import UIConfig, CharacterClasses
+from spell_card_generator.models.spell import ClassTabState
+from spell_card_generator.data.loader import SpellDataLoader
+from spell_card_generator.data.filter import SpellFilter
 
 
 class SpellTabManager:

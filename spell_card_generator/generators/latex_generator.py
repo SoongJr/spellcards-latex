@@ -6,9 +6,9 @@ from pathlib import Path
 from typing import Callable, Optional, List, Tuple
 import pandas as pd
 
-from config.constants import Config
-from utils.exceptions import GenerationError
-from utils.validators import Validators
+from spell_card_generator.config.constants import Config
+from spell_card_generator.utils.exceptions import GenerationError
+from spell_card_generator.utils.validators import Validators
 
 
 class LaTeXGenerator:

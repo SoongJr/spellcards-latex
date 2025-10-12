@@ -36,4 +36,4 @@ poetry -C "${scriptFolder}" install --without=dev
 
 # Launch the GUI application
 echo "Starting Spell Card Generator..."
-bash -cx '$@' -- poetry -C "${scriptFolder}" run python main.py
+bash -cx '$@' -- poetry -C "${scriptFolder}" run spell-card-generator

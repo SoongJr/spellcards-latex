@@ -49,7 +49,7 @@ maybe update dependencies, you'll need a development setup.
 2. **Make your code changes** - no reinstallation needed! The package is installed in editable mode.
 
 3. **Run the application**  
-  `python spell_card_generator/main.py`
+  `poetry run spell-card-generator`
 
 4. **Run tests and linting:**
    ```bash
@@ -65,6 +65,8 @@ maybe update dependencies, you'll need a development setup.
 
 You only need to run `poetry -C spell_card_generator install` again when:
 - Dependencies change in `pyproject.toml`
+- Entry points are modified in `pyproject.toml`
+- Major structural changes occur (rare)
 
 ## Project Structure
 

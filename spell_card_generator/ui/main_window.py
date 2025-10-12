@@ -3,7 +3,7 @@
 import tkinter as tk
 from tkinter import ttk
 
-from config.constants import UIConfig
+from spell_card_generator.config.constants import UIConfig
 
 
 class MainWindow:

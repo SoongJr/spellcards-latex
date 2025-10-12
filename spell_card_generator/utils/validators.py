@@ -1,7 +1,7 @@
 """Input validation utilities."""
 
 import re
-from config.constants import CharacterClasses
+from spell_card_generator.config.constants import CharacterClasses
 
 
 class Validators:
