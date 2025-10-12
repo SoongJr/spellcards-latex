@@ -1,6 +1,7 @@
 """Main application coordinator."""
 
 import tkinter as tk
+from pathlib import Path
 from tkinter import ttk
 from typing import Set
 
@@ -140,8 +141,6 @@ class SpellCardGeneratorApp:
 
             if generated_files:
                 # Extract output directory from first generated file
-                from pathlib import Path
-
                 output_dir = Path(generated_files[0]).parent.parent
                 result_msg += (
                     f"\n\nFiles generated in: {output_dir}"

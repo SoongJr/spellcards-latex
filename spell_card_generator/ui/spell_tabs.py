@@ -1,7 +1,7 @@
 """Spell tabs UI management."""
 
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, scrolledtext
 from typing import Dict, Set, Optional, List, Tuple
 import pandas as pd
 
@@ -395,8 +395,6 @@ class SpellTabManager:
         preview_window.geometry("600x400")
 
         # Create scrolled text widget
-        from tkinter import scrolledtext
-
         text_widget = scrolledtext.ScrolledText(preview_window, wrap=tk.WORD)
         text_widget.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 

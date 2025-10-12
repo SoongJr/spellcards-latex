@@ -275,7 +275,7 @@ class ClassSelectionManager:
     def _update_section_checkbox_state(self, classes: list):
         """Update the tri-state checkbox based on current class selections."""
         # Find which section these classes belong to
-        for section_name, section_data in self.section_frames.items():
+        for _section_name, section_data in self.section_frames.items():
             if set(classes) == set(section_data.classes):
                 selected_count = sum(
                     1
@@ -320,7 +320,7 @@ class ClassSelectionManager:
     def _update_section_checkbox_for_class(self, class_name: str):
         """Update section checkbox when an individual class selection changes."""
         # Find the section containing this class
-        for section_name, section_data in self.section_frames.items():
+        for _section_name, section_data in self.section_frames.items():
             if class_name in section_data.classes:
                 self._update_section_checkbox_state(section_data.classes)
                 break
@@ -332,7 +332,7 @@ class ClassSelectionManager:
             self.current_classes.add(class_name)
 
         # Update all section checkboxes
-        for section_name, section_data in self.section_frames.items():
+        for _section_name, section_data in self.section_frames.items():
             self._update_section_checkbox_state(section_data.classes)
 
         # Notify callback
@@ -340,12 +340,12 @@ class ClassSelectionManager:
 
     def deselect_all_classes(self):
         """Deselect all character classes."""
-        for class_name, var in self.class_vars.items():
+        for _class_name, var in self.class_vars.items():
             var.set(False)
         self.current_classes.clear()
 
         # Update all section checkboxes
-        for section_name, section_data in self.section_frames.items():
+        for _section_name, section_data in self.section_frames.items():
             self._update_section_checkbox_state(section_data.classes)
 
         # Notify callback
@@ -363,7 +363,7 @@ class ClassSelectionManager:
                 var.set(False)
 
         # Update all section checkboxes
-        for section_name, section_data in self.section_frames.items():
+        for _section_name, section_data in self.section_frames.items():
             self._update_section_checkbox_state(section_data.classes)
 
         # Notify callback
