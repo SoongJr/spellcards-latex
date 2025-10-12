@@ -6,6 +6,7 @@ from typing import Callable, Set, Dict
 
 from spell_card_generator.config.constants import CharacterClasses, UIConfig
 from spell_card_generator.models.spell import SectionData
+from spell_card_generator.utils.class_categorization import categorize_character_classes
 
 
 class ClassSelectionManager:
@@ -76,31 +77,7 @@ class ClassSelectionManager:
 
     def _get_class_categories(self, character_classes: list) -> dict:
         """Get character classes organized by categories."""
-        categories = {}
-
-        # Filter categories to only include classes that exist in the data
-        for category_name, class_list in CharacterClasses.CATEGORIES.items():
-            existing_classes = [cls for cls in class_list if cls in character_classes]
-            if existing_classes:
-                categories[f"{category_name} ({len(existing_classes)})"] = {
-                    "classes": existing_classes,
-                    "expanded": category_name
-                    == "Core Classes",  # Only Core Classes start expanded
-                }
-
-        # Find unknown classes and add them to "Other"
-        known_classes = set()
-        for classes in CharacterClasses.CATEGORIES.values():
-            known_classes.update(classes)
-
-        unknown_classes = [cls for cls in character_classes if cls not in known_classes]
-        if unknown_classes:
-            categories[f"Other ({len(unknown_classes)})"] = {
-                "classes": unknown_classes,
-                "expanded": False,
-            }
-
-        return categories
+        return categorize_character_classes(character_classes)
 
     def _create_class_section_in_frame(
         self, parent_frame: ttk.Frame, section_name: str, section_data: dict, row: int

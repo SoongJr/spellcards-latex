@@ -6,6 +6,7 @@ import pandas as pd
 
 from spell_card_generator.config.constants import Config, CharacterClasses
 from spell_card_generator.utils.exceptions import DataLoadError
+from spell_card_generator.utils.class_categorization import categorize_character_classes
 
 
 class SpellDataLoader:
@@ -70,31 +71,4 @@ class SpellDataLoader:
         if not self.character_classes:
             return {}
 
-        # Filter categories to only include classes that exist in the data
-        categories = {}
-        for category_name, class_list in CharacterClasses.CATEGORIES.items():
-            existing_classes = [
-                cls for cls in class_list if cls in self.character_classes
-            ]
-            if existing_classes:
-                categories[f"{category_name} ({len(existing_classes)})"] = {
-                    "classes": existing_classes,
-                    "expanded": category_name
-                    == "Core Classes",  # Only Core Classes start expanded
-                }
-
-        # Find unknown classes and add them to "Other"
-        known_classes = set()
-        for classes in CharacterClasses.CATEGORIES.values():
-            known_classes.update(classes)
-
-        unknown_classes = [
-            cls for cls in self.character_classes if cls not in known_classes
-        ]
-        if unknown_classes:
-            categories[f"Other ({len(unknown_classes)})"] = {
-                "classes": unknown_classes,
-                "expanded": False,
-            }
-
-        return categories
+        return categorize_character_classes(self.character_classes)
