@@ -283,17 +283,17 @@ valid-metaclass-classmethod-first-arg=mcs
 
 # List of regular expressions of class ancestor names to ignore when counting
 # public methods (see R0903)
-exclude-too-few-public-methods=
+exclude-too-few-public-methods=.*Config.*,.*Constants.*,.*Exception.*
 
 # List of qualified class names to ignore when counting class parents (see
 # R0901)
 ignored-parents=
 
 # Maximum number of arguments for function / method.
-max-args=5
+max-args=8
 
 # Maximum number of attributes for a class (see R0902).
-max-attributes=7
+max-attributes=20
 
 # Maximum number of boolean expressions in an if statement (see R0916).
 max-bool-expr=5
@@ -302,13 +302,13 @@ max-bool-expr=5
 max-branches=12
 
 # Maximum number of locals for function / method body.
-max-locals=15
+max-locals=20
 
 # Maximum number of parents for a class (see R0901).
 max-parents=7
 
 # Maximum number of positional arguments for function / method.
-max-positional-arguments=5
+max-positional-arguments=8
 
 # Maximum number of public methods for a class (see R0904).
 max-public-methods=20
@@ -345,6 +345,8 @@ indent-after-paren=4
 indent-string='    '
 
 # Maximum number of characters on a single line.
+# this config is "Black-compatible", see https://black.readthedocs.io/en/latest/guides/using_black_with_other_tools.html
+# (actually we allow even slightly longer lines than Black is aiming for)
 max-line-length=100
 
 # Maximum number of lines in a module.
@@ -438,7 +440,8 @@ disable=raw-checker-failed,
         deprecated-pragma,
         use-symbolic-message-instead,
         use-implicit-booleaness-not-comparison-to-string,
-        use-implicit-booleaness-not-comparison-to-zero
+        use-implicit-booleaness-not-comparison-to-zero,
+        too-few-public-methods
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
