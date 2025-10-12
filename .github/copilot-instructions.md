@@ -26,21 +26,23 @@ before then using poetry to install app dependencies into that same venv.
 ⚠️ **MANDATORY**: Every Python/Poetry operation MUST follow this pattern:
 
 ```bash
-cd ${WORKSPACE:-.}/spell_card_generator && source .venv/bin/activate && poetry run [command]
+[[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator && source .venv/bin/activate && poetry run [command]
 ```
 
 #### Application Execution
 ```bash
-cd ${WORKSPACE:-.}/spell_card_generator && source .venv/bin/activate && poetry run spell-card-generator
+[[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator
+source .venv/bin/activate && poetry run spell-card-generator
 ```
 
 #### Alternative (if needed)
 ```bash
-cd ${WORKSPACE:-.}/spell_card_generator && source .venv/bin/activate && [command]
+[[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator
+source .venv/bin/activate && [command]
 ```
 
 **NEVER run Python commands without:**
-1. Changing to `${WORKSPACE:-.}/spell_card_generator` directory
+1. Changing to `spell_card_generator` subdirectory of the repository
 2. Activating `.venv`
 3. Using `poetry run` to start the application
 
@@ -62,27 +64,32 @@ cd ${WORKSPACE:-.}/spell_card_generator && source .venv/bin/activate && [command
 
 #### Running the Application
 ```bash
-cd ${WORKSPACE:-.}/spell_card_generator && poetry run spell-card-generator
+[[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator
+poetry run spell-card-generator
 ```
 
 #### Adding Dependencies
 ```bash
-cd ${WORKSPACE:-.}/spell_card_generator && poetry add [--dev] <package-name>
+[[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator
+poetry add [--dev] <package-name>
 ```
 
 #### Code Quality Checks
 ```bash
 # Format code
-cd ${WORKSPACE:-.}/spell_card_generator && poetry run black .
+[[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator
+poetry run black .
 
 # Lint code (maintain 9.77/10 score)
-cd ${WORKSPACE:-.}/spell_card_generator && poetry run pylint .
+[[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator
+poetry run pylint .
 ```
 
 ### Critical DO NOTs
 
 #### Environment & Execution
 - ❌ Run Python commands without proper environment setup
+- ❌ Use exclamation marks in commands
 - ❌ Modify `.venv/` directory contents
 - ❌ Use relative imports (always use absolute)
 
@@ -108,7 +115,7 @@ cd ${WORKSPACE:-.}/spell_card_generator && poetry run pylint .
 
 ```bash
 # Navigate to project directory
-cd ${WORKSPACE:-.}/spell_card_generator
+cd ./spell_card_generator
 
 # Activate virtual environment
 source .venv/bin/activate # On Windows: .venv/Scripts/activate
