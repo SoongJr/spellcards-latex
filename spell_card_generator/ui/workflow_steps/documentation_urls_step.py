@@ -630,20 +630,45 @@ class DocumentationURLsStep(BaseWorkflowStep):
         else:
             row_tag = self.STATE_VALID
 
-        # Check if item exists and delete it
+        # Find existing item
+        existing_item = None
         for item in self.spells_tree.get_children():
             tags = self.spells_tree.item(item, "tags")
             if tags and spell_name in tags:
-                self.spells_tree.delete(item)
+                existing_item = item
                 break
 
-        # Insert/update item with color tag
-        self.spells_tree.insert(
-            "",
-            tk.END,
-            values=(spell_name, primary_display, "R", "V", secondary_display, "R", "V"),
-            tags=(spell_name, row_tag),
-        )
+        if existing_item:
+            # Update existing item using item() method - this is as close to "in-place" as Treeview allows
+            self.spells_tree.item(
+                existing_item,
+                values=(
+                    spell_name,
+                    primary_display,
+                    "R",
+                    "V",
+                    secondary_display,
+                    "R",
+                    "V",
+                ),
+                tags=(spell_name, row_tag),
+            )
+        else:
+            # Insert new item at the end (used during initial load)
+            self.spells_tree.insert(
+                "",
+                tk.END,
+                values=(
+                    spell_name,
+                    primary_display,
+                    "R",
+                    "V",
+                    secondary_display,
+                    "R",
+                    "V",
+                ),
+                tags=(spell_name, row_tag),
+            )
 
     def _format_url_with_status(self, url: str, state: str) -> str:
         """Format URL with validation status symbol."""
