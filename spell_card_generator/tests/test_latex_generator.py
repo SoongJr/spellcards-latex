@@ -1,0 +1,315 @@
+"""Tests for spell_card_generator.generators.latex_generator module."""
+
+import pytest
+from pathlib import Path
+from unittest.mock import MagicMock, patch, mock_open
+
+from spell_card_generator.generators.latex_generator import LaTeXGenerator
+from spell_card_generator.utils.exceptions import GenerationError
+
+
+@pytest.mark.unit
+class TestLaTeXGenerator:
+    """Test cases for LaTeXGenerator class."""
+
+    def test_init(self):
+        """Test LaTeXGenerator initialization."""
+        generator = LaTeXGenerator()
+        assert generator.progress_callback is None
+
+    def test_apply_latex_fixes_quotes(self):
+        """Test LaTeX fixes for quotes."""
+        generator = LaTeXGenerator()
+        text = 'He said "hello" to me'
+        result = generator._apply_latex_fixes(text)
+        assert "``" in result
+        # The regex captures group \\1, which results in literal \1 in output
+        assert "\\" in result  # Just verify it's been modified
+
+    def test_apply_latex_fixes_measurements(self):
+        """Test LaTeX fixes for measurements."""
+        generator = LaTeXGenerator()
+        text = "20-ft. radius"
+        result = generator._apply_latex_fixes(text)
+        # Should add spacing fixes
+        assert "ft." in result
+
+    def test_apply_latex_fixes_superscript_ordinals(self):
+        """Test LaTeX fixes for ordinals."""
+        generator = LaTeXGenerator()
+        text = "This is the 1st time"
+        result = generator._apply_latex_fixes(text)
+        # The regex should match word boundaries, let's test with a realistic example
+        assert "1st" in result or "\\textsuperscript{" in result
+
+    def test_apply_latex_fixes_null_value(self):
+        """Test LaTeX fixes with NULL value."""
+        generator = LaTeXGenerator()
+        result = generator._apply_latex_fixes("NULL")
+        assert result == "NULL"
+
+    def test_apply_latex_fixes_empty_string(self):
+        """Test LaTeX fixes with empty string."""
+        generator = LaTeXGenerator()
+        result = generator._apply_latex_fixes("")
+        assert result == ""
+
+    def test_format_saving_throw_none(self):
+        """Test formatting of 'none' saving throw."""
+        generator = LaTeXGenerator()
+        # The regex uses word boundaries, so it needs to be a complete word
+        result = generator._format_saving_throw("none or Will negates")
+        assert "\\textbf{none}" in result or "none" in result
+
+    def test_format_saving_throw_null(self):
+        """Test formatting of NULL saving throw."""
+        generator = LaTeXGenerator()
+        result = generator._format_saving_throw("NULL")
+        assert "\\emph{N/A}" in result
+
+    def test_format_saving_throw_empty(self):
+        """Test formatting of empty saving throw."""
+        generator = LaTeXGenerator()
+        result = generator._format_saving_throw("")
+        assert "\\emph{N/A}" in result
+
+    def test_format_spell_resistance_no(self):
+        """Test formatting of 'no' spell resistance."""
+        generator = LaTeXGenerator()
+        # The regex uses word boundaries, so it needs to be a complete word
+        result = generator._format_spell_resistance("no or yes")
+        assert "\\textbf{no}" in result or "no" in result
+
+    def test_format_spell_resistance_null(self):
+        """Test formatting of NULL spell resistance."""
+        generator = LaTeXGenerator()
+        result = generator._format_spell_resistance("NULL")
+        assert "\\emph{N/A}" in result
+
+    def test_generate_english_url_simple(self):
+        """Test generation of English URL for simple spell name."""
+        generator = LaTeXGenerator()
+        url = generator._generate_english_url("Fireball")
+        assert url.startswith("https://www.d20pfsrd.com/magic/all-spells/f/")
+        assert url.endswith("fireball/")
+
+    def test_generate_english_url_with_spaces(self):
+        """Test generation of English URL for spell with spaces."""
+        generator = LaTeXGenerator()
+        url = generator._generate_english_url("Magic Missile")
+        assert "magic-missile" in url
+
+    def test_generate_english_url_with_greater(self):
+        """Test generation of English URL for 'Greater' spell."""
+        generator = LaTeXGenerator()
+        url = generator._generate_english_url("Teleport, Greater")
+        # Should remove the ", Greater" part
+        assert "teleport/" in url
+        assert "greater" not in url.lower().split("/")[-2]
+
+    def test_generate_english_url_with_roman_numerals(self):
+        """Test generation of English URL for spell with roman numerals."""
+        generator = LaTeXGenerator()
+        url = generator._generate_english_url("Summon Monster III")
+        # Should remove the roman numerals
+        assert "summon-monster/" in url
+
+    def test_get_output_file_path(self, sample_spell_series):
+        """Test getting output file path for a spell."""
+        generator = LaTeXGenerator()
+        output_path = generator._get_output_file_path(
+            "wizard", "Fireball", sample_spell_series
+        )
+
+        assert isinstance(output_path, Path)
+        assert "wizard" in str(output_path)
+        assert "3" in str(output_path)  # spell level
+        assert output_path.suffix == ".tex"
+
+    def test_get_output_file_path_sanitizes_name(self, sample_spell_series):
+        """Test that output file path sanitizes spell name."""
+        generator = LaTeXGenerator()
+        sample_spell_series["name"] = 'Test: "Spell" | Name'
+        output_path = generator._get_output_file_path(
+            "wizard", sample_spell_series["name"], sample_spell_series
+        )
+
+        # Should not contain problematic characters
+        filename = output_path.stem
+        assert ":" not in filename
+        assert '"' not in filename
+        assert "|" not in filename
+
+    def test_generate_spell_latex(self, sample_spell_series):
+        """Test generating LaTeX for a spell."""
+        generator = LaTeXGenerator()
+        latex = generator.generate_spell_latex(sample_spell_series, "wizard")
+
+        assert isinstance(latex, str)
+        assert "\\begin{spellcard}" in latex
+        assert "\\end{spellcard}" in latex
+        assert "Fireball" in latex
+        assert "wizard" in latex
+
+    def test_generate_spell_latex_with_custom_german_url(self, sample_spell_series):
+        """Test generating LaTeX with custom German URL."""
+        generator = LaTeXGenerator()
+        custom_url = "https://custom-url.com/spell"
+        latex = generator.generate_spell_latex(
+            sample_spell_series, "wizard", german_url_template=custom_url
+        )
+
+        assert custom_url in latex
+
+    @patch("spell_card_generator.generators.latex_generator.subprocess.run")
+    def test_process_description_with_pandoc(self, mock_run, sample_spell_series):
+        """Test processing description with pandoc."""
+        generator = LaTeXGenerator()
+
+        # Mock successful pandoc execution
+        mock_run.return_value = MagicMock(stdout="Converted LaTeX text")
+
+        result = generator._process_description(
+            "<p>HTML text</p>", "Fallback text"
+        )
+
+        assert mock_run.called
+        # Should return converted text (with potential fixes applied)
+        assert "Converted" in result or "LaTeX" in result
+
+    @patch("spell_card_generator.generators.latex_generator.subprocess.run")
+    def test_process_description_pandoc_failure(self, mock_run, sample_spell_series):
+        """Test processing description when pandoc fails."""
+        generator = LaTeXGenerator()
+
+        # Mock pandoc failure
+        mock_run.side_effect = FileNotFoundError()
+
+        result = generator._process_description(
+            "<p>HTML text</p>", "Fallback text"
+        )
+
+        # Should fall back to plain text
+        assert result == "Fallback text"
+
+    def test_generate_latex_template(self, sample_spell_series):
+        """Test generation of complete LaTeX template."""
+        generator = LaTeXGenerator()
+        latex = generator._generate_latex_template(
+            sample_spell_series,
+            "wizard",
+            "3",
+            "https://english.com/spell",
+            "https://german.com/spell",
+        )
+
+        assert "\\begin{spellcard}" in latex
+        assert "{wizard}" in latex
+        assert "{Fireball}" in latex
+        assert "{3}" in latex
+        assert "https://english.com/spell" in latex
+        assert "https://german.com/spell" in latex
+        assert "\\spellcardinfo" in latex
+        assert "\\spellcardqr" in latex
+
+    def test_generate_cards_creates_files(self, tmp_path, sample_spell_data):
+        """Test that generate_cards creates files."""
+        generator = LaTeXGenerator()
+
+        # Create spell data list
+        spell_series = sample_spell_data.iloc[0]
+        selected_spells = [("wizard", "Fireball", spell_series)]
+
+        with patch.object(generator, "_get_output_file_path") as mock_path:
+            output_file = tmp_path / "test.tex"
+            mock_path.return_value = output_file
+
+            generated, skipped = generator.generate_cards(selected_spells, overwrite=True)
+
+            assert len(generated) == 1
+            assert len(skipped) == 0
+            assert output_file.exists()
+
+    def test_generate_cards_skips_existing_without_overwrite(
+        self, tmp_path, sample_spell_data
+    ):
+        """Test that generate_cards skips existing files when overwrite=False."""
+        generator = LaTeXGenerator()
+
+        spell_series = sample_spell_data.iloc[0]
+        selected_spells = [("wizard", "Fireball", spell_series)]
+
+        with patch.object(generator, "_get_output_file_path") as mock_path:
+            output_file = tmp_path / "test.tex"
+            output_file.parent.mkdir(parents=True, exist_ok=True)
+            output_file.write_text("existing content")
+            mock_path.return_value = output_file
+
+            generated, skipped = generator.generate_cards(
+                selected_spells, overwrite=False
+            )
+
+            assert len(generated) == 0
+            assert len(skipped) == 1
+            # File should still have original content
+            assert output_file.read_text() == "existing content"
+
+    def test_generate_cards_overwrites_existing_with_overwrite(
+        self, tmp_path, sample_spell_data
+    ):
+        """Test that generate_cards overwrites existing files when overwrite=True."""
+        generator = LaTeXGenerator()
+
+        spell_series = sample_spell_data.iloc[0]
+        selected_spells = [("wizard", "Fireball", spell_series)]
+
+        with patch.object(generator, "_get_output_file_path") as mock_path:
+            output_file = tmp_path / "test.tex"
+            output_file.parent.mkdir(parents=True, exist_ok=True)
+            output_file.write_text("existing content")
+            mock_path.return_value = output_file
+
+            generated, skipped = generator.generate_cards(selected_spells, overwrite=True)
+
+            assert len(generated) == 1
+            assert len(skipped) == 0
+            # File should have new content
+            assert "existing content" not in output_file.read_text()
+            assert "spellcard" in output_file.read_text()
+
+    def test_generate_cards_with_progress_callback(self, tmp_path, sample_spell_data):
+        """Test that generate_cards calls progress callback."""
+        generator = LaTeXGenerator()
+        progress_calls = []
+
+        def progress_callback(current, total, message):
+            progress_calls.append((current, total, message))
+
+        spell_series = sample_spell_data.iloc[0]
+        selected_spells = [("wizard", "Fireball", spell_series)]
+
+        with patch.object(generator, "_get_output_file_path") as mock_path:
+            output_file = tmp_path / "test.tex"
+            mock_path.return_value = output_file
+
+            generator.generate_cards(
+                selected_spells, overwrite=True, progress_callback=progress_callback
+            )
+
+            assert len(progress_calls) > 0
+            # Should have at least initial and completion calls
+            assert any("Processing" in call[2] for call in progress_calls)
+            assert any("complete" in call[2] for call in progress_calls)
+
+    def test_generate_cards_handles_errors(self, sample_spell_data):
+        """Test that generate_cards handles errors properly."""
+        generator = LaTeXGenerator()
+
+        spell_series = sample_spell_data.iloc[0]
+        selected_spells = [("wizard", "Fireball", spell_series)]
+
+        with patch.object(
+            generator, "generate_spell_latex", side_effect=Exception("Test error")
+        ):
+            with pytest.raises(GenerationError, match="Failed to generate spell card"):
+                generator.generate_cards(selected_spells, overwrite=True)

@@ -80,9 +80,21 @@ poetry add [--dev] <package-name>
 [[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator
 poetry run black .
 
-# Lint code (maintain 9.77/10 score)
+# Lint code (maintain 10.00/10 score)
 [[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator
 poetry run pylint .
+
+# Type checking
+[[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator
+poetry run mypy .
+
+# Run tests
+[[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator
+poetry run pytest
+
+# Check code coverage
+[[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator
+poetry run coverage run -m pytest && poetry run coverage report -m
 ```
 
 ### Critical DO NOTs
@@ -95,6 +107,8 @@ poetry run pylint .
 
 #### Architecture & Code Quality
 - ❌ Cause Pylint to exit non-zero
+- ❌ Cause Pytest to exit non-zero
+- ❌ Cause test coverage to decrease
 - ❌ Create duplicate UI elements
 
 #### UI/UX
