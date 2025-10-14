@@ -145,6 +145,9 @@ class DocumentationURLsStep(BaseWorkflowStep):
 
         # UI components
         self.spells_tree: Optional[ttk.Treeview] = None
+        self.progress_frame: Optional[ttk.Frame] = None
+        self.progress_bar: Optional[ttk.Progressbar] = None
+        self.progress_label: Optional[ttk.Label] = None
 
         # URL storage per spell
         self.primary_urls: Dict[str, str] = {}
@@ -207,6 +210,9 @@ class DocumentationURLsStep(BaseWorkflowStep):
         self._create_bulk_actions(top_container)
         # pylint: enable=duplicate-code
 
+        # Progress indicator (initially hidden)
+        self._create_progress_indicator(self.content_frame)
+
         # Spell URLs table
         self._create_urls_table(self.content_frame)
 
@@ -244,6 +250,46 @@ class DocumentationURLsStep(BaseWorkflowStep):
             text="Guess URLs...",
             command=self._guess_secondary_urls,
         ).grid(row=1, column=1, padx=5, pady=5)
+
+    def _create_progress_indicator(self, parent: ttk.Frame):
+        """Create a progress indicator for URL validation operations."""
+        self.progress_frame = ttk.Frame(parent)
+        self.progress_frame.pack(fill=tk.X, pady=(0, 10))
+
+        self.progress_label = ttk.Label(
+            self.progress_frame, text="Validating URLs...", font=("TkDefaultFont", 9)
+        )
+        self.progress_label.pack(side=tk.LEFT, padx=(0, 10))
+
+        self.progress_bar = ttk.Progressbar(
+            self.progress_frame, mode="determinate", length=300
+        )
+        self.progress_bar.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        # Initially hide the progress indicator
+        self.progress_frame.pack_forget()
+
+    def _show_progress(self, message: str = "Validating URLs...", maximum: int = 100):
+        """Show the progress indicator."""
+        if self.progress_frame and self.progress_bar and self.progress_label:
+            self.progress_label.config(text=message)
+            self.progress_bar.config(maximum=maximum, value=0)
+            self.progress_frame.pack(fill=tk.X, pady=(0, 10))
+            self.content_frame.update_idletasks()
+
+    def _update_progress(self, value: int, message: str = None):
+        """Update the progress bar value and optionally the message."""
+        if self.progress_bar:
+            self.progress_bar.config(value=value)
+            if message and self.progress_label:
+                self.progress_label.config(text=message)
+            self.content_frame.update_idletasks()
+
+    def _hide_progress(self):
+        """Hide the progress indicator."""
+        if self.progress_frame:
+            self.progress_frame.pack_forget()
+            self.content_frame.update_idletasks()
 
     def _create_urls_table(self, parent: ttk.Frame):
         """Create the editable URLs table."""
@@ -328,7 +374,18 @@ class DocumentationURLsStep(BaseWorkflowStep):
 
         # Add selected spells - extract spell name from each spell data
         spell_names = sorted([spell[1] for spell in workflow_state.selected_spells])
-        for spell_name in spell_names:
+        total_spells = len(spell_names)
+
+        # Show progress if we have many spells to validate
+        show_progress = total_spells > 5
+        if show_progress:
+            self._show_progress("Validating URLs...", total_spells)
+
+        for idx, spell_name in enumerate(spell_names):
+            # Update progress
+            if show_progress:
+                self._update_progress(idx + 1, f"Validating {spell_name}...")
+
             # Generate default primary URL (e.g., online documentation link)
             if spell_name not in self.default_primary_urls:
                 self.default_primary_urls[spell_name] = self._generate_default_url(
@@ -392,6 +449,10 @@ class DocumentationURLsStep(BaseWorkflowStep):
 
             self._update_tree_item(spell_name)
 
+        # Hide progress when done
+        if show_progress:
+            self._hide_progress()
+
     def _generate_default_url(self, spell_name: str) -> str:
         """Generate default documentation URL for a spell."""
         # Generate a default URL (d20pfsrd format)
@@ -408,7 +469,15 @@ class DocumentationURLsStep(BaseWorkflowStep):
 
         if dialog.result:
             pattern = dialog.result
-            for spell_name in spell_names:
+            total_spells = len(spell_names)
+
+            # Show progress for URL generation and validation
+            self._show_progress("Generating and validating URLs...", total_spells)
+
+            for idx, spell_name in enumerate(spell_names):
+                # Update progress
+                self._update_progress(idx + 1, f"Validating {spell_name}...")
+
                 # Generate URL for this spell
                 url = self._generate_guessed_url(spell_name, pattern)
                 self.secondary_urls[spell_name] = url
@@ -424,6 +493,9 @@ class DocumentationURLsStep(BaseWorkflowStep):
 
                 # Also update the cache so it persists if preserve URLs is set
                 workflow_state.set_spell_data(spell_name, "secondary_url", url)
+
+            # Hide progress
+            self._hide_progress()
 
             self._load_spell_data()
             if self.on_urls_changed:
@@ -644,7 +716,18 @@ class DocumentationURLsStep(BaseWorkflowStep):
 
     def _reset_all_primary(self):
         """Reset all primary URLs to defaults."""
-        for spell_name in self.primary_urls:
+        spell_names = list(self.primary_urls.keys())
+        total_spells = len(spell_names)
+
+        # Show progress if we have many spells
+        show_progress = total_spells > 5
+        if show_progress:
+            self._show_progress("Resetting and validating URLs...", total_spells)
+
+        for idx, spell_name in enumerate(spell_names):
+            if show_progress:
+                self._update_progress(idx + 1, f"Validating {spell_name}...")
+
             self.primary_urls[spell_name] = self.default_primary_urls.get(
                 spell_name, ""
             )
@@ -656,6 +739,10 @@ class DocumentationURLsStep(BaseWorkflowStep):
                 )
             else:
                 self.primary_validation[spell_name] = self.STATE_VALID
+
+        if show_progress:
+            self._hide_progress()
+
         self._load_spell_data()
         if self.on_urls_changed:
             self.on_urls_changed()
