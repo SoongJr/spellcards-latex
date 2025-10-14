@@ -16,9 +16,6 @@ from spell_card_generator.ui.workflow_steps.class_selection_step import (
 from spell_card_generator.ui.workflow_steps.spell_selection_step import (
     SpellSelectionStep,
 )
-from spell_card_generator.ui.workflow_steps.generation_options_step import (
-    GenerationOptionsStep,
-)
 from spell_card_generator.ui.workflow_steps.overwrite_cards_step import (
     OverwriteCardsStep,
 )
@@ -62,9 +59,8 @@ class WorkflowCoordinator:
             "class_selection": 0,
             "spell_selection": 1,
             "overwrite_cards": 2,
-            "generation_options": 3,
-            "documentation_urls": 4,
-            "preview_generate": 5,
+            "documentation_urls": 3,
+            "preview_generate": 4,
         }
         self.index_to_step_id = {v: k for k, v in self.step_id_to_index.items()}
 
@@ -156,21 +152,14 @@ class WorkflowCoordinator:
                 navigation_callback=self._on_step_changed,
                 on_overwrite_changed=self._on_overwrite_changed,
             )
-        if step_index == 3:  # Generation Options (shifted)
-            return GenerationOptionsStep(
-                self.content_frame,
-                step_index,
-                navigation_callback=self._on_step_changed,
-                on_options_changed=self._on_options_changed,
-            )
-        if step_index == 4:  # Documentation & Language URLs (consolidated)
+        if step_index == 3:  # Documentation & Language URLs
             return DocumentationURLsStep(
                 self.content_frame,
                 step_index,
                 navigation_callback=self._on_step_changed,
                 on_urls_changed=self._on_urls_changed,
             )
-        if step_index == 5:  # Preview & Generate (shifted)
+        if step_index == 4:  # Preview & Generate
             return PreviewGenerateStep(
                 self.content_frame,
                 step_index,
@@ -238,12 +227,6 @@ class WorkflowCoordinator:
 
     def _on_overwrite_changed(self):
         """Handle overwrite decision changes."""
-        # Update sidebar state
-        if self.sidebar:
-            self.sidebar.refresh_navigation()
-
-    def _on_options_changed(self):
-        """Handle generation options changes."""
         # Update sidebar state
         if self.sidebar:
             self.sidebar.refresh_navigation()

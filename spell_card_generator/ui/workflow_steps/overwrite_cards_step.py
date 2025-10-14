@@ -391,7 +391,7 @@ class OverwriteCardsStep(BaseWorkflowStep):
 
     def get_next_step_index(self) -> int:
         """Get the next step index after handling conflicts."""
-        return 3  # Go to generation options (accounting for inserted overwrite step)
+        return 3  # Go to documentation URLs
 
     def get_previous_step_index(self) -> int:
         """Get the previous step index."""

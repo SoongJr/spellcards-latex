@@ -312,14 +312,6 @@ def create_default_workflow() -> WorkflowNavigator:
             condition=StepCondition.REQUIRES_CONFLICTS,
         ),
         WorkflowStep(
-            step_id="generation_options",
-            name="Generation Options",
-            icon="settings",
-            description="Configure output settings",
-            required=False,
-            condition=StepCondition.REQUIRES_SPELLS,
-        ),
-        WorkflowStep(
             step_id="documentation_urls",
             name="Documentation & Language URLs",
             icon="link",
