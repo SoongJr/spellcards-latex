@@ -7,6 +7,7 @@ import urllib.request
 import urllib.error
 import urllib.parse
 import webbrowser
+from deep_translator import GoogleTranslator
 
 from spell_card_generator.ui.workflow_steps.base_step import BaseWorkflowStep
 from spell_card_generator.ui.workflow_state import workflow_state
@@ -171,6 +172,7 @@ class DocumentationURLsStep(BaseWorkflowStep):
         top_container = ttk.Frame(self.content_frame)
         top_container.pack(fill=tk.X, pady=(0, 15))
 
+        # pylint: disable=duplicate-code
         # Configure grid: description on left, bulk actions on right
         top_container.grid_rowconfigure(0, weight=0)
         top_container.columnconfigure(0, weight=1)
@@ -203,6 +205,7 @@ class DocumentationURLsStep(BaseWorkflowStep):
 
         # Row 0, Col 1: Bulk actions
         self._create_bulk_actions(top_container)
+        # pylint: enable=duplicate-code
 
         # Spell URLs table
         self._create_urls_table(self.content_frame)
@@ -314,8 +317,8 @@ class DocumentationURLsStep(BaseWorkflowStep):
         self.spells_tree.bind("<Double-Button-1>", self._on_tree_double_click)
         self.spells_tree.bind("<Button-1>", self._on_tree_click)
 
-    def _load_spell_data(self):
-        """Load selected spells into the tree."""
+    def _load_spell_data(self):  # pylint: disable=too-many-branches
+        """Load selected spells into the tree, respecting preserve URLs option."""
         if not self.spells_tree:
             return
 
@@ -332,10 +335,21 @@ class DocumentationURLsStep(BaseWorkflowStep):
                     spell_name
                 )
 
-            # Initialize URLs if not set
-            if spell_name not in self.primary_urls:
-                self.primary_urls[spell_name] = self.default_primary_urls[spell_name]
-                # Validate default primary URL on first load
+            # If preserve URLs is set for this spell, use the original URLs from cache
+            if workflow_state.preserve_urls.get(spell_name, False):
+                # Try to get preserved URLs from spell_data_cache
+                preserved_primary = workflow_state.get_spell_data(
+                    spell_name, "primary_url", ""
+                )
+                preserved_secondary = workflow_state.get_spell_data(
+                    spell_name, "secondary_url", ""
+                )
+                self.primary_urls[spell_name] = (
+                    preserved_primary or self.default_primary_urls[spell_name]
+                )
+                self.secondary_urls[spell_name] = preserved_secondary
+
+                # Validate the preserved URLs
                 if self.primary_urls[spell_name]:
                     is_valid = self._validate_url(self.primary_urls[spell_name])
                     self.primary_validation[spell_name] = (
@@ -343,16 +357,38 @@ class DocumentationURLsStep(BaseWorkflowStep):
                     )
                 else:
                     self.primary_validation[spell_name] = self.STATE_VALID
-            if spell_name not in self.secondary_urls:
-                self.secondary_urls[spell_name] = self.original_secondary_urls.get(
-                    spell_name, ""
-                )
-                # Empty URLs are considered valid
-                self.secondary_validation[spell_name] = (
-                    self.STATE_VALID
-                    if not self.secondary_urls[spell_name]
-                    else self.STATE_UNVALIDATED
-                )
+
+                if self.secondary_urls[spell_name]:
+                    is_valid = self._validate_url(self.secondary_urls[spell_name])
+                    self.secondary_validation[spell_name] = (
+                        self.STATE_VALID if is_valid else self.STATE_INVALID
+                    )
+                else:
+                    self.secondary_validation[spell_name] = self.STATE_VALID
+            else:
+                # Initialize URLs if not set
+                if spell_name not in self.primary_urls:
+                    self.primary_urls[spell_name] = self.default_primary_urls[
+                        spell_name
+                    ]
+                    # Validate default primary URL on first load
+                    if self.primary_urls[spell_name]:
+                        is_valid = self._validate_url(self.primary_urls[spell_name])
+                        self.primary_validation[spell_name] = (
+                            self.STATE_VALID if is_valid else self.STATE_INVALID
+                        )
+                    else:
+                        self.primary_validation[spell_name] = self.STATE_VALID
+                if spell_name not in self.secondary_urls:
+                    self.secondary_urls[spell_name] = self.original_secondary_urls.get(
+                        spell_name, ""
+                    )
+                    # Empty URLs are considered valid
+                    self.secondary_validation[spell_name] = (
+                        self.STATE_VALID
+                        if not self.secondary_urls[spell_name]
+                        else self.STATE_UNVALIDATED
+                    )
 
             self._update_tree_item(spell_name)
 
@@ -361,7 +397,7 @@ class DocumentationURLsStep(BaseWorkflowStep):
         # Generate a default URL (d20pfsrd format)
         spell_slug = spell_name.lower().replace(" ", "-").replace("'", "")
         base_url = "https://www.d20pfsrd.com/magic/all-spells"
-        return f"{base_url}/{spell_slug[0]}/{spell_slug}/"
+        return f"{base_url}/{spell_slug[0]}/{spell_slug}"  # No trailing slash
 
     def _guess_secondary_urls(self):
         """Show dialog to guess secondary URLs."""
@@ -373,20 +409,39 @@ class DocumentationURLsStep(BaseWorkflowStep):
         if dialog.result:
             pattern = dialog.result
             for spell_name in spell_names:
+                # Generate URL for this spell
                 url = self._generate_guessed_url(spell_name, pattern)
                 self.secondary_urls[spell_name] = url
-                self.secondary_validation[spell_name] = self.STATE_UNVALIDATED
+
+                # Validate the generated URL immediately
+                if url:
+                    is_valid = self._validate_url(url)
+                    self.secondary_validation[spell_name] = (
+                        self.STATE_VALID if is_valid else self.STATE_INVALID
+                    )
+                else:
+                    self.secondary_validation[spell_name] = self.STATE_VALID
+
+                # Also update the cache so it persists if preserve URLs is set
+                workflow_state.set_spell_data(spell_name, "secondary_url", url)
 
             self._load_spell_data()
             if self.on_urls_changed:
                 self.on_urls_changed()
 
     def _generate_guessed_url(self, spell_name: str, pattern: str) -> str:
-        """Generate a guessed URL based on pattern."""
+        """Generate a guessed URL based on pattern, with translation."""
         if pattern == "german":
             # German 5footstep.de pattern
-            # Note: This is a guess and will need manual adjustment
-            spell_part = spell_name.replace(" ", "-").replace("'", "")
+            # Translate spell name to German using deep-translator
+            target_lang = getattr(workflow_state, "secondary_language_code", "de")
+            try:
+                translator = GoogleTranslator(source="auto", target=target_lang)
+                translated = translator.translate(spell_name)
+            except (ValueError, TypeError, ConnectionError):
+                # Fallback to original if translation fails
+                translated = spell_name
+            spell_part = translated.replace(" ", "-").replace("'", "")
             return f"http://prd.5footstep.de/Grundregelwerk/Zauber/{spell_part}"
         return ""
 
@@ -639,7 +694,8 @@ class DocumentationURLsStep(BaseWorkflowStep):
                 break
 
         if existing_item:
-            # Update existing item using item() method - this is as close to "in-place" as Treeview allows
+            # Update existing item using item() method
+            # This is as close to "in-place" as Treeview allows
             self.spells_tree.item(
                 existing_item,
                 values=(

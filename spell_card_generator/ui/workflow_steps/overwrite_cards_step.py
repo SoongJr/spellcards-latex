@@ -44,6 +44,7 @@ class OverwriteCardsStep(BaseWorkflowStep):
         top_container = ttk.Frame(self.content_frame)
         top_container.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
 
+        # pylint: disable=duplicate-code
         # Configure grid: description on left, bulk actions on right
         top_container.grid_rowconfigure(0, weight=0)
         top_container.columnconfigure(0, weight=1)  # Description column stretches
@@ -73,6 +74,7 @@ class OverwriteCardsStep(BaseWorkflowStep):
 
         # Row 0, Col 1: Bulk actions
         self._create_bulk_actions(top_container)
+        # pylint: enable=duplicate-code
 
         # Conflicts tree view spans full width below
         self._create_conflicts_tree(self.content_frame)
@@ -209,9 +211,15 @@ class OverwriteCardsStep(BaseWorkflowStep):
         # Get conflicts summary for file analysis
         summary = FileScanner.get_conflicts_summary(workflow_state.existing_cards)
 
-        # Add items to tree
+        # Add items to tree and cache URLs for each existing spell
         for spell_name, _file_path in workflow_state.existing_cards.items():
             analysis = summary["analyses"].get(spell_name, {})
+
+            # Cache the URLs from existing files for potential preservation
+            primary_url = analysis.get("primary_url", "")
+            secondary_url = analysis.get("secondary_url", "")
+            workflow_state.set_spell_data(spell_name, "primary_url", primary_url)
+            workflow_state.set_spell_data(spell_name, "secondary_url", secondary_url)
 
             # Get current decisions with defaults
             overwrite = workflow_state.overwrite_decisions.get(spell_name, False)
@@ -311,6 +319,7 @@ class OverwriteCardsStep(BaseWorkflowStep):
         """Toggle preserve URLs decision for a specific spell."""
         current = workflow_state.preserve_urls.get(spell_name, False)
         workflow_state.preserve_urls[spell_name] = not current
+        # URLs are already cached in _populate_conflicts, no need to do it again
         self._populate_conflicts()
         if self.on_overwrite_changed:
             self.on_overwrite_changed()

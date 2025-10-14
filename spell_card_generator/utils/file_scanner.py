@@ -91,6 +91,8 @@ class FileScanner:
                 "file_size": stats.st_size,
                 "modification_time": stats.st_mtime,
                 "has_secondary_language": False,
+                "primary_url": "",
+                "secondary_url": "",
                 "secondary_language_urls": [],
                 "qr_codes": [],
                 "content_preview": (
@@ -111,9 +113,28 @@ class FileScanner:
                     analysis["has_secondary_language"] = True
                     break
 
-            # Extract URLs
+            # Extract URLs from \newcommand{\urlenglish} and \newcommand{\urlsecondary}
+            primary_url_pattern = r"\\newcommand\{\\urlenglish\}\{([^}]+)\}"
+            secondary_url_pattern = r"\\newcommand\{\\urlsecondary\}\{([^}]+)\}"
+
+            primary_match = re.search(primary_url_pattern, content)
+            secondary_match = re.search(secondary_url_pattern, content)
+
+            analysis["primary_url"] = primary_match.group(1) if primary_match else ""
+            analysis["secondary_url"] = (
+                secondary_match.group(1) if secondary_match else ""
+            )
+
+            # Also extract all \href URLs for backward compatibility
             url_pattern = r"\\href\{([^}]+)\}"
             urls = re.findall(url_pattern, content)
+
+            # If we didn't find URLs in newcommand format, fall back to href
+            if not analysis["primary_url"] and urls:
+                analysis["primary_url"] = urls[0] if len(urls) > 0 else ""
+            if not analysis["secondary_url"] and urls:
+                analysis["secondary_url"] = urls[1] if len(urls) > 1 else ""
+
             analysis["secondary_language_urls"] = [
                 url for url in urls if ".de" in url or "german" in url.lower()
             ]
@@ -131,6 +152,8 @@ class FileScanner:
                 "file_size": 0,
                 "modification_time": 0,
                 "has_secondary_language": False,
+                "primary_url": "",
+                "secondary_url": "",
                 "secondary_language_urls": [],
                 "qr_codes": [],
             }
