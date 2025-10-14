@@ -21,8 +21,13 @@ RUN initexmf --admin --set-config-value [MPM]AutoInstall=t
 FROM base AS devcontainer
 
 # Install some extra packages for development
-RUN apt-get update -y; apt-get install -y git pandoc python3 python3-pip python3-venv python3-tk python-is-python3 && \
+# fonts-noto-color-emoji provides emoji support for GUI applications
+RUN apt-get update -y; apt-get install -y git pandoc python3 python3-pip python3-venv python3-tk python-is-python3 \
+    fonts-noto-color-emoji fonts-noto fonts-dejavu && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Rebuild font cache to recognize newly installed fonts
+RUN fc-cache -f -v
 
 # Set up a persistent storage for bash history so rebuilding the devcontainer preserves commands
 # devcontainer.json needs to mount a volume to ${HOME}/persisted!

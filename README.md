@@ -38,6 +38,8 @@ spellcards-latex
 
 The easiest way to do this is by using GitHub Codespaces or the provided Docker environment, which includes all necessary dependencies.
 
+**Note**: The devcontainer includes `fonts-noto-color-emoji` for Unicode symbol and emoji support in the spell card generator GUI. If you encounter display issues with symbols (✓, ✗, ⚠, etc.), rebuild the devcontainer to ensure fonts are properly installed.
+
 ### Creating spell cards
 
 The file spell_card_generator/spell_full.tsv is a database of existing spells, exported from a [Google Doc](https://docs.google.com/spreadsheets/d/1cuwb3QSvWDD7GG5McdvyyRBpqycYuKMRsXgyrvxvLFI/edit?usp=sharing)  

@@ -313,9 +313,9 @@ def create_default_workflow() -> WorkflowNavigator:
         ),
         WorkflowStep(
             step_id="documentation_urls",
-            name="Documentation & Language URLs",
+            name="Documentation URLs",
             icon="link",
-            description="Custom spell references and multi-language support",
+            description="Add primary and secondary URLs",
             required=False,
             condition=StepCondition.REQUIRES_SPELLS,
         ),

@@ -11,10 +11,21 @@
 ## Remaining Steps & Priorities
 
 1. **Sidebar Workflow Completion**
-   - Finalize Documentation & Language URLs step (per-spell English and secondary language URL inputs)
+   - ✅ Class Selection step (single class selection with validation)
+   - ✅ Spell Selection step (searchable table with filtering)
+   - ✅ Overwrite Cards step (conflict resolution with bulk actions)
+   - ✅ Documentation URLs step (per-spell primary and secondary URL configuration with validation)
+     - **Features implemented:**
+       - Primary URL: Auto-generated d20pfsrd.com links, editable, with reset button
+       - Secondary URL: Optional, with "Guess URLs" dialog for German 5footstep.de pattern
+       - URL validation: HTTP HEAD requests with User-Agent header to avoid bot detection
+       - Visual feedback: Colored text with Unicode symbols (✓ green valid, ○ orange unvalidated, ✗ red invalid)
+       - Per-URL actions: "R" reset button, "V" visit button to open in browser
+       - Bulk actions: Reset all primary URLs, Guess all secondary URLs
+       - Non-ASCII support: Proper URL encoding for German umlauts (ä, ö, ü)
+       - Anti-bot measures: User-Agent header required for d20pfsrd.com validation
    - Complete Preview & Generate step (comprehensive summary and generation)
    - Polish UI transitions and animations
-   - Integrate advanced input feedback (URL validation, tooltips, help icons)
 
 2. **Testing and Validation**
    - Ensure all existing tests pass
