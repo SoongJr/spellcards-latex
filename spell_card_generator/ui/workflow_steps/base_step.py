@@ -86,8 +86,8 @@ class BaseWorkflowStep(ABC):
         button_container = ttk.Frame(self.navigation_frame)
         button_container.grid(row=0, column=0, sticky=tk.E)
 
-        # Previous button (left in container)
-        if workflow_state.can_navigate_previous():
+        # Always show Previous button if not at first step
+        if self.step_index > 0:
             self.previous_button = ttk.Button(
                 button_container,
                 text="Previous",
@@ -97,8 +97,8 @@ class BaseWorkflowStep(ABC):
             self.previous_button.configure(underline=0)
             self.previous_button.grid(row=0, column=0, padx=(0, 5))
 
-        # Next button (right in container)
-        if workflow_state.can_navigate_next():
+        # Always show Next button if not at last step
+        if self.step_index < 5:  # Maximum step index
             self.next_button = ttk.Button(
                 button_container,
                 text="Next",
@@ -106,7 +106,7 @@ class BaseWorkflowStep(ABC):
             )
             # Set underline for 'N' character (position 0)
             self.next_button.configure(underline=0)
-            next_col = 1 if workflow_state.can_navigate_previous() else 0
+            next_col = 1 if self.step_index > 0 else 0
             self.next_button.grid(row=0, column=next_col, padx=5)
 
     def _setup_keyboard_shortcuts(self):

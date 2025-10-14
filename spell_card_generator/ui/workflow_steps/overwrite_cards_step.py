@@ -1,10 +1,9 @@
 """Workflow step for managing overwrite decisions for existing spell cards."""
 
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk
 from typing import Callable, Optional
 import datetime
-from pathlib import Path
 
 from spell_card_generator.ui.workflow_steps.base_step import BaseWorkflowStep
 from spell_card_generator.ui.workflow_state import workflow_state
@@ -29,63 +28,60 @@ class OverwriteCardsStep(BaseWorkflowStep):
 
         # UI components
         self.conflicts_tree: Optional[ttk.Treeview] = None
-        self.preserve_secondary_var: Optional[tk.BooleanVar] = None
-        self.summary_label: Optional[ttk.Label] = None
         self.selection_frame: Optional[ttk.Frame] = None
 
-    def create_ui(self):
-        """Create the overwrite management UI."""
-        super().create_ui()
-
-        # Main content area
-        content_frame = ttk.Frame(self.main_frame)
-        content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
-
-        # Title and description
+    def create_step_content(self):
+        """Create the overwrite management step content."""
+        # Title
         title_label = ttk.Label(
-            content_frame,
+            self.content_frame,
             text="Existing Spell Cards Detected",
             font=("TkDefaultFont", 12, "bold"),
         )
         title_label.pack(anchor=tk.W, pady=(0, 5))
 
+        # Create grid container for description and bulk actions
+        top_container = ttk.Frame(self.content_frame)
+        top_container.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
+
+        # Configure grid: description on left, bulk actions on right
+        top_container.grid_rowconfigure(0, weight=0)
+        top_container.columnconfigure(0, weight=1)  # Description column stretches
+        top_container.columnconfigure(1, weight=0)  # Bulk actions column fixed width
+
+        # Row 0, Col 0: Description (with dynamic wrapping)
+        desc_frame = ttk.Frame(top_container)
+        desc_frame.grid(row=0, column=0, sticky=(tk.W, tk.E), padx=(0, 20))
+        desc_frame.columnconfigure(0, weight=1)
+
         desc_label = ttk.Label(
-            content_frame,
-            text="Some selected spells already have generated card files. "
-            "Choose which ones to overwrite:",
-            wraplength=600,
+            desc_frame,
+            text=(
+                "Some selected spells already have generated card files. "
+                "Choose which ones to overwrite and what to preserve.\n"
+                "Click checkboxes to toggle options:"
+            ),
+            justify=tk.LEFT,
         )
-        desc_label.pack(anchor=tk.W, pady=(0, 15))
+        desc_label.grid(row=0, column=0, sticky=(tk.W, tk.E))
 
-        # Summary information
-        self._create_summary_section(content_frame)
+        # Bind to configure event to update wraplength dynamically
+        def update_wraplength(event):
+            desc_label.configure(wraplength=event.width - 10)
 
-        # Conflicts tree view
-        self._create_conflicts_tree(content_frame)
+        desc_frame.bind("<Configure>", update_wraplength)
 
-        # Bulk actions
-        self._create_bulk_actions(content_frame)
+        # Row 0, Col 1: Bulk actions
+        self._create_bulk_actions(top_container)
 
-        # Secondary language preservation
-        self._create_preservation_options(content_frame)
+        # Conflicts tree view spans full width below
+        self._create_conflicts_tree(self.content_frame)
 
         # Populate the tree with current conflicts
         self._populate_conflicts()
 
         # Update validation
         self._update_validation()
-
-    def create_step_content(self):
-        """Create the overwrite management step content."""
-        # This method is implemented via create_ui() which calls the specific UI creation methods
-
-    def _create_summary_section(self, parent: ttk.Frame):
-        """Create summary information section."""
-        summary_frame = ttk.LabelFrame(parent, text="Conflict Summary", padding=10)
-        summary_frame.pack(fill=tk.X, pady=(0, 15))
-
-        self.summary_label = ttk.Label(summary_frame, text="")
-        self.summary_label.pack(anchor=tk.W)
 
     def _create_conflicts_tree(self, parent: ttk.Frame):
         """Create the conflicts treeview."""
@@ -96,34 +92,35 @@ class OverwriteCardsStep(BaseWorkflowStep):
         tree_container = ttk.Frame(tree_frame)
         tree_container.pack(fill=tk.BOTH, expand=True)
 
-        # Treeview
+        # Treeview - reordered columns with checkboxes on the left
         columns = (
             "overwrite",
+            "preserve_desc",
+            "preserve_urls",
             "spell",
-            "file_path",
-            "size",
             "modified",
-            "secondary_lang",
         )
         self.conflicts_tree = ttk.Treeview(
             tree_container, columns=columns, show="headings", selectmode="extended"
         )
 
-        # Configure columns
+        # Configure columns - checkboxes first, then spell info
         self.conflicts_tree.heading("overwrite", text="Overwrite")
+        self.conflicts_tree.heading("preserve_desc", text="Preserve Description")
+        self.conflicts_tree.heading("preserve_urls", text="Preserve URLs")
         self.conflicts_tree.heading("spell", text="Spell Name")
-        self.conflicts_tree.heading("file_path", text="File Path")
-        self.conflicts_tree.heading("size", text="Size")
-        self.conflicts_tree.heading("modified", text="Modified")
-        self.conflicts_tree.heading("secondary_lang", text="Has German")
+        self.conflicts_tree.heading("modified", text="Last Modified")
 
-        # Column widths
-        self.conflicts_tree.column("overwrite", width=80, minwidth=60)
-        self.conflicts_tree.column("spell", width=200, minwidth=150)
-        self.conflicts_tree.column("file_path", width=300, minwidth=200)
-        self.conflicts_tree.column("size", width=80, minwidth=60)
-        self.conflicts_tree.column("modified", width=120, minwidth=100)
-        self.conflicts_tree.column("secondary_lang", width=100, minwidth=80)
+        # Column widths - checkboxes narrower, spell info wider
+        self.conflicts_tree.column("overwrite", width=100, minwidth=80, anchor="center")
+        self.conflicts_tree.column(
+            "preserve_desc", width=150, minwidth=120, anchor="center"
+        )
+        self.conflicts_tree.column(
+            "preserve_urls", width=150, minwidth=120, anchor="center"
+        )
+        self.conflicts_tree.column("spell", width=250, minwidth=150)
+        self.conflicts_tree.column("modified", width=150, minwidth=120)
 
         # Scrollbars
         v_scrollbar = ttk.Scrollbar(
@@ -144,60 +141,61 @@ class OverwriteCardsStep(BaseWorkflowStep):
         tree_container.grid_rowconfigure(0, weight=1)
         tree_container.grid_columnconfigure(0, weight=1)
 
-        # Bind events
-        self.conflicts_tree.bind("<Double-1>", self._on_tree_double_click)
+        # Bind events - click to toggle checkboxes
         self.conflicts_tree.bind("<Button-1>", self._on_tree_click)
+        self.conflicts_tree.bind("<space>", self._on_tree_space)
+        self.conflicts_tree.bind("<Return>", self._on_tree_space)
 
     def _create_bulk_actions(self, parent: ttk.Frame):
-        """Create bulk action buttons."""
-        actions_frame = ttk.Frame(parent)
-        actions_frame.pack(fill=tk.X, pady=(0, 15))
+        """Create bulk action buttons in a grid layout."""
+        actions_frame = ttk.LabelFrame(parent, text="Bulk Actions", padding=10)
+        actions_frame.grid(row=0, column=1, sticky=tk.NE)
 
-        ttk.Label(actions_frame, text="Bulk Actions:").pack(side=tk.LEFT, padx=(0, 10))
+        # Configure grid columns: label, button1, button2
+        actions_frame.columnconfigure(0, weight=0)  # Label column (fixed width)
+        actions_frame.columnconfigure(1, weight=0)  # Button columns (no stretch)
+        actions_frame.columnconfigure(2, weight=0)
 
-        ttk.Button(actions_frame, text="Select All", command=self._select_all).pack(
-            side=tk.LEFT, padx=(0, 5)
+        # Row 0: Overwrite
+        ttk.Label(actions_frame, text="Overwrite:", anchor=tk.E).grid(
+            row=0, column=0, sticky=tk.E, padx=(0, 10), pady=5
         )
-
-        ttk.Button(actions_frame, text="Select None", command=self._select_none).pack(
-            side=tk.LEFT, padx=(0, 5)
-        )
-
         ttk.Button(
-            actions_frame, text="Invert Selection", command=self._invert_selection
-        ).pack(side=tk.LEFT, padx=(0, 5))
-
+            actions_frame, text="Overwrite All", command=self._select_all_overwrite
+        ).grid(row=0, column=1, padx=5, pady=5)
         ttk.Button(
-            actions_frame, text="Preview File", command=self._preview_selected_file
-        ).pack(side=tk.RIGHT)
+            actions_frame, text="Skip All", command=self._select_none_overwrite
+        ).grid(row=0, column=2, padx=5, pady=5)
 
-    def _create_preservation_options(self, parent: ttk.Frame):
-        """Create secondary language preservation options."""
-        preserve_frame = ttk.LabelFrame(
-            parent, text="Secondary Language Options", padding=10
+        # Row 1: Description
+        ttk.Label(actions_frame, text="Preserve Description:", anchor=tk.E).grid(
+            row=1, column=0, sticky=tk.E, padx=(0, 10), pady=5
         )
-        preserve_frame.pack(fill=tk.X)
+        ttk.Button(
+            actions_frame,
+            text="Preserve All",
+            command=self._select_all_preserve_desc,
+        ).grid(row=1, column=1, padx=5, pady=5)
+        ttk.Button(
+            actions_frame,
+            text="Clear All",
+            command=self._clear_all_preserve_desc,
+        ).grid(row=1, column=2, padx=5, pady=5)
 
-        self.preserve_secondary_var = tk.BooleanVar(
-            value=workflow_state.preserve_secondary_language
+        # Row 2: URLs
+        ttk.Label(actions_frame, text="Preserve URLs:", anchor=tk.E).grid(
+            row=2, column=0, sticky=tk.E, padx=(0, 10), pady=5
         )
-
-        preserve_check = ttk.Checkbutton(
-            preserve_frame,
-            text="Preserve existing secondary language configuration (German URLs, QR codes)",
-            variable=self.preserve_secondary_var,
-            command=self._on_preserve_changed,
-        )
-        preserve_check.pack(anchor=tk.W)
-
-        help_label = ttk.Label(
-            preserve_frame,
-            text="When enabled, existing German documentation and QR codes "
-            "will be preserved for overwritten cards.",
-            font=("TkDefaultFont", 8),
-            foreground="gray50",
-        )
-        help_label.pack(anchor=tk.W, pady=(5, 0))
+        ttk.Button(
+            actions_frame,
+            text="Preserve All",
+            command=self._select_all_preserve_urls,
+        ).grid(row=2, column=1, padx=5, pady=5)
+        ttk.Button(
+            actions_frame,
+            text="Clear All",
+            command=self._clear_all_preserve_urls,
+        ).grid(row=2, column=2, padx=5, pady=5)
 
     def _populate_conflicts(self):
         """Populate the conflicts tree with current data."""
@@ -208,56 +206,40 @@ class OverwriteCardsStep(BaseWorkflowStep):
         for item in self.conflicts_tree.get_children():
             self.conflicts_tree.delete(item)
 
-        # Get conflicts summary
+        # Get conflicts summary for file analysis
         summary = FileScanner.get_conflicts_summary(workflow_state.existing_cards)
 
-        # Update summary label
-        if self.summary_label:
-            summary_text = (
-                f"Total conflicts: {summary['total_conflicts']} | "
-                f"With German content: {summary['has_secondary_language']} | "
-                f"Total size: {self._format_file_size(summary['total_size'])}"
-            )
-            self.summary_label.config(text=summary_text)
-
         # Add items to tree
-        for spell_name, file_path in workflow_state.existing_cards.items():
+        for spell_name, _file_path in workflow_state.existing_cards.items():
             analysis = summary["analyses"].get(spell_name, {})
-            overwrite = workflow_state.overwrite_decisions.get(spell_name, False)
 
-            # Format data for display
-            overwrite_text = "☑" if overwrite else "☐"
-            size_text = self._format_file_size(analysis.get("file_size", 0))
+            # Get current decisions with defaults
+            overwrite = workflow_state.overwrite_decisions.get(spell_name, False)
+            preserve_desc = workflow_state.preserve_description.get(spell_name, False)
+            preserve_urls = workflow_state.preserve_urls.get(spell_name, False)
+
+            # Format checkboxes with more visible characters
+            overwrite_text = "[X]" if overwrite else "[ ]"
+            preserve_desc_text = "[X]" if preserve_desc else "[ ]"
+            preserve_urls_text = "[X]" if preserve_urls else "[ ]"
+
+            # Format modification time
             modified_text = self._format_modification_time(
                 analysis.get("modification_time", 0)
             )
-            has_german = (
-                "Yes" if analysis.get("has_secondary_language", False) else "No"
-            )
-
-            # Relative path for display
-            try:
-                relative_path = Path(file_path).relative_to(Path.cwd())
-            except (ValueError, OSError):
-                relative_path = Path(file_path).name
 
             self.conflicts_tree.insert(
                 "",
                 tk.END,
                 values=(
                     overwrite_text,
+                    preserve_desc_text,
+                    preserve_urls_text,
                     spell_name,
-                    str(relative_path),
-                    size_text,
                     modified_text,
-                    has_german,
                 ),
-                tags=("overwrite" if overwrite else "skip",),
+                tags=(spell_name,),  # Store spell_name in tags for easy lookup
             )
-
-        # Configure tags for visual feedback
-        self.conflicts_tree.tag_configure("overwrite", background="#ffe6e6")
-        self.conflicts_tree.tag_configure("skip", background="#e6ffe6")
 
     def _on_tree_click(self, event):
         """Handle tree click events."""
@@ -268,42 +250,72 @@ class OverwriteCardsStep(BaseWorkflowStep):
         region = self.conflicts_tree.identify("region", event.x, event.y)
         if region == "cell":
             column = self.conflicts_tree.identify("column", event.x, event.y)
+            item = self.conflicts_tree.identify("item", event.x, event.y)
+
+            if not item:
+                return
+
+            # Get spell name from tags
+            tags = self.conflicts_tree.item(item, "tags")
+            if not tags:
+                return
+            spell_name = tags[0]
+
+            # Toggle based on column clicked (updated for new column order)
             if column == "#1":  # Overwrite column
-                item = self.conflicts_tree.identify("item", event.x, event.y)
-                if item:
-                    self._toggle_overwrite(item)
+                self._toggle_overwrite(spell_name)
+            elif column == "#2":  # Preserve Description column (moved to #2)
+                self._toggle_preserve_description(spell_name)
+            elif column == "#3":  # Preserve URLs column (moved to #3)
+                self._toggle_preserve_urls(spell_name)
 
-    def _on_tree_double_click(self, _event):
-        """Handle double-click to preview file."""
-        self._preview_selected_file()
-
-    def _toggle_overwrite(self, item_id: str):
-        """Toggle overwrite decision for a specific item."""
+    def _on_tree_space(self, event):  # pylint: disable=unused-argument
+        """Handle space/enter key to toggle overwrite for selected items."""
         if not self.conflicts_tree:
             return
 
-        values = self.conflicts_tree.item(item_id, "values")
-        if len(values) >= 2:
-            spell_name = values[1]
-            current_overwrite = workflow_state.overwrite_decisions.get(
-                spell_name, False
-            )
-            new_overwrite = not current_overwrite
+        selection = self.conflicts_tree.selection()
+        for item in selection:
+            tags = self.conflicts_tree.item(item, "tags")
+            if tags:
+                spell_name = tags[0]
+                self._toggle_overwrite(spell_name)
 
-            # Update state
-            workflow_state.overwrite_decisions[spell_name] = new_overwrite
+    def _toggle_overwrite(self, spell_name: str):
+        """Toggle overwrite decision for a specific spell."""
+        current_overwrite = workflow_state.overwrite_decisions.get(spell_name, False)
+        new_overwrite = not current_overwrite
 
-            # Update display
-            self._populate_conflicts()
+        # Update state
+        workflow_state.overwrite_decisions[spell_name] = new_overwrite
 
-            # Notify callback
-            if self.on_overwrite_changed:
-                self.on_overwrite_changed()
+        # Update display
+        self._populate_conflicts()
 
-            # Update validation
-            self._update_validation()
+        # Notify callback
+        if self.on_overwrite_changed:
+            self.on_overwrite_changed()
 
-    def _select_all(self):
+        # Update validation
+        self._update_validation()
+
+    def _toggle_preserve_description(self, spell_name: str):
+        """Toggle preserve description decision for a specific spell."""
+        current = workflow_state.preserve_description.get(spell_name, False)
+        workflow_state.preserve_description[spell_name] = not current
+        self._populate_conflicts()
+        if self.on_overwrite_changed:
+            self.on_overwrite_changed()
+
+    def _toggle_preserve_urls(self, spell_name: str):
+        """Toggle preserve URLs decision for a specific spell."""
+        current = workflow_state.preserve_urls.get(spell_name, False)
+        workflow_state.preserve_urls[spell_name] = not current
+        self._populate_conflicts()
+        if self.on_overwrite_changed:
+            self.on_overwrite_changed()
+
+    def _select_all_overwrite(self):
         """Select all conflicts for overwrite."""
         for spell_name in workflow_state.existing_cards:
             workflow_state.overwrite_decisions[spell_name] = True
@@ -312,7 +324,7 @@ class OverwriteCardsStep(BaseWorkflowStep):
         if self.on_overwrite_changed:
             self.on_overwrite_changed()
 
-    def _select_none(self):
+    def _select_none_overwrite(self):
         """Deselect all conflicts."""
         for spell_name in workflow_state.existing_cards:
             workflow_state.overwrite_decisions[spell_name] = False
@@ -321,103 +333,43 @@ class OverwriteCardsStep(BaseWorkflowStep):
         if self.on_overwrite_changed:
             self.on_overwrite_changed()
 
-    def _invert_selection(self):
-        """Invert current selection."""
+    def _select_all_preserve_desc(self):
+        """Select preserve description for all spells."""
         for spell_name in workflow_state.existing_cards:
-            current = workflow_state.overwrite_decisions.get(spell_name, False)
-            workflow_state.overwrite_decisions[spell_name] = not current
+            workflow_state.preserve_description[spell_name] = True
         self._populate_conflicts()
-        self._update_validation()
         if self.on_overwrite_changed:
             self.on_overwrite_changed()
 
-    def _preview_selected_file(self):
-        """Preview the content of the selected file."""
-        if not self.conflicts_tree:
-            return
+    def _select_all_preserve_urls(self):
+        """Select preserve URLs for all spells."""
+        for spell_name in workflow_state.existing_cards:
+            workflow_state.preserve_urls[spell_name] = True
+        self._populate_conflicts()
+        if self.on_overwrite_changed:
+            self.on_overwrite_changed()
 
-        selection = self.conflicts_tree.selection()
-        if not selection:
-            messagebox.showinfo("No Selection", "Please select a file to preview.")
-            return
+    def _clear_all_preserve_desc(self):
+        """Clear preserve description for all spells."""
+        for spell_name in workflow_state.existing_cards:
+            workflow_state.preserve_description[spell_name] = False
+        self._populate_conflicts()
+        if self.on_overwrite_changed:
+            self.on_overwrite_changed()
 
-        item = selection[0]
-        values = self.conflicts_tree.item(item, "values")
-        if len(values) >= 2:
-            spell_name = values[1]
-            file_path = workflow_state.existing_cards.get(spell_name)
-
-            if file_path and Path(file_path).exists():
-                self._show_file_preview(spell_name, Path(file_path))
-            else:
-                messagebox.showerror(
-                    "File Not Found", f"Could not find file for {spell_name}"
-                )
-
-    def _show_file_preview(self, spell_name: str, file_path: Path):
-        """Show file preview dialog."""
-        preview_window = tk.Toplevel(self.main_frame)
-        preview_window.title(f"Preview: {spell_name}")
-        preview_window.geometry("600x400")
-        preview_window.transient(self.main_frame.winfo_toplevel())
-        preview_window.grab_set()
-
-        # File info
-        info_frame = ttk.Frame(preview_window)
-        info_frame.pack(fill=tk.X, padx=10, pady=5)
-
-        ttk.Label(
-            info_frame, text=f"File: {file_path}", font=("TkDefaultFont", 10, "bold")
-        ).pack(anchor=tk.W)
-
-        # Content
-        content_frame = ttk.Frame(preview_window)
-        content_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
-
-        text_widget = tk.Text(content_frame, wrap=tk.WORD, font=("Consolas", 9))
-        scrollbar = ttk.Scrollbar(
-            content_frame, orient=tk.VERTICAL, command=text_widget.yview
-        )
-        text_widget.configure(yscrollcommand=scrollbar.set)
-
-        text_widget.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-
-        try:
-            content = file_path.read_text(encoding="utf-8")
-            text_widget.insert("1.0", content)
-            text_widget.config(state=tk.DISABLED)
-        except (OSError, UnicodeDecodeError, PermissionError) as e:
-            text_widget.insert("1.0", f"Error reading file: {e}")
-            text_widget.config(state=tk.DISABLED)
-
-        # Close button
-        ttk.Button(preview_window, text="Close", command=preview_window.destroy).pack(
-            pady=10
-        )
-
-    def _on_preserve_changed(self):
-        """Handle preserve secondary language change."""
-        if self.preserve_secondary_var:
-            workflow_state.preserve_secondary_language = (
-                self.preserve_secondary_var.get()
-            )
-            if self.on_overwrite_changed:
-                self.on_overwrite_changed()
+    def _clear_all_preserve_urls(self):
+        """Clear preserve URLs for all spells."""
+        for spell_name in workflow_state.existing_cards:
+            workflow_state.preserve_urls[spell_name] = False
+        self._populate_conflicts()
+        if self.on_overwrite_changed:
+            self.on_overwrite_changed()
 
     def _update_validation(self):
         """Update step validation based on current selections."""
         # Step is valid if user has made decisions (even if all are "don't overwrite")
         has_decisions = len(workflow_state.overwrite_decisions) > 0
         workflow_state.set_step_valid(self.step_index, has_decisions)
-
-    def _format_file_size(self, size_bytes: int) -> str:
-        """Format file size for display."""
-        if size_bytes < 1024:
-            return f"{size_bytes} B"
-        if size_bytes < 1024 * 1024:
-            return f"{size_bytes / 1024:.1f} KB"
-        return f"{size_bytes / (1024 * 1024):.1f} MB"
 
     def _format_modification_time(self, timestamp: float) -> str:
         """Format modification time for display."""
@@ -432,8 +384,6 @@ class OverwriteCardsStep(BaseWorkflowStep):
     def refresh_ui(self):
         """Refresh the UI with current state."""
         self._populate_conflicts()
-        if self.preserve_secondary_var:
-            self.preserve_secondary_var.set(workflow_state.preserve_secondary_language)
 
     def is_step_complete(self) -> bool:
         """Check if the step is complete."""

@@ -43,7 +43,7 @@ class ClassSelectionStep(BaseWorkflowStep):
             self.content_frame,
             text=(
                 "Choose a character class to generate spell cards for. "
-                "Double-click to proceed to spell selection:"
+                "Select a class and click Next to proceed:"
             ),
             font=("TkDefaultFont", 10),
         )
@@ -64,12 +64,30 @@ class ClassSelectionStep(BaseWorkflowStep):
         if hasattr(self.data_loader, "character_classes"):
             self.class_manager.setup_class_tree(self.data_loader.character_classes)
 
+        # Restore previously selected class from workflow state
+        if workflow_state.selected_class:
+            self._restore_class_selection(workflow_state.selected_class)
+
         # Add double-click navigation
         if hasattr(self.class_manager, "tree"):
             self.class_manager.tree.bind("<Double-1>", self._on_double_click)
 
-        # Class selection state is automatically restored by the UI component
-        # based on the workflow state during initialization
+    def _restore_class_selection(self, class_name: str):
+        """Restore the previously selected class in the tree."""
+        if not self.class_manager or not self.class_manager.tree:
+            return
+
+        # Find and select the class in the tree
+        for category_item in self.class_manager.tree.get_children():
+            for class_item in self.class_manager.tree.get_children(category_item):
+                tags = self.class_manager.tree.item(class_item, "tags")
+                if tags and tags[0] == class_name:
+                    # Select this item
+                    self.class_manager.tree.selection_set(class_item)
+                    self.class_manager.tree.see(class_item)
+                    # Update internal state
+                    self.class_manager.selected_class = class_name
+                    return
 
     def _on_class_selection_changed(self, selected_class: Optional[str] = None):
         """Handle class selection changes."""

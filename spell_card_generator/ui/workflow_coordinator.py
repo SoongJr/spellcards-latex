@@ -54,8 +54,19 @@ class WorkflowCoordinator:
         self.content_frame: Optional[ttk.Frame] = None
         self.current_step: Optional[object] = None
 
-        # Step instances (created on demand)
+        # Step instances (created on demand) - mapped by step_id
         self.step_instances = {}
+
+        # Step ID to index mapping for backward compatibility
+        self.step_id_to_index = {
+            "class_selection": 0,
+            "spell_selection": 1,
+            "overwrite_cards": 2,
+            "generation_options": 3,
+            "documentation_urls": 4,
+            "preview_generate": 5,
+        }
+        self.index_to_step_id = {v: k for k, v in self.step_id_to_index.items()}
 
         self._create_workflow_ui()
 
@@ -64,6 +75,13 @@ class WorkflowCoordinator:
         # Main container frame
         workflow_frame = ttk.Frame(self.parent_frame)
         workflow_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Initialize workflow navigator state
+        self.workflow_state.navigator.refresh_step_states(
+            self.workflow_state.selected_class,
+            self.workflow_state.selected_spells,
+            self.workflow_state.conflicts_detected,
+        )
 
         # Create modern sidebar navigation
         self.sidebar = ModernSidebar(
@@ -74,7 +92,7 @@ class WorkflowCoordinator:
         self.content_frame = ttk.Frame(workflow_frame)
         self.content_frame.pack(fill=tk.BOTH, expand=True, side=tk.RIGHT)
 
-        # Show initial step (Class Selection)
+        # Show initial step (Class Selection - index 0)
         self._show_step(0)
 
     def _show_step(self, step_index: int):
@@ -82,7 +100,7 @@ class WorkflowCoordinator:
         # Disable UI updates temporarily to prevent flashing
         self.content_frame.update_idletasks()  # Ensure current state is rendered
 
-        # Create step instance if not exists
+        # Create step instance if not exists (use step_index as key)
         if step_index not in self.step_instances:
             self.step_instances[step_index] = self._create_step_instance(step_index)
 
@@ -98,6 +116,14 @@ class WorkflowCoordinator:
         self.current_step = self.step_instances[step_index]
         if self.current_step and hasattr(self.current_step, "create_ui"):
             self.current_step.create_ui()
+
+        # Update workflow state current step
+        self.workflow_state.current_step = step_index
+
+        # Update navigator to match (convert index to step_id)
+        step_id = self.index_to_step_id.get(step_index)
+        if step_id:
+            workflow_state.navigate_to_step(step_id)
 
         # Force immediate update to minimize visible changes
         self.content_frame.update_idletasks()

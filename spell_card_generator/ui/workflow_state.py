@@ -40,6 +40,15 @@ class WorkflowState:
     current_step: int = 0
     step_validation: Dict[int, bool] = field(default_factory=dict)
 
+    def __post_init__(self):
+        """Initialize workflow state after dataclass creation."""
+        # Ensure navigator starts at first step and refreshes state
+        if self.navigator and self.navigator.first_step:
+            self.navigator.current_step = self.navigator.first_step
+            self.navigator.refresh_step_states(
+                self.selected_class, self.selected_spells, self.conflicts_detected
+            )
+
     # Overwrite management
     existing_cards: Dict[str, Any] = field(
         default_factory=dict
@@ -47,7 +56,13 @@ class WorkflowState:
     overwrite_decisions: Dict[str, bool] = field(
         default_factory=dict
     )  # spell_name -> overwrite
-    preserve_secondary_language: bool = False
+    preserve_description: Dict[str, bool] = field(
+        default_factory=dict
+    )  # spell_name -> preserve description
+    preserve_urls: Dict[str, bool] = field(
+        default_factory=dict
+    )  # spell_name -> preserve URLs
+    preserve_secondary_language: bool = False  # Legacy global setting
     conflicts_detected: bool = False
 
     # Spell-specific data (preserved when spells are re-selected)

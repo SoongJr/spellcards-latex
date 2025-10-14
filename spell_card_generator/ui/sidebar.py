@@ -61,9 +61,9 @@ class ModernSidebar:
         self.parent_frame = parent_frame
         self.step_change_callback = step_change_callback
 
-        # UI State
+        # UI State - sync with workflow navigator
         self.expanded = True
-        self.current_step = 0
+        self.current_step = workflow_state.navigator.get_current_step_index()
         self.step_buttons: List[ttk.Button] = []
         self.tooltips: List[object] = []  # Tooltip objects
 
@@ -71,6 +71,7 @@ class ModernSidebar:
         self.sidebar_frame: Optional[ttk.Frame] = None
         self.buttons_frame: Optional[ttk.Frame] = None
         self.expand_button: Optional[ttk.Button] = None
+        self.progress_frame: Optional[ttk.Frame] = None
 
         # Create UI
         self._create_sidebar_ui()
@@ -290,14 +291,18 @@ class ModernSidebar:
             self._show_navigation_warning_by_id(step_id)
             return
 
+        # Get the updated current step index from navigator
+        step_index = workflow_state.navigator.get_current_step_index()
+
         # Update current step tracking
-        self.current_step = workflow_state.current_step
+        self.current_step = step_index
+        workflow_state.current_step = step_index
 
         # Refresh navigation states
         self._update_navigation_state()
 
         # Notify the callback with the new step index
-        self.step_change_callback(workflow_state.current_step)
+        self.step_change_callback(step_index)
 
     def _navigate_to_step(self, step_index: int):
         """Navigate to a specific workflow step (legacy method for compatibility)."""
@@ -369,7 +374,13 @@ class ModernSidebar:
 
     def refresh_navigation(self):
         """Refresh navigation state and visual indicators."""
-        # Since we always show all steps now, we mainly need to update states
+        # Refresh workflow state first to ensure everything is current
+        workflow_state.navigator.refresh_step_states(
+            workflow_state.selected_class,
+            workflow_state.selected_spells,
+            workflow_state.conflicts_detected,
+        )
+
         # Update navigation state (accessibility, current step highlighting)
         self._update_navigation_state()
 
