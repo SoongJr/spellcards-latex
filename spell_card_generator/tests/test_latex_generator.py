@@ -169,9 +169,7 @@ class TestLaTeXGenerator:
         # Mock successful pandoc execution
         mock_run.return_value = MagicMock(stdout="Converted LaTeX text")
 
-        result = generator._process_description(
-            "<p>HTML text</p>", "Fallback text"
-        )
+        result = generator._process_description("<p>HTML text</p>", "Fallback text")
 
         assert mock_run.called
         # Should return converted text (with potential fixes applied)
@@ -185,9 +183,7 @@ class TestLaTeXGenerator:
         # Mock pandoc failure
         mock_run.side_effect = FileNotFoundError()
 
-        result = generator._process_description(
-            "<p>HTML text</p>", "Fallback text"
-        )
+        result = generator._process_description("<p>HTML text</p>", "Fallback text")
 
         # Should fall back to plain text
         assert result == "Fallback text"
@@ -224,7 +220,9 @@ class TestLaTeXGenerator:
             output_file = tmp_path / "test.tex"
             mock_path.return_value = output_file
 
-            generated, skipped = generator.generate_cards(selected_spells, overwrite=True)
+            generated, skipped = generator.generate_cards(
+                selected_spells, overwrite=True
+            )
 
             assert len(generated) == 1
             assert len(skipped) == 0
@@ -269,7 +267,9 @@ class TestLaTeXGenerator:
             output_file.write_text("existing content")
             mock_path.return_value = output_file
 
-            generated, skipped = generator.generate_cards(selected_spells, overwrite=True)
+            generated, skipped = generator.generate_cards(
+                selected_spells, overwrite=True
+            )
 
             assert len(generated) == 1
             assert len(skipped) == 0

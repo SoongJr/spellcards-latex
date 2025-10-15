@@ -67,7 +67,7 @@ class TestValidators:
     def test_sanitize_filename_complex(self):
         """Test complex filename sanitization."""
         result = Validators.sanitize_filename('  My <File>: "Test" | Name.txt  ')
-        assert result == 'My -File- -Test- - Name.txt'
+        assert result == "My -File- -Test- - Name.txt"
 
     def test_validate_url_valid_http(self):
         """Test validation of valid HTTP URLs."""

@@ -50,10 +50,12 @@ source .venv/bin/activate && [command]
 
 #### Code Quality Standards
 - **Pylint Score**: MUST maintain 10.00/10 and not return non-zero exit code
+- **Test Coverage**: Target 60%+ overall (currently 39%, core modules at 93-100%)
 - **Import Style**: Use absolute imports only (`from spell_card_generator.module import ...`)
 - **Type Hints**: Required for all function parameters and return values
 - **Exception Handling**: Use proper exception chaining (`raise CustomError(...) from e`)
 - **Formatting**: Black formatting enforced
+- **Testing**: All tests must pass (142 tests, 100% pass rate)
 
 #### UI/UX Principles
 - **Single class selection**: Users select exactly one character class
@@ -92,10 +94,29 @@ poetry run mypy .
 [[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator
 poetry run pytest
 
-# Check code coverage
+# Run tests with coverage
 [[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator
-poetry run coverage run -m pytest && poetry run coverage report -m
-```
+poetry run pytest --cov --cov-report=html
+
+### Testing Strategy
+
+#### Testing Approach
+The project uses a **three-tier testing strategy**:
+
+1. **Unit Tests with Mocked tkinter**
+   - Mock tkinter widgets to test logic without GUI rendering
+   - Test state management, validation, event handlers
+   - Located in `tests/ui/` directory
+
+2. **Integration Tests**
+   - Test workflow state transitions end-to-end
+   - Verify data flow between components
+   - Focus on critical user paths
+
+3. **Manual Testing Documentation**
+   - Document visual behaviors in `tests/manual_testing.md`
+   - List edge cases for manual verification
+
 
 ### Critical DO NOTs
 
