@@ -92,6 +92,7 @@ class SpellCardGeneratorApp:
     def on_class_selection_changed(self, selected_class: Optional[str] = None):
         """Handle class selection changes (legacy method - now handled by workflow)."""
         # Class selection is now handled within the workflow coordinator
+        # Keep this for backward compatibility but it's not used
         self.current_selected_class = selected_class
 
     def on_spell_selection_changed(self):
@@ -101,7 +102,9 @@ class SpellCardGeneratorApp:
     def generate_cards(self):
         """Generate LaTeX spell cards."""
         try:
-            if not self.current_selected_class:
+            # Get selected class from workflow state
+            selected_class = self.workflow_coordinator.workflow_state.selected_class
+            if not selected_class:
                 self.dialog_manager.show_warning(
                     "Warning", "Please select a character class first"
                 )
@@ -115,11 +118,23 @@ class SpellCardGeneratorApp:
                 )
                 return
 
+            # Determine overwrite strategy from workflow state
+            # If we have overwrite decisions, respect them per-spell
+            # Otherwise, use the global overwrite_existing setting
+            workflow_state = self.workflow_coordinator.workflow_state
+
+            # For now, use simple overwrite logic:
+            # - If conflicts were detected and resolved, allow overwrite
+            # - Otherwise, use the overwrite_existing flag
+            overwrite = (
+                workflow_state.overwrite_existing or workflow_state.conflicts_detected
+            )
+
             # Generate cards with workflow state options
             generated_files, skipped_files = self.latex_generator.generate_cards(
                 selected_spells,
-                overwrite=self.workflow_coordinator.workflow_state.overwrite_existing,
-                german_url_template=self.workflow_coordinator.workflow_state.german_url_template,
+                overwrite=overwrite,
+                german_url_template=workflow_state.german_url_template,
                 progress_callback=self._update_progress,
             )
 
