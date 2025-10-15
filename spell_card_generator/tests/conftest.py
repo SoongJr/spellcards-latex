@@ -1,14 +1,16 @@
-"""Shared test fixtures and utilities."""
+"""Common fixtures for testing."""
+
+# pylint: disable=redefined-outer-name,unused-argument,import-outside-toplevel
+
+from unittest.mock import MagicMock
 
 import pandas as pd
 import pytest
-from pathlib import Path
-from unittest.mock import Mock, MagicMock
 
 
 @pytest.fixture
 def sample_spell_data():
-    """Create sample spell DataFrame for testing."""
+    """Sample spell data for testing."""
     data = {
         "name": [
             "Fireball",

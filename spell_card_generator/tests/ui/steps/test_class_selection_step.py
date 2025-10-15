@@ -1,7 +1,10 @@
 """Tests for class selection step."""
 
-import pytest
-from unittest.mock import MagicMock, patch, call
+# some complaints pylint may throw at us do not apply to test code:
+# pylint: disable=protected-access,unused-argument,too-many-arguments,too-many-positional-arguments
+
+from unittest.mock import MagicMock, patch
+
 from spell_card_generator.ui.workflow_steps.class_selection_step import (
     ClassSelectionStep,
 )

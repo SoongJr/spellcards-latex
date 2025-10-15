@@ -1,7 +1,7 @@
 """Tests for workflow state management."""
 
-import pytest
 import pandas as pd
+
 from spell_card_generator.ui.workflow_state import WorkflowState
 
 

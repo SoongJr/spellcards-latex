@@ -1,7 +1,11 @@
 """Tests for base workflow step."""
 
+# pylint: disable=unused-argument
+
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, patch, call
+
 from spell_card_generator.ui.workflow_steps.base_step import BaseWorkflowStep
 
 
@@ -10,7 +14,6 @@ class ConcreteStep(BaseWorkflowStep):
 
     def create_step_content(self):
         """Create minimal step content."""
-        pass
 
 
 class TestBaseWorkflowStep:
@@ -126,7 +129,7 @@ class TestBaseWorkflowStep:
         step.create_ui()
 
         # Verify destroy was called on the first frame
-        assert first_frame.destroy.called
+        first_frame.destroy.assert_called_once()  # pylint: disable=no-member
 
 
 class TestBaseWorkflowStepNavigation:
@@ -176,7 +179,8 @@ class TestBaseWorkflowStepAbstractMethod:
     def test_create_step_content_is_abstract(self):
         """Test that create_step_content must be implemented."""
         # BaseWorkflowStep itself cannot be instantiated
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError, match="abstract"):
+            # pylint: disable=abstract-class-instantiated
             BaseWorkflowStep(MagicMock(), 0)
 
     def test_concrete_implementation_works(self):

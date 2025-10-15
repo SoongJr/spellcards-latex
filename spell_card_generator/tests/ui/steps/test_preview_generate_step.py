@@ -3,10 +3,14 @@
 Note: This step is currently a placeholder implementation and will be
 completed in a future iteration. These tests verify the basic structure
 exists and can be instantiated.
+
+TODO: Implement comprehensive tests when PreviewGenerateStep is completed
 """
 
-import pytest
+# pylint: disable=unused-argument,import-outside-toplevel,fixme
+
 from unittest.mock import MagicMock, patch
+
 from spell_card_generator.ui.workflow_steps.preview_generate_step import (
     PreviewGenerateStep,
 )
@@ -103,7 +107,6 @@ class TestPreviewGenerateStepPlaceholder:
         assert step.on_generate == mock_generate_callback
 
 
-# TODO: Implement comprehensive tests when PreviewGenerateStep is completed
 # Future tests should cover:
 # - Summary display of selected class
 # - Summary display of selected spells

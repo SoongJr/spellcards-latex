@@ -1,7 +1,9 @@
 """Tests for workflow coordinator."""
 
-import pytest
-from unittest.mock import MagicMock, patch, call
+# pylint: disable=unused-argument
+
+from unittest.mock import MagicMock, patch
+
 from spell_card_generator.ui.workflow_coordinator import WorkflowCoordinator
 
 
@@ -104,7 +106,7 @@ class TestWorkflowCoordinator:
         mock_step_instance = MagicMock()
         mock_step_class.return_value = mock_step_instance
 
-        coordinator = WorkflowCoordinator(
+        _ = WorkflowCoordinator(
             parent_frame=mock_parent,
             data_loader=mock_data_loader,
             spell_filter=mock_spell_filter,

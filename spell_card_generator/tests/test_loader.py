@@ -2,7 +2,6 @@
 
 import pandas as pd
 import pytest
-from pathlib import Path
 
 from spell_card_generator.data.loader import SpellDataLoader
 from spell_card_generator.utils.exceptions import DataLoadError
@@ -113,7 +112,7 @@ class TestSpellDataLoader:
         assert len(categories) > 0
 
         # Check structure of categories
-        for category_name, category_data in categories.items():
+        for _, category_data in categories.items():
             assert "classes" in category_data
             assert "expanded" in category_data
             assert isinstance(category_data["classes"], list)

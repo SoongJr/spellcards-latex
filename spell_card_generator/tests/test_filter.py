@@ -1,6 +1,5 @@
 """Tests for spell_card_generator.data.filter module."""
 
-import pandas as pd
 import pytest
 
 from spell_card_generator.data.filter import SpellFilter

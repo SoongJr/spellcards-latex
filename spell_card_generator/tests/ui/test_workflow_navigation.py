@@ -1,6 +1,5 @@
 """Tests for workflow navigation system."""
 
-import pytest
 from spell_card_generator.ui.workflow_navigation import (
     WorkflowNavigator,
     WorkflowStep,
