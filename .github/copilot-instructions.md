@@ -50,7 +50,7 @@ source .venv/bin/activate && [command]
 
 #### Code Quality Standards
 - **Pylint Score**: MUST maintain 10.00/10 and not return non-zero exit code
-- **Test Coverage**: Target 60%+ overall (currently 39%, core modules at 93-100%)
+- **Test Coverage**: Target 60%+ overall
 - **Import Style**: Use absolute imports only (`from spell_card_generator.module import ...`)
 - **Type Hints**: Required for all function parameters and return values
 - **Exception Handling**: Use proper exception chaining (`raise CustomError(...) from e`)
