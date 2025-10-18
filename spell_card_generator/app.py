@@ -22,8 +22,8 @@ class SpellCardGeneratorApp:
         self.root.title("Spell Card Generator")
 
         # Set reasonable default window size to prevent startup sizing issues
-        self.root.geometry("900x600")  # Good default size for the application
-        self.root.minsize(900, 600)  # Minimum size to ensure usability
+        self.root.geometry("1080x720")  # Good default size for the application
+        self.root.minsize(780, 600)  # Minimum size to ensure usability
 
         # Initialize components (main window layout is now handled by workflow coordinator)
         self.data_loader = SpellDataLoader()

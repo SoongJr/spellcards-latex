@@ -10,6 +10,7 @@ from spell_card_generator.config.constants import Config
 from spell_card_generator.utils.exceptions import GenerationError
 from spell_card_generator.utils.validators import Validators
 from spell_card_generator.utils.file_scanner import FileScanner
+from spell_card_generator.utils.paths import PathConfig
 
 
 class LaTeXGenerator:
@@ -59,7 +60,7 @@ class LaTeXGenerator:
                     )
 
                 try:
-                    output_file = self._get_output_file_path(
+                    output_file = LaTeXGenerator.get_output_file_path(
                         class_name, spell_name, spell_data
                     )
 
@@ -136,16 +137,28 @@ class LaTeXGenerator:
                 raise GenerationError(f"Spell card generation failed: {e}") from e
             raise
 
-    def _get_output_file_path(
-        self, class_name: str, spell_name: str, spell_data: pd.Series
+    @staticmethod
+    def get_output_base_path() -> Path:
+        """
+        Get the output base path for spell cards.
+
+        Deprecated: Use PathConfig.get_output_base_path() instead.
+        This method is kept for backward compatibility.
+        """
+        return PathConfig.get_output_base_path()
+
+    @staticmethod
+    def get_output_file_path(
+        class_name: str, spell_name: str, spell_data: pd.Series
     ) -> Path:
         """Get the output file path for a spell."""
-        # Get base directory (assuming we're in spell_card_generator/)
-        base_dir = Path(__file__).parent.parent.parent
 
         # Create output directory path
         spell_level = str(spell_data[class_name])
-        output_dir = base_dir / "src" / "spells" / class_name / spell_level
+        base_path = PathConfig.get_output_base_path()
+        output_dir = PathConfig.get_spells_output_dir(
+            base_path, class_name, spell_level
+        )
 
         # Sanitize filename
         safe_name = Validators.sanitize_filename(spell_name)

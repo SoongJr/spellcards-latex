@@ -60,7 +60,7 @@ class SpellSelectionStep(BaseWorkflowStep):
         instruction_label = ttk.Label(
             self.content_frame, text=instruction_text, font=("TkDefaultFont", 10)
         )
-        instruction_label.pack(pady=(0, 15))
+        instruction_label.pack(pady=(0, 10))
 
         if workflow_state.selected_class:
             # Create spell selection interface

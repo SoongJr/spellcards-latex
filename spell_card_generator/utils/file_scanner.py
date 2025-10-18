@@ -6,6 +6,7 @@ from typing import Dict, List, Tuple, Optional, Any
 import pandas as pd
 
 from spell_card_generator.utils.validators import Validators
+from spell_card_generator.utils.paths import PathConfig
 
 
 class FileScanner:
@@ -43,13 +44,102 @@ class FileScanner:
         return existing_cards
 
     @staticmethod
+    def find_all_existing_cards(  # pylint: disable=too-many-branches
+        spell_dataframe: Optional[pd.DataFrame],
+        class_name: str,
+        level_filter: str = "All",
+        source_filter: str = "All",
+        search_term: str = "",
+        base_directory: Optional[Path] = None,
+    ) -> List[Tuple[str, str, pd.Series]]:
+        """
+        Find all existing .tex spell card files for a class, with optional filters.
+
+        This method scans the file system for existing spell cards and matches them
+        with the spell database, applying the same filters as the spell selection UI.
+
+        Args:
+            spell_dataframe: DataFrame with all spell data
+            class_name: Character class to search for (e.g., "wizard", "cleric")
+            level_filter: Spell level filter ("All" or specific level like "3")
+            source_filter: Source filter ("All" or specific source like "Core Rulebook")
+            search_term: Search term to filter spell names (case-insensitive)
+            base_directory: Base directory to search in
+                            (defaults to LaTeXGenerator.get_output_base_path)
+
+        Returns:
+            List of (class_name, spell_name, spell_data) tuples for found cards
+        """
+        if spell_dataframe is None or spell_dataframe.empty:
+            return []
+        if base_directory is None:
+            base_directory = PathConfig.get_output_base_path()
+
+        spells_dir = PathConfig.get_class_spells_dir(base_directory, class_name)
+        if not spells_dir.exists():
+            return []
+
+        found_spells: List[Tuple[str, str, pd.Series]] = []
+
+        # Scan through all .tex files in src/spells/{class_name}/
+        for tex_file in spells_dir.rglob("*.tex"):
+            try:
+                # Get relative path components: level/spellname.tex
+                parts = tex_file.relative_to(spells_dir).parts
+                if len(parts) != 2:  # Should be level/spell.tex
+                    continue
+
+                level, filename = parts
+                spell_name_from_file = filename.replace(".tex", "")
+
+                # Find matching spell in dataframe
+                for _, row in spell_dataframe.iterrows():
+                    sanitized = Validators.sanitize_filename(row["name"])
+                    if sanitized != spell_name_from_file:
+                        continue
+
+                    # Verify this class has this spell at this level
+                    if class_name not in row:
+                        continue
+
+                    spell_level = str(row[class_name])
+                    if spell_level != level:
+                        continue
+
+                    # Apply level filter
+                    if level_filter not in ("All", spell_level):
+                        continue
+
+                    # Apply source filter
+                    if source_filter != "All":
+                        spell_source = row.get("source", "")
+                        if spell_source != source_filter:
+                            continue
+
+                    # Apply search term filter
+                    if search_term:
+                        spell_name_lower = row["name"].lower()
+                        if search_term.lower() not in spell_name_lower:
+                            continue
+
+                    # All filters passed - add to found spells
+                    found_spells.append((class_name, row["name"], row))
+                    break
+
+            except (ValueError, KeyError):
+                # Skip files that don't match expected structure
+                continue
+
+        return found_spells
+
+    @staticmethod
     def _get_expected_file_path(
         class_name: str, spell_name: str, spell_data: pd.Series, base_directory: Path
     ) -> Path:
         """
         Get the expected file path for a spell card.
 
-        This mirrors the logic in LaTeXGenerator._get_output_file_path()
+        This mirrors the logic in LaTeXGenerator.get_output_file_path()
         to ensure consistency.
         """
         # Get spell level for the class
