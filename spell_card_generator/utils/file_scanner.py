@@ -159,6 +159,35 @@ class FileScanner:
             }
 
     @staticmethod
+    def extract_description(  # pylint: disable=too-many-return-statements
+        file_path: Path,
+    ) -> str:
+        """
+        Extract the description section from an existing .tex file.
+
+        Args:
+            file_path: Path to the .tex file
+
+        Returns:
+            The description text, or empty string if not found
+        """
+        if not file_path.exists():
+            return ""
+
+        try:
+            content = file_path.read_text(encoding="utf-8")
+
+            # Pattern: % SPELL DESCRIPTION BEGIN ... % SPELL DESCRIPTION END
+            pattern = r"% SPELL DESCRIPTION BEGIN\s*\n(.*?)\n\s*% SPELL DESCRIPTION END"
+            match = re.search(pattern, content, re.DOTALL)
+            if match:
+                return match.group(1).strip()
+            return ""
+
+        except (OSError, UnicodeDecodeError, PermissionError):
+            return ""
+
+    @staticmethod
     def get_conflicts_summary(existing_cards: Dict[str, Path]) -> Dict[str, Any]:
         """
         Get a summary of conflicts for display to the user.
