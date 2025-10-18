@@ -65,8 +65,10 @@ Follow the instructions of the tool and this general workflow:
    1. Fix hyphenation and under-/overfull boxes
 
 #### Re-creating spells
-This might be required if either the spell_full.tsv or spell_card_generator.py have changed.  
-<TODO>
+This might be required if either `spell_full.tsv` or `spell_card_generator` have changed.
+
+The spell card generator GUI includes a "Select Existing" button, allowing users to re-import and update previously generated spell cards.  
+You will be asked to confirm the overwrite and whether you wish to preserve URLs and description. 
 
 ### Recommended Extensions
 

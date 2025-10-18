@@ -10,6 +10,7 @@ from spell_card_generator.models.spell import ClassTabState
 from spell_card_generator.data.loader import SpellDataLoader
 from spell_card_generator.data.filter import SpellFilter
 from spell_card_generator.ui.workflow_state import workflow_state
+from spell_card_generator.utils.file_scanner import FileScanner
 
 
 class SpellTabManager:
@@ -234,6 +235,12 @@ class SpellTabManager:
 
         ttk.Button(
             buttons_frame,
+            text="Select\nExisting",
+            command=lambda: self._select_existing_cards(class_name),
+        ).pack(pady=(0, 5), fill=tk.X)
+
+        ttk.Button(
+            buttons_frame,
             text="Deselect All",
             command=lambda: self._deselect_all_spells(class_name),
         ).pack(pady=(0, 5), fill=tk.X)
@@ -443,6 +450,49 @@ class SpellTabManager:
         # Notify callback about selection change
         if self.spell_selection_callback:
             self.spell_selection_callback()
+
+    def _select_existing_cards(self, class_name: str):
+        """Select all existing spell cards that are on disk."""
+        if class_name not in self.spell_data:
+            return
+
+        # Get current filter state
+        level_filter = workflow_state.get_spell_filter_state("level_filter", "All")
+        source_filter = workflow_state.get_spell_filter_state("source_filter", "All")
+        search_term = workflow_state.get_spell_filter_state("search_term", "")
+
+        # Find all existing cards matching the filters
+        try:
+            existing_cards = FileScanner.find_all_existing_cards(
+                spell_dataframe=self.data_loader.spells_df,
+                class_name=class_name,
+                level_filter=level_filter,
+                source_filter=source_filter,
+                search_term=search_term,
+            )
+
+            if not existing_cards:
+                return
+
+            # Get the set of existing spell names
+            existing_spell_names = {spell_name for _, spell_name, _ in existing_cards}
+
+            # Select spells that exist and are currently visible in the tree
+            spells_tree = self.spell_data[class_name].spells_tree
+            for item in spells_tree.get_children():
+                spell_name = spells_tree.item(item)["values"][1]
+                if spell_name in existing_spell_names:
+                    self.selected_spells_state[spell_name] = True
+                    spells_tree.set(item, "Select", UIConfig.CHECKED_ICON)
+                    spells_tree.item(item, tags=("checked",))
+
+            # Notify callback about selection change
+            if self.spell_selection_callback:
+                self.spell_selection_callback()
+
+        except (OSError, ValueError, KeyError):
+            # Silently fail - this is just a convenience feature
+            pass
 
     def _preview_spell(self, class_name: str):
         """Preview selected spell details."""

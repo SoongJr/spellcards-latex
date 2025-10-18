@@ -121,8 +121,7 @@ class TestLaTeXGenerator:
 
     def test_get_output_file_path(self, sample_spell_series):
         """Test getting output file path for a spell."""
-        generator = LaTeXGenerator()
-        output_path = generator._get_output_file_path(
+        output_path = LaTeXGenerator.get_output_file_path(
             "wizard", "Fireball", sample_spell_series
         )
 
@@ -133,9 +132,8 @@ class TestLaTeXGenerator:
 
     def test_get_output_file_path_sanitizes_name(self, sample_spell_series):
         """Test that output file path sanitizes spell name."""
-        generator = LaTeXGenerator()
         sample_spell_series["name"] = 'Test: "Spell" | Name'
-        output_path = generator._get_output_file_path(
+        output_path = LaTeXGenerator.get_output_file_path(
             "wizard", sample_spell_series["name"], sample_spell_series
         )
 
@@ -144,6 +142,39 @@ class TestLaTeXGenerator:
         assert ":" not in filename
         assert '"' not in filename
         assert "|" not in filename
+
+    def test_get_output_file_path_preserves_comma(self, sample_spell_series):
+        """Test that output file path preserves commas in spell names."""
+        sample_spell_series["name"] = "Invisibility, Greater"
+        output_path = LaTeXGenerator.get_output_file_path(
+            "wizard", sample_spell_series["name"], sample_spell_series
+        )
+
+        # Comma should be preserved in filename
+        assert output_path.name == "Invisibility, Greater.tex"
+        assert "," in output_path.stem
+
+    def test_get_output_file_path_preserves_apostrophe(self, sample_spell_series):
+        """Test that output file path preserves apostrophes in spell names."""
+        sample_spell_series["name"] = "Mage's Magnificent Mansion"
+        output_path = LaTeXGenerator.get_output_file_path(
+            "wizard", sample_spell_series["name"], sample_spell_series
+        )
+
+        # Apostrophe should be preserved in filename
+        assert output_path.name == "Mage's Magnificent Mansion.tex"
+        assert "'" in output_path.stem
+
+    def test_get_output_file_path_preserves_spaces(self, sample_spell_series):
+        """Test that output file path preserves spaces in spell names."""
+        sample_spell_series["name"] = "Magic Missile"
+        output_path = LaTeXGenerator.get_output_file_path(
+            "wizard", sample_spell_series["name"], sample_spell_series
+        )
+
+        # Spaces should be preserved in filename
+        assert output_path.name == "Magic Missile.tex"
+        assert " " in output_path.stem
 
     def test_generate_spell_latex(self, sample_spell_series):
         """Test generating LaTeX for a spell."""
@@ -221,7 +252,7 @@ class TestLaTeXGenerator:
         spell_series = sample_spell_data.iloc[0]
         selected_spells = [("wizard", "Fireball", spell_series)]
 
-        with patch.object(generator, "_get_output_file_path") as mock_path:
+        with patch.object(LaTeXGenerator, "get_output_file_path") as mock_path:
             output_file = tmp_path / "test.tex"
             mock_path.return_value = output_file
 
@@ -242,7 +273,7 @@ class TestLaTeXGenerator:
         spell_series = sample_spell_data.iloc[0]
         selected_spells = [("wizard", "Fireball", spell_series)]
 
-        with patch.object(generator, "_get_output_file_path") as mock_path:
+        with patch.object(LaTeXGenerator, "get_output_file_path") as mock_path:
             output_file = tmp_path / "test.tex"
             output_file.parent.mkdir(parents=True, exist_ok=True)
             output_file.write_text("existing content")
@@ -266,7 +297,7 @@ class TestLaTeXGenerator:
         spell_series = sample_spell_data.iloc[0]
         selected_spells = [("wizard", "Fireball", spell_series)]
 
-        with patch.object(generator, "_get_output_file_path") as mock_path:
+        with patch.object(LaTeXGenerator, "get_output_file_path") as mock_path:
             output_file = tmp_path / "test.tex"
             output_file.parent.mkdir(parents=True, exist_ok=True)
             output_file.write_text("existing content")
@@ -293,7 +324,7 @@ class TestLaTeXGenerator:
         spell_series = sample_spell_data.iloc[0]
         selected_spells = [("wizard", "Fireball", spell_series)]
 
-        with patch.object(generator, "_get_output_file_path") as mock_path:
+        with patch.object(LaTeXGenerator, "get_output_file_path") as mock_path:
             output_file = tmp_path / "test.tex"
             mock_path.return_value = output_file
 
@@ -318,3 +349,127 @@ class TestLaTeXGenerator:
         ):
             with pytest.raises(GenerationError, match="Failed to generate spell card"):
                 generator.generate_cards(selected_spells, overwrite=True)
+
+    def test_generate_cards_special_characters_in_filename(
+        self, tmp_path, sample_spell_data
+    ):
+        """Test that generate_cards handles special characters correctly."""
+        generator = LaTeXGenerator()
+
+        # Create spell with apostrophe like "Mage's Magnificent Mansion"
+        spell_series = sample_spell_data.iloc[0].copy()
+        spell_series["name"] = "Mage's Magnificent Mansion"
+        selected_spells = [("wizard", "Mage's Magnificent Mansion", spell_series)]
+
+        with patch(
+            "spell_card_generator.utils.paths.PathConfig.get_output_base_path",
+            return_value=tmp_path,
+        ):
+            generated, skipped = generator.generate_cards(
+                selected_spells, overwrite=True
+            )
+
+            assert len(generated) == 1
+
+            # Verify the file was created with the correct name (apostrophe preserved)
+            expected_file = (
+                tmp_path
+                / "src"
+                / "spells"
+                / "wizard"
+                / "3"
+                / "Mage's Magnificent Mansion.tex"
+            )
+            assert expected_file.exists()
+            assert "'" in expected_file.name
+
+            # Verify content contains the spell name
+            content = expected_file.read_text()
+            assert "Mage's Magnificent Mansion" in content
+
+    def test_generate_cards_comma_in_filename(self, tmp_path, sample_spell_data):
+        """Test that generate_cards handles commas in spell names correctly."""
+        generator = LaTeXGenerator()
+
+        # Create spell with comma like "Invisibility, Greater"
+        spell_series = sample_spell_data.iloc[0].copy()
+        spell_series["name"] = "Invisibility, Greater"
+        selected_spells = [("wizard", "Invisibility, Greater", spell_series)]
+
+        with patch(
+            "spell_card_generator.utils.paths.PathConfig.get_output_base_path",
+            return_value=tmp_path,
+        ):
+            generated, skipped = generator.generate_cards(
+                selected_spells, overwrite=True
+            )
+
+            assert len(generated) == 1
+
+            # Verify the file was created with the correct name (comma preserved)
+            expected_file = (
+                tmp_path
+                / "src"
+                / "spells"
+                / "wizard"
+                / "3"
+                / "Invisibility, Greater.tex"
+            )
+            assert expected_file.exists()
+            assert "," in expected_file.name
+
+            # Verify content contains the spell name
+            content = expected_file.read_text()
+            assert "Invisibility, Greater" in content
+
+    def test_generate_cards_overwrite_special_characters(
+        self, tmp_path, sample_spell_data
+    ):
+        """Test that overwriting works correctly with special characters in filename."""
+        generator = LaTeXGenerator()
+
+        # Create spell with apostrophe
+        spell_series = sample_spell_data.iloc[0].copy()
+        spell_series["name"] = "Mage's Magnificent Mansion"
+        selected_spells = [("wizard", "Mage's Magnificent Mansion", spell_series)]
+
+        with patch(
+            "spell_card_generator.utils.paths.PathConfig.get_output_base_path",
+            return_value=tmp_path,
+        ):
+            # First generation
+            generated1, skipped1 = generator.generate_cards(
+                selected_spells, overwrite=True
+            )
+            assert len(generated1) == 1
+            assert len(skipped1) == 0
+
+            expected_file = (
+                tmp_path
+                / "src"
+                / "spells"
+                / "wizard"
+                / "3"
+                / "Mage's Magnificent Mansion.tex"
+            )
+            assert expected_file.exists()
+            first_content = expected_file.read_text()
+
+            # Try to generate again without overwrite - should skip
+            generated2, skipped2 = generator.generate_cards(
+                selected_spells, overwrite=False
+            )
+            assert len(generated2) == 0
+            assert len(skipped2) == 1
+            assert expected_file.read_text() == first_content
+
+            # Generate again with overwrite - should overwrite the same file
+            generated3, skipped3 = generator.generate_cards(
+                selected_spells, overwrite=True
+            )
+            assert len(generated3) == 1
+            assert len(skipped3) == 0
+
+            # File should still exist with the same name
+            assert expected_file.exists()
+            assert "Mage's Magnificent Mansion.tex" in str(expected_file)
