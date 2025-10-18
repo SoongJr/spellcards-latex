@@ -70,13 +70,13 @@ class TestLaTeXGenerator:
         """Test formatting of NULL saving throw."""
         generator = LaTeXGenerator()
         result = generator._format_saving_throw("NULL")
-        assert "\\emph{N/A}" in result
+        assert "\\textbf{none}" in result
 
     def test_format_saving_throw_empty(self):
         """Test formatting of empty saving throw."""
         generator = LaTeXGenerator()
         result = generator._format_saving_throw("")
-        assert "\\emph{N/A}" in result
+        assert "\\textbf{none}" in result
 
     def test_format_spell_resistance_no(self):
         """Test formatting of 'no' spell resistance."""
@@ -89,7 +89,7 @@ class TestLaTeXGenerator:
         """Test formatting of NULL spell resistance."""
         generator = LaTeXGenerator()
         result = generator._format_spell_resistance("NULL")
-        assert "\\emph{N/A}" in result
+        assert "\\textbf{no}" in result
 
     def test_generate_english_url_simple(self):
         """Test generation of English URL for simple spell name."""

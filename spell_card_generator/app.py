@@ -130,12 +130,24 @@ class SpellCardGeneratorApp:
                 workflow_state.overwrite_existing or workflow_state.conflicts_detected
             )
 
+            # Build URL configuration from workflow state
+            # URLs are stored separately: custom_url_templates (primary),
+            # secondary_language_urls (secondary)
+            url_config = {}
+            for spell_name in [name for _, name, _ in selected_spells]:
+                primary = workflow_state.custom_url_templates.get(spell_name)
+                secondary = workflow_state.secondary_language_urls.get(spell_name)
+                url_config[spell_name] = (primary, secondary)
+
             # Generate cards with workflow state options
             generated_files, skipped_files = self.latex_generator.generate_cards(
                 selected_spells,
                 overwrite=overwrite,
                 german_url_template=workflow_state.german_url_template,
                 progress_callback=self._update_progress,
+                preserve_description=workflow_state.preserve_description,
+                preserve_urls=workflow_state.preserve_urls,
+                url_configuration=url_config,
             )
 
             # Show results

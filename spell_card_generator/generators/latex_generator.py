@@ -9,6 +9,7 @@ import pandas as pd
 from spell_card_generator.config.constants import Config
 from spell_card_generator.utils.exceptions import GenerationError
 from spell_card_generator.utils.validators import Validators
+from spell_card_generator.utils.file_scanner import FileScanner
 
 
 class LaTeXGenerator:
@@ -17,7 +18,7 @@ class LaTeXGenerator:
     def __init__(self):
         self.progress_callback: Optional[Callable[[int, int, str], None]] = None
 
-    def generate_cards(
+    def generate_cards(  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
         self,
         selected_spells: List[
             Tuple[str, str, pd.Series]
@@ -25,6 +26,9 @@ class LaTeXGenerator:
         overwrite: bool = False,
         german_url_template: str = Config.DEFAULT_GERMAN_URL,
         progress_callback: Optional[Callable[[int, int, str], None]] = None,
+        preserve_description: Optional[dict] = None,  # spell_name -> bool
+        preserve_urls: Optional[dict] = None,  # spell_name -> bool
+        url_configuration: Optional[dict] = None,  # spell_name -> (primary, secondary)
     ) -> Tuple[List[str], List[str]]:
         """
         Generate LaTeX files for selected spells.
@@ -35,6 +39,14 @@ class LaTeXGenerator:
         self.progress_callback = progress_callback
         generated_files = []
         skipped_files = []
+
+        # Initialize preservation dicts if not provided
+        if preserve_description is None:
+            preserve_description = {}
+        if preserve_urls is None:
+            preserve_urls = {}
+        if url_configuration is None:
+            url_configuration = {}
 
         try:
             total_spells = len(selected_spells)
@@ -56,9 +68,47 @@ class LaTeXGenerator:
                         skipped_files.append(str(output_file))
                         continue
 
+                    # Check for preservation settings
+                    should_preserve_desc = preserve_description.get(spell_name, False)
+                    should_preserve_urls = preserve_urls.get(spell_name, False)
+
+                    # Extract preserved content if needed
+                    preserved_description = None
+                    preserved_primary_url = None
+                    preserved_secondary_url = None
+
+                    if (
+                        should_preserve_desc or should_preserve_urls
+                    ) and output_file.exists():
+                        if should_preserve_desc:
+                            preserved_description = FileScanner.extract_description(
+                                output_file
+                            )
+
+                        if should_preserve_urls:
+                            analysis = FileScanner.analyze_existing_card(output_file)
+                            preserved_primary_url = analysis.get("primary_url", "")
+                            preserved_secondary_url = analysis.get("secondary_url", "")
+
+                    # Get URL configuration for this spell
+                    urls = url_configuration.get(spell_name, (None, None))
+                    primary_url = urls[0] if urls[0] is not None else None
+                    secondary_url = urls[1] if urls[1] is not None else None
+
+                    # Use preserved URLs if requested
+                    if should_preserve_urls and preserved_primary_url:
+                        primary_url = preserved_primary_url
+                    if should_preserve_urls and preserved_secondary_url:
+                        secondary_url = preserved_secondary_url
+
                     # Generate LaTeX content
                     latex_content = self.generate_spell_latex(
-                        spell_data, class_name, german_url_template
+                        spell_data,
+                        class_name,
+                        german_url_template,
+                        preserved_description=preserved_description,
+                        custom_primary_url=primary_url,
+                        custom_secondary_url=secondary_url,
                     )
 
                     # Write file
@@ -108,6 +158,9 @@ class LaTeXGenerator:
         spell_data: pd.Series,
         character_class: str,
         german_url_template: str = Config.DEFAULT_GERMAN_URL,
+        preserved_description: Optional[str] = None,
+        custom_primary_url: Optional[str] = None,
+        custom_secondary_url: Optional[str] = None,
     ) -> str:
         """Generate LaTeX code for a single spell."""
         try:
@@ -115,11 +168,17 @@ class LaTeXGenerator:
             spell_level = spell_data[character_class]
 
             # Apply LaTeX fixes to relevant fields
-            processed_data = self._process_spell_data(spell_data)
+            processed_data = self._process_spell_data(spell_data, preserved_description)
 
-            # Generate URLs
-            english_url = self._generate_english_url(spell_data["name"])
-            german_url = german_url_template  # User can modify this manually
+            # Generate URLs (use custom if provided)
+            english_url = (
+                custom_primary_url
+                if custom_primary_url
+                else self._generate_english_url(spell_data["name"])
+            )
+            german_url = (
+                custom_secondary_url if custom_secondary_url else german_url_template
+            )
 
             # Generate LaTeX content
             latex_content = self._generate_latex_template(
@@ -131,7 +190,9 @@ class LaTeXGenerator:
         except Exception as e:
             raise GenerationError(f"Failed to generate LaTeX for spell: {e}") from e
 
-    def _process_spell_data(self, spell_data: pd.Series) -> pd.Series:
+    def _process_spell_data(
+        self, spell_data: pd.Series, preserved_description: Optional[str] = None
+    ) -> pd.Series:
         """Process spell data and apply LaTeX fixes."""
         processed = spell_data.copy()
 
@@ -149,10 +210,14 @@ class LaTeXGenerator:
             processed.get("spell_resistance", "")
         )
 
-        # Process description
-        processed["description_formatted"] = self._process_description(
-            processed.get("description_formatted", ""), processed.get("description", "")
-        )
+        # Process description - use preserved if provided
+        if preserved_description:
+            processed["description_formatted"] = preserved_description
+        else:
+            processed["description_formatted"] = self._process_description(
+                processed.get("description_formatted", ""),
+                processed.get("description", ""),
+            )
 
         return processed
 
@@ -181,16 +246,18 @@ class LaTeXGenerator:
     def _format_saving_throw(self, saving_throw: str) -> str:
         """Format saving throw for LaTeX."""
         if not saving_throw or saving_throw == Config.NULL_VALUE:
-            return "\\\\emph{N/A}"
+            return "\\textbf{none}"
 
-        return re.sub(r"\\bnone\\b", r"\\\\textbf{none}", saving_throw)
+        # Make "none" bold to emphasize it
+        return re.sub(r"\bnone\b", r"\\textbf{none}", saving_throw, flags=re.IGNORECASE)
 
     def _format_spell_resistance(self, spell_resistance: str) -> str:
         """Format spell resistance for LaTeX."""
         if not spell_resistance or spell_resistance == Config.NULL_VALUE:
-            return "\\\\emph{N/A}"
+            return "\\textbf{no}"
 
-        return re.sub(r"\\bno\\b", r"\\\\textbf{no}", spell_resistance)
+        # Make "no" bold to emphasize it
+        return re.sub(r"\bno\b", r"\\textbf{no}", spell_resistance, flags=re.IGNORECASE)
 
     def _process_description(
         self, description_formatted: str, description_fallback: str
@@ -236,10 +303,23 @@ class LaTeXGenerator:
     ) -> str:
         """Generate the complete LaTeX template for a spell."""
 
-        # Helper function to get field value or empty string
+        # Helper function to get field value or NULL
         def get_field(field_name: str) -> str:
             value = spell_data.get(field_name, "")
-            return value if value != Config.NULL_VALUE else ""
+            # Return "NULL" for missing/null values to match legacy behavior
+            return value if value != Config.NULL_VALUE else "NULL"
+
+        # Prepare QR code lines (can't use backslashes in f-string expressions)
+        primary_qr = (
+            "\\spellcardqr{\\urlenglish}"
+            if english_url
+            else "% \\spellcardqr{\\urlenglish}"
+        )
+        secondary_qr = (
+            "\\spellcardqr{\\urlsecondary}"
+            if (secondary_url and secondary_url != Config.DEFAULT_GERMAN_URL)
+            else "% \\spellcardqr{\\urlsecondary}"
+        )
 
         return f"""%%%
 %%% file content generated by spell_card_generator.py,
@@ -316,13 +396,12 @@ class LaTeXGenerator:
   % print the tabular information at the top of the card:
   \\spellcardinfo{{}}
   % draw a QR Code pointing at online resources for this spell on the front face:
-  \\spellcardqr{{\\urlenglish}}
-  % \\spellcardqr{{\\urlsecondary}}
+  {primary_qr}
+  {secondary_qr}
   %
-  % Now follows a LaTeX-formatted description of the spell,
-  % generated from the HTML-formatted description_formatted column:
-  %
+  % SPELL DESCRIPTION BEGIN
   {get_field('description_formatted')}
+  % SPELL DESCRIPTION END
   %
 \\end{{spellcard}}
 """

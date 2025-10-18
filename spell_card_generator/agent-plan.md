@@ -48,21 +48,22 @@
      - All 241 tests passing (100% pass rate)
      - 58% test coverage maintained
 
-3. Bug hunting and fixing
-  - test the workflows thoroughly
-  - review generated cards
-  - fix any issues that arise:
-    - description is not preserved
-    - I don't think the secondary URL was preserved either, despite having been validated (probably not isnerted into the template)
-    - compared to the previous generation with convert.sh, there are no explicit "NULL" values anymore. Do we need those, or just keep them empty?
-    - compared to convert.sh, the spell resistance and saving throw modifications are not recreated (emphasizing "no"/"none" respectively)
-    - `\spellcardqr{\urlsecondary}` needs to be uncommented if we do have that URL. Similarly, comment the primary one if that is missing. Maybe modify the \spellcardqr command to not do anything if there is no value given... Might actually already happen!
-    - After generating the cards, there is a "Next" button that just leads to an empty screen. This button should not exist, that was the last step (as of now)
+3. **Bug Hunting and Fixing** ✅ *COMPLETED*
+   - ✅ **Description preservation**: Added extraction logic to FileScanner and integrated into LaTeXGenerator
+   - ✅ **Secondary URL preservation**: Extended preservation logic to extract and reuse URLs from existing files
+   - ✅ **NULL value handling**: Changed to output "NULL" for empty fields (matching legacy convert.sh behavior)
+   - ✅ **Saving throw & spell resistance formatting**: Updated to use `\textbf{none}` and `\textbf{no}` (matching legacy)
+   - ✅ **QR code conditional commenting**: Implemented conditional commenting based on URL presence
+   - ✅ **Next button removal**: Removed Next button from final step (Preview & Generate at index 4)
+   - ✅ **Description marker consolidation**: 
+     - Standardized on `% SPELL DESCRIPTION BEGIN` / `% SPELL DESCRIPTION END` markers
+     - Updated FileScanner to handle both old and new formats (backward compatible)
+     - Migrated all 46 existing spell card files to use new markers
 
 4. Add more functionality
   - select all spells that already have a card to be re-generated
   - provide buttons to open the generated file for each spell so they can be adjusted (manual adjustments are an expected part of the workflow!)
-  - offer to add the `\input`  startements for new cards to the appropriate tex file (might have to gneerate that if missing...), and/or to open that file.
+  - offer to add the `\input`  startements for new cards to the appropriate tex file, e.g. `src/spells/sor.tex`, (might have to gneerate that if missing...), and/or to open that file.
 
 ---
 
@@ -72,8 +73,8 @@
 - ✅ **Test coverage:** 241 tests passing, 58% coverage
 - ✅ **Application verified:** GUI launches and runs without exceptions
 
-**Next Priority:** Bug hunting and fixing (item #3)
-- Test workflows thoroughly with real data
-- Review generated LaTeX cards for quality
-- Fix any identified issues with preservation, formatting, and navigation
+**Next Priority:** Add more functionality (item #4)
+- Select all spells that already have a card to be re-generated
+- Provide buttons to open the generated file for each spell
+- Offer to add `\input` statements for new cards to the appropriate tex file
 - This plan should be updated as new priorities emerge or tasks are completed.

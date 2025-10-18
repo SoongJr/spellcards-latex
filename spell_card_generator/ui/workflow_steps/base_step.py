@@ -104,7 +104,8 @@ class BaseWorkflowStep(ABC):
             self.previous_button.grid(row=0, column=0, padx=(0, 5))
 
         # Always show Next button if not at last step
-        if self.step_index < 5:  # Maximum step index
+        # Preview & Generate (step 4) is the last step, so no Next button there
+        if self.step_index < 4:  # Show Next for steps 0-3 only
             self.next_button = ttk.Button(
                 button_container,
                 text="Next",
@@ -150,7 +151,7 @@ class BaseWorkflowStep(ABC):
 
     def _navigate_to_next_step(self):
         """Common navigation logic for going to next step."""
-        if self.step_index < 5:  # Maximum step index
+        if self.step_index < 4:  # Maximum step index is 4 (Preview & Generate)
             # Check if this step has custom next step logic
             if hasattr(self, "get_next_step_index"):
                 next_step = self.get_next_step_index()
