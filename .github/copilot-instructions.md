@@ -35,6 +35,7 @@ Class Selection → Spell Selection → Conflict Resolution → Documentation UR
 
 The project uses Poetry for dependency management and follows
 modern Python development practices with a workflow-based GUI.  
+**Requirements**: Python 3.10+  
 The poetry application is to be installed into a virtual environment first (requirements.txt),
 before then using poetry to install app dependencies into that same venv.
 
@@ -116,10 +117,12 @@ cd spell_card_generator && source .venv/bin/activate && timeout 15s poetry run s
 ### Development Guidelines
 
 #### Code Quality Standards
+- **Python Version**: Requires Python 3.10+
 - **Pylint Score**: MUST maintain 10.00/10 and not return non-zero exit code
+- **Type Checking**: mypy configured with `check_untyped_defs=true` and `no_implicit_optional=true`
 - **Test Coverage**: Maintain ~55% overall; new features must be well-tested and changes must not decrease coverage
 - **Import Style**: Use absolute imports only (`from spell_card_generator.module import ...`)
-- **Type Hints**: Required for all function parameters and return values
+- **Type Hints**: Required for all function parameters and return values (use `Optional[]` for None defaults)
 - **Exception Handling**: Use proper exception chaining (`raise CustomError(...) from e`)
 - **Formatting**: Black formatting enforced
 - **Testing**: All tests must pass (100% pass rate)

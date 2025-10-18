@@ -120,7 +120,9 @@ class SpellTabManager:
         level_combo = ttk.Combobox(
             filters_frame, textvariable=level_var, state="readonly"
         )
-        level_combo.grid(row=0, column=1, sticky=(tk.W, tk.E), padx=(0, 10))
+        level_combo.grid(
+            row=0, column=1, sticky=(tk.W, tk.E), padx=(0, 10)  # type: ignore[arg-type]
+        )
         level_combo.bind(
             "<<ComboboxSelected>>", lambda e: self._apply_filters(class_name)
         )
@@ -132,26 +134,28 @@ class SpellTabManager:
         source_combo = ttk.Combobox(
             filters_frame, textvariable=source_var, state="readonly"
         )
-        source_combo.grid(row=0, column=3, sticky=(tk.W, tk.E))
+        source_combo.grid(row=0, column=3, sticky=(tk.W, tk.E))  # type: ignore[arg-type]
         source_combo.bind(
             "<<ComboboxSelected>>", lambda e: self._apply_filters(class_name)
         )
 
         # Search by name
-        ttk.Label(filters_frame, text="Search Name:").grid(
+        ttk.Label(filters_frame, text="Search:").grid(
             row=1, column=0, sticky=tk.W, padx=(0, 5)
         )
         search_entry = ttk.Entry(filters_frame, textvariable=search_var)
-        search_entry.grid(row=1, column=1, sticky=(tk.W, tk.E), padx=(0, 10))
+        search_entry.grid(
+            row=1, column=1, sticky=(tk.W, tk.E), padx=(0, 10)  # type: ignore[arg-type]
+        )
         search_entry.bind("<KeyRelease>", lambda e: self._apply_filters(class_name))
 
-        # Store references in the frame for later retrieval  # pylint: disable=protected-access
-        filters_frame._level_var = level_var
-        filters_frame._source_var = source_var
-        filters_frame._search_var = search_var
-        filters_frame._level_combo = level_combo
-        filters_frame._source_combo = source_combo
-        filters_frame._search_entry = search_entry
+        # Store references in the frame for later retrieval
+        filters_frame._level_var = level_var  # type: ignore[attr-defined]
+        filters_frame._source_var = source_var  # type: ignore[attr-defined]
+        filters_frame._search_var = search_var  # type: ignore[attr-defined]
+        filters_frame._level_combo = level_combo  # type: ignore[attr-defined]
+        filters_frame._source_combo = source_combo  # type: ignore[attr-defined]
+        filters_frame._search_entry = search_entry  # type: ignore[attr-defined]
 
         return filters_frame
 
@@ -179,7 +183,7 @@ class SpellTabManager:
         for col in UIConfig.TREE_COLUMNS:
             # Center align the Select column for better checkbox visibility
             anchor = "center" if col == "Select" else "w"
-            spells_tree.column(
+            spells_tree.column(  # type: ignore[call-overload]
                 col,
                 width=UIConfig.TREE_COLUMN_WIDTHS[col],
                 minwidth=UIConfig.TREE_COLUMN_MIN_WIDTHS[col],
@@ -245,17 +249,17 @@ class SpellTabManager:
     def _get_filter_variables(self, filters_frame: ttk.LabelFrame):
         """Get filter variables from filters frame."""
         return (
-            filters_frame._level_var,  # pylint: disable=protected-access
-            filters_frame._source_var,  # pylint: disable=protected-access
-            filters_frame._search_var,  # pylint: disable=protected-access
+            filters_frame._level_var,  # type: ignore[attr-defined]
+            filters_frame._source_var,  # type: ignore[attr-defined]
+            filters_frame._search_var,  # type: ignore[attr-defined]
         )
 
     def _get_filter_widgets(self, filters_frame: ttk.LabelFrame):
         """Get filter widgets from filters frame."""
         return (
-            filters_frame._level_combo,  # pylint: disable=protected-access
-            filters_frame._source_combo,  # pylint: disable=protected-access
-            filters_frame._search_entry,  # pylint: disable=protected-access
+            filters_frame._level_combo,  # type: ignore[attr-defined]
+            filters_frame._source_combo,  # type: ignore[attr-defined]
+            filters_frame._search_entry,  # type: ignore[attr-defined]
         )
 
     def _setup_class_filters(self, class_name: str):
@@ -272,7 +276,6 @@ class SpellTabManager:
         class_data.level_combo["values"] = levels
 
         # Update source filter options
-        # pylint: disable=protected-access
         sources = self.spell_filter.get_available_sources(
             self.data_loader.spells_df, class_name
         )
@@ -299,7 +302,7 @@ class SpellTabManager:
             "search_term", class_data.search_var.get()
         )
 
-        # Apply filters  # pylint: disable=protected-access
+        # Apply filters
         filtered_df = self.spell_filter.filter_spells(
             self.data_loader.spells_df,
             class_name,
@@ -496,7 +499,7 @@ class SpellTabManager:
 
     def get_selected_spells(self) -> List[Tuple[str, str, pd.Series]]:
         """Get all selected spells based on persistent selection state."""
-        selected_spells = []
+        selected_spells: List[Tuple[str, str, pd.Series]] = []
 
         # Get the current class (we're using single class selection now)
         current_class = self.get_current_class()

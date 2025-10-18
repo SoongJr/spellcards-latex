@@ -38,7 +38,7 @@ class WorkflowStep:
     is_visible: bool = True
 
     # Additional metadata
-    step_data: Dict[str, Any] = None
+    step_data: Optional[Dict[str, Any]] = None
 
     def __post_init__(self):
         """Initialize step data dictionary."""
@@ -214,6 +214,8 @@ class WorkflowNavigator:
 
     def _find_last_step(self) -> WorkflowStep:
         """Find the last step in the chain."""
+        if not self.first_step:
+            raise ValueError("No steps in workflow")
         step = self.first_step
         while step.next_step:
             step = step.next_step

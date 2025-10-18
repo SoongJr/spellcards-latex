@@ -129,6 +129,8 @@ class TestBaseWorkflowStep:
         step.create_ui()
 
         # Verify destroy was called on the first frame
+        assert first_frame is not None
+        assert isinstance(first_frame, MagicMock)
         first_frame.destroy.assert_called_once()  # pylint: disable=no-member
 
 
@@ -181,7 +183,7 @@ class TestBaseWorkflowStepAbstractMethod:
         # BaseWorkflowStep itself cannot be instantiated
         with pytest.raises(TypeError, match="abstract"):
             # pylint: disable=abstract-class-instantiated
-            BaseWorkflowStep(MagicMock(), 0)
+            BaseWorkflowStep(MagicMock(), 0)  # type: ignore[abstract]
 
     def test_concrete_implementation_works(self):
         """Test that concrete implementation can be created."""

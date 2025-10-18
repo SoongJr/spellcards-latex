@@ -13,12 +13,13 @@ from spell_card_generator.ui.step_utils import format_steps_list
 
 
 @dataclass
-class WorkflowState:
+class WorkflowState:  # pylint: disable=too-many-instance-attributes
     """Central state for the multi-step spell card generation workflow."""
 
     # Current selection state
     selected_class: Optional[str] = None
     selected_spells: List[Tuple[str, str, pd.Series]] = field(default_factory=list)
+    _last_selected_class: Optional[str] = None  # Track class changes for spell clearing
 
     # Generation options
     overwrite_existing: bool = False
@@ -69,7 +70,7 @@ class WorkflowState:
     spell_data_cache: Dict[str, Dict[str, Any]] = field(default_factory=dict)
 
     # Spell filtering state (preserved when navigating between steps)
-    spell_filter_state: Dict[str, Dict[str, str]] = field(
+    spell_filter_state: Dict[str, str] = field(
         default_factory=lambda: {
             "level_filter": "All",
             "source_filter": "All",

@@ -108,7 +108,7 @@ class TestSpellFilter:
         """Test error handling in filter_spells."""
         # Pass invalid data structure
         with pytest.raises(FilterError, match="Failed to filter spells"):
-            SpellFilter.filter_spells(None, "wizard")
+            SpellFilter.filter_spells(None, "wizard")  # type: ignore[arg-type]
 
     def test_get_available_levels(self, sample_spell_data):
         """Test getting available spell levels for a class."""
@@ -130,7 +130,7 @@ class TestSpellFilter:
     def test_get_available_levels_exception_handling(self):
         """Test error handling in get_available_levels."""
         with pytest.raises(FilterError, match="Failed to get available levels"):
-            SpellFilter.get_available_levels(None, "wizard")
+            SpellFilter.get_available_levels(None, "wizard")  # type: ignore[arg-type]
 
     def test_get_available_sources(self, sample_spell_data):
         """Test getting available sources for a class."""
@@ -149,7 +149,7 @@ class TestSpellFilter:
     def test_get_available_sources_exception_handling(self):
         """Test error handling in get_available_sources."""
         with pytest.raises(FilterError, match="Failed to get available sources"):
-            SpellFilter.get_available_sources(None, "wizard")
+            SpellFilter.get_available_sources(None, "wizard")  # type: ignore[arg-type]
 
     def test_filter_excludes_null_values(self, sample_spell_data):
         """Test that NULL values are properly excluded."""

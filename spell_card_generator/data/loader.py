@@ -39,6 +39,9 @@ class SpellDataLoader:
 
     def _extract_character_classes(self):
         """Extract available character classes from data."""
+        if self.spells_df is None:
+            return
+
         all_classes = []
         for category_classes in CharacterClasses.CATEGORIES.values():
             all_classes.extend(category_classes)
@@ -52,6 +55,9 @@ class SpellDataLoader:
 
     def _extract_spell_sources(self):
         """Extract available spell sources from data."""
+        if self.spells_df is None:
+            return
+
         if "source" in self.spells_df.columns:
             self.spell_sources = set(self.spells_df["source"].unique())
             self.spell_sources.discard(Config.NULL_VALUE)

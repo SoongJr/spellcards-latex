@@ -56,8 +56,9 @@ class ClassSelectionStep(BaseWorkflowStep):
         tree_frame.pack(fill=tk.BOTH, expand=True)
 
         # Create class selection manager
+        # Note: SingleClassSelectionManager expects Frame but LabelFrame is compatible
         self.class_manager = SingleClassSelectionManager(
-            tree_frame, self._on_class_selection_changed
+            tree_frame, self._on_class_selection_changed  # type: ignore[arg-type]
         )
 
         # Setup class tree with data
@@ -70,6 +71,7 @@ class ClassSelectionStep(BaseWorkflowStep):
 
         # Add double-click navigation
         if hasattr(self.class_manager, "tree"):
+            assert self.class_manager.tree is not None, "Tree must be initialized"
             self.class_manager.tree.bind("<Double-1>", self._on_double_click)
 
     def _restore_class_selection(self, class_name: str):
@@ -104,7 +106,6 @@ class ClassSelectionStep(BaseWorkflowStep):
             workflow_state.selected_spells.clear()
             workflow_state.set_step_valid(1, False)  # Invalidate spell selection step
 
-        # pylint: disable=protected-access
         workflow_state._last_selected_class = selected_class
 
         # Update navigation state

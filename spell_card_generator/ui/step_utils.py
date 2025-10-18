@@ -1,6 +1,6 @@
 """Utility functions for workflow step management."""
 
-from typing import Dict, Any, List
+from typing import Dict, List, Any, Optional
 from spell_card_generator.ui.workflow_navigation import WorkflowStep
 
 
@@ -20,7 +20,7 @@ def format_step_info(step: WorkflowStep, is_current: bool = False) -> Dict[str, 
 
 
 def format_steps_list(
-    steps: List[WorkflowStep], current_step: WorkflowStep = None
+    steps: List[WorkflowStep], current_step: Optional[WorkflowStep] = None
 ) -> List[Dict[str, Any]]:
     """Format a list of WorkflowSteps into dictionaries for UI consumption."""
     return [format_step_info(step, step == current_step) for step in steps]

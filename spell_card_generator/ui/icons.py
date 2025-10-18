@@ -4,6 +4,7 @@
 
 import tkinter as tk
 from tkinter import font
+from typing import Optional
 
 
 class IconFont:
@@ -86,7 +87,7 @@ class IconFont:
 
 
 # Global icon manager instance (initialized by app)
-icon_manager: IconFont = None
+icon_manager: Optional[IconFont] = None
 
 
 def init_icons(root: tk.Tk):

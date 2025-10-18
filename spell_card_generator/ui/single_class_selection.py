@@ -23,7 +23,7 @@ class SingleClassSelectionManager:
         self.selected_class: Optional[str] = None
 
         # UI components
-        self.tree: ttk.Treeview = None
+        self.tree: Optional[ttk.Treeview] = None
         self.character_classes: list = []
 
     def setup_class_tree(self, character_classes: list):
@@ -59,13 +59,13 @@ class SingleClassSelectionManager:
 
         # Create treeview
         self.tree = ttk.Treeview(tree_frame, show="tree", height=12)
-        self.tree.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        self.tree.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))  # type: ignore[arg-type]
 
         # Create scrollbar
         scrollbar = ttk.Scrollbar(
             tree_frame, orient=tk.VERTICAL, command=self.tree.yview
         )
-        scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
+        scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))  # type: ignore[arg-type]
         self.tree.configure(yscrollcommand=scrollbar.set)
 
         # Bind selection event
@@ -78,6 +78,8 @@ class SingleClassSelectionManager:
 
     def _populate_tree(self):
         """Populate the treeview with character classes."""
+        assert self.tree is not None, "Tree must be created before populating"
+
         # Get class categories
         categories = categorize_character_classes(self.character_classes)
 
@@ -102,6 +104,8 @@ class SingleClassSelectionManager:
 
     def _on_tree_selection(self, event):  # pylint: disable=unused-argument
         """Handle treeview selection changes."""
+        assert self.tree is not None, "Tree must be initialized"
+
         selection = self.tree.selection()
         if not selection:
             return

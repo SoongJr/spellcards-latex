@@ -17,7 +17,7 @@ maybe update dependencies, you'll need a development setup.
 
 ### Prerequisites
 
-- Python 3.9+
+- Python 3.10+
 
 ### Setup Workflow
 
@@ -57,8 +57,11 @@ maybe update dependencies, you'll need a development setup.
    # Code formatting
    black .
    # Linting
-   flake8 .
    pylint .
+   # Type checking
+   mypy .
+   # Run tests
+   pytest
    ```
 
 ### When to Reinstall
@@ -107,7 +110,7 @@ These files can be included in your main LaTeX document using `\input{}` stateme
 ## Contributing
 
 1. Format code with Black
-1. Ensure all code passes linting (flake8, pylint)
+1. Ensure all code passes linting (pylint) and type checking (mypy)
 1. Add test coverage for new functionality
 1. Update documentation as needed
 

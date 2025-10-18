@@ -187,8 +187,16 @@ def reset_workflow_state():
 
     yield workflow_state
 
-    # Restore original state after test
-    workflow_state.selected_class = original_state["selected_class"]
-    workflow_state.selected_spells = original_state["selected_spells"]
-    workflow_state.overwrite_existing = original_state["overwrite_existing"]
-    workflow_state.conflicts_detected = original_state["conflicts_detected"]
+    # Restore original state after test (assignments match original state types)
+    workflow_state.selected_class = original_state[
+        "selected_class"
+    ]  # type: ignore[assignment]
+    workflow_state.selected_spells = original_state[
+        "selected_spells"
+    ]  # type: ignore[assignment]
+    workflow_state.overwrite_existing = original_state[
+        "overwrite_existing"
+    ]  # type: ignore[assignment]
+    workflow_state.conflicts_detected = original_state[
+        "conflicts_detected"
+    ]  # type: ignore[assignment]
