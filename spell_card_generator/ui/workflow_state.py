@@ -106,8 +106,10 @@ class WorkflowState:  # pylint: disable=too-many-instance-attributes
             return True
         if step == 1:  # Spell Selection requires class selection
             return self.selected_class is not None
-        if step == 2:  # Overwrite Cards (conditional) - only if conflicts detected
-            return len(self.selected_spells) > 0 and self.conflicts_detected
+        if step == 2:  # Overwrite Cards (conditional)
+            # Allow navigation past this step even if no conflicts
+            # The navigator will skip it automatically if inaccessible
+            return len(self.selected_spells) > 0
         # Other steps require spells to be selected
         return len(self.selected_spells) > 0
 

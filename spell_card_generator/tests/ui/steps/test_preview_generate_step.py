@@ -30,7 +30,6 @@ class TestPreviewGenerateStep:
         assert step.on_generate is None
 
     @patch("tkinter.scrolledtext.ScrolledText")
-    @patch("tkinter.ttk.Button")
     @patch("tkinter.ttk.LabelFrame")
     @patch("tkinter.ttk.Label")
     @patch("tkinter.ttk.Frame")
@@ -39,7 +38,6 @@ class TestPreviewGenerateStep:
         mock_frame_class,
         mock_label_class,
         mock_labelframe_class,
-        mock_button_class,
         mock_scrolled_text_class,
     ):
         """Test create_step_content creates UI components."""
@@ -57,7 +55,6 @@ class TestPreviewGenerateStep:
         # Verify UI components were created
         assert mock_label_class.called
         assert mock_labelframe_class.called
-        assert mock_button_class.called
         assert mock_scrolled_text_class.called
 
     @patch("tkinter.ttk.Frame")
@@ -132,6 +129,9 @@ class TestPreviewGenerateStep:
         step.content_frame = MagicMock()
         step.create_step_content()
 
+        # Create generate button for _update_summary to work
+        step.generate_button = MagicMock()
+
         # Should not raise an error even with no data
         step._update_summary()
 
@@ -181,6 +181,9 @@ class TestPreviewGenerateStep:
         )
         step.content_frame = MagicMock()
         step.create_step_content()
+
+        # Create generate button for _update_summary to work
+        step.generate_button = MagicMock()
 
         step._update_summary()
 
@@ -235,6 +238,9 @@ class TestPreviewGenerateStep:
         )
         step.content_frame = MagicMock()
         step.create_step_content()
+
+        # Create generate button for _update_summary to work
+        step.generate_button = MagicMock()
 
         step._update_summary()
 
@@ -296,6 +302,9 @@ class TestPreviewGenerateStep:
         step.content_frame = MagicMock()
         step.create_step_content()
 
+        # Create generate button for _update_summary to work
+        step.generate_button = MagicMock()
+
         # Reset mock to track calls after initialization
         mock_text_widget.reset_mock()
 
@@ -335,19 +344,20 @@ class TestPreviewGenerateStep:
             step_index=4,
         )
         step.content_frame = MagicMock()
-        step.create_step_content()
+        step.navigation_frame = MagicMock()
 
-        # Verify button state was set to normal (enabled)
-        config_calls = [
-            call
-            for call in mock_button.config.call_args_list
-            if len(call[1]) > 0 and "state" in call[1]
-        ]
+        # Create summary text widget for _update_summary to work
+        step.summary_text = mock_scrolled_text_class.return_value
 
-        # The button should have been configured with state="normal"
-        assert any(
-            "state" in str(call) and "normal" in str(call) for call in config_calls
-        )
+        # Create navigation buttons which creates the generate button and calls _update_summary
+        step._create_navigation_area()
+
+        # Verify button was created
+        assert step.generate_button is not None
+        assert step.generate_button == mock_button
+
+        # Verify the mock button's config method was called with state="normal"
+        step.generate_button.config.assert_any_call(state="normal")  # type: ignore[attr-defined]
 
     @patch("tkinter.scrolledtext.ScrolledText")
     @patch("tkinter.ttk.Button")
@@ -376,16 +386,17 @@ class TestPreviewGenerateStep:
             step_index=4,
         )
         step.content_frame = MagicMock()
-        step.create_step_content()
+        step.navigation_frame = MagicMock()
 
-        # Verify button state was set to disabled
-        config_calls = [
-            call
-            for call in mock_button.config.call_args_list
-            if len(call[1]) > 0 and "state" in call[1]
-        ]
+        # Create summary text widget for _update_summary to work
+        step.summary_text = mock_scrolled_text_class.return_value
 
-        # The button should have been configured with state="disabled"
-        assert any(
-            "state" in str(call) and "disabled" in str(call) for call in config_calls
-        )
+        # Create navigation buttons which creates the generate button and calls _update_summary
+        step._create_navigation_area()
+
+        # Verify button was created
+        assert step.generate_button is not None
+        assert step.generate_button == mock_button
+
+        # Verify the mock button's config method was called with state="disabled"
+        step.generate_button.config.assert_any_call(state="disabled")  # type: ignore[attr-defined]

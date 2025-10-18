@@ -2,7 +2,7 @@
 
 import tkinter as tk
 from tkinter import ttk
-from typing import Callable, Optional
+from typing import Callable, Optional, Union
 from abc import ABC, abstractmethod
 
 from spell_card_generator.ui.workflow_state import workflow_state
@@ -11,11 +11,20 @@ from spell_card_generator.ui.workflow_state import workflow_state
 class BaseWorkflowStep(ABC):
     """Base class for all workflow steps with navigation support."""
 
+    # Static mapping from step index to step ID for navigation
+    INDEX_TO_STEP_ID = {
+        0: "class_selection",
+        1: "spell_selection",
+        2: "overwrite_cards",
+        3: "documentation_urls",
+        4: "preview_generate",
+    }
+
     def __init__(
         self,
         parent_frame: ttk.Frame,
         step_index: int,
-        navigation_callback: Optional[Callable[[int], None]] = None,
+        navigation_callback: Optional[Callable[[Union[int, str]], None]] = None,
     ):
         self.parent_frame = parent_frame
         self.step_index = step_index
@@ -126,10 +135,13 @@ class BaseWorkflowStep(ABC):
 
     def _go_previous(self):
         """Navigate to previous step."""
-        # Try using the new navigation system first
+        # Use the new navigation system which handles step IDs directly
         if workflow_state.navigate_previous():
             if self.navigation_callback:
-                self.navigation_callback(workflow_state.current_step)
+                # Get the current step from navigator (returns step ID directly)
+                current_step = workflow_state.navigator.get_current_step()
+                if current_step:
+                    self.navigation_callback(current_step.step_id)
         # Fallback to legacy logic for compatibility
         elif self.step_index > 0 and self.navigation_callback:
             # Check if this step has custom previous step logic
@@ -137,14 +149,21 @@ class BaseWorkflowStep(ABC):
                 previous_step = self.get_previous_step_index()
             else:
                 previous_step = self.step_index - 1
-            self.navigation_callback(previous_step)
+            # Convert step index to step ID for the callback
+            previous_step_id = self.INDEX_TO_STEP_ID.get(
+                previous_step, "class_selection"
+            )
+            self.navigation_callback(previous_step_id)
 
     def _go_next(self):
         """Navigate to next step."""
-        # Try using the new navigation system first
+        # Use the new navigation system which handles step IDs directly
         if workflow_state.navigate_next():
             if self.navigation_callback:
-                self.navigation_callback(workflow_state.current_step)
+                # Get the current step from navigator (returns step ID directly)
+                current_step = workflow_state.navigator.get_current_step()
+                if current_step:
+                    self.navigation_callback(current_step.step_id)
         else:
             # Fallback to legacy logic
             self._navigate_to_next_step()
@@ -163,7 +182,11 @@ class BaseWorkflowStep(ABC):
             # Check if we can navigate to next step
             if workflow_state.can_navigate_to_step(next_step):
                 if self.navigation_callback:
-                    self.navigation_callback(next_step)
+                    # Convert step index to step ID for the callback
+                    next_step_id = self.INDEX_TO_STEP_ID.get(
+                        next_step, "preview_generate"
+                    )
+                    self.navigation_callback(next_step_id)
             else:
                 self._show_navigation_warning(next_step)
 

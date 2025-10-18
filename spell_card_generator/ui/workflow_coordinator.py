@@ -209,8 +209,18 @@ class WorkflowCoordinator:
                 self.step_instances[2].destroy()
             del self.step_instances[2]
 
-    def _on_step_changed(self, step_index: int):
-        """Handle step navigation with smart conflict handling."""
+    def _on_step_changed(self, step_id_or_index):
+        """Handle step navigation with smart conflict handling.
+
+        Args:
+            step_id_or_index: Either a step ID (str) or step index (int) for backward compatibility
+        """
+        # Convert step_id to index if needed
+        if isinstance(step_id_or_index, str):
+            step_index = self.step_id_to_index.get(step_id_or_index, 0)
+        else:
+            step_index = step_id_or_index
+
         # If navigating from spell selection (step 1) to next step
         if (
             step_index > 1

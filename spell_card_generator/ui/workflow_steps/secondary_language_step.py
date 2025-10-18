@@ -2,7 +2,7 @@
 
 import tkinter as tk
 from tkinter import ttk
-from typing import Callable, Optional
+from typing import Callable, Optional, Union
 
 from spell_card_generator.ui.workflow_steps.base_step import BaseWorkflowStep
 
@@ -15,7 +15,7 @@ class SecondaryLanguageStep(BaseWorkflowStep):
         self,
         parent_frame: ttk.Frame,
         step_index: int,
-        navigation_callback: Optional[Callable[[int], None]] = None,
+        navigation_callback: Optional[Callable[[Union[int, str]], None]] = None,
         on_language_changed: Optional[Callable] = None,
     ):
         super().__init__(parent_frame, step_index, navigation_callback)

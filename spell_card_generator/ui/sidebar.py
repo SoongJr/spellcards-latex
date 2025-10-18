@@ -5,7 +5,6 @@ from tkinter import ttk
 from typing import Callable, List, Dict, Optional, Any
 
 from spell_card_generator.ui.workflow_state import workflow_state
-from spell_card_generator.ui.icons import get_icon
 from spell_card_generator.ui.step_utils import format_step_info
 
 
@@ -56,22 +55,18 @@ class ModernSidebar:
     def __init__(
         self,
         parent_frame: ttk.Frame,
-        step_change_callback: Callable[[int], None],
+        step_change_callback: Callable[[str], None],  # Changed to accept step_id
     ):
         self.parent_frame = parent_frame
         self.step_change_callback = step_change_callback
 
         # UI State - sync with workflow navigator
-        self.expanded = True
         self.current_step = workflow_state.navigator.get_current_step_index()
         self.step_buttons: List[ttk.Button] = []
-        self.tooltips: List[object] = []  # Tooltip objects
 
         # UI Components (initialized here to avoid W0201)
         self.sidebar_frame: Optional[ttk.Frame] = None
         self.buttons_frame: Optional[ttk.Frame] = None
-        self.expand_button: Optional[ttk.Button] = None
-        self.progress_frame: Optional[ttk.Frame] = None
 
         # Create UI
         self._create_sidebar_ui()
@@ -105,14 +100,14 @@ class ModernSidebar:
 
     def _create_sidebar_ui(self):
         """Create the modern vertical sidebar navigation UI."""
-        # Main sidebar frame - minimal width when collapsed
+        # Main sidebar frame
         self.sidebar_frame = ttk.Frame(
             self.parent_frame, relief=tk.RAISED, borderwidth=1
         )
         self.sidebar_frame.pack(fill=tk.Y, side=tk.LEFT, padx=(0, 2))
 
-        # Configure sidebar width based on expanded state
-        self.sidebar_frame.configure(width=60 if not self.expanded else 200)
+        # Configure sidebar width
+        self.sidebar_frame.configure(width=200)
         self.sidebar_frame.pack_propagate(False)  # Maintain fixed width
 
         # Step buttons container
@@ -122,17 +117,6 @@ class ModernSidebar:
         # Create step buttons
         self._create_step_buttons()
 
-    def _create_actual_expand_button(self):
-        """Create expand/collapse button at bottom of sidebar."""
-        expand_icon = get_icon("collapse" if self.expanded else "expand")
-        self.expand_button = ttk.Button(
-            self.buttons_frame,
-            text=expand_icon,
-            command=self._toggle_sidebar,
-            width=4 if not self.expanded else 18,
-        )
-        self.expand_button.pack(side=tk.BOTTOM, fill=tk.X, pady=(5, 0))
-
     def _create_step_buttons(self):
         """Create step buttons based on visible steps."""
         # Clear existing buttons
@@ -140,36 +124,16 @@ class ModernSidebar:
             button.destroy()
         self.step_buttons.clear()
 
-        # Clear tooltips
-        for tooltip in self.tooltips:
-            if hasattr(tooltip, "destroy"):
-                tooltip.destroy()
-        self.tooltips.clear()
-
         # Create buttons for visible steps
         visible_steps = self.get_visible_steps()
         for i, step in enumerate(visible_steps):
             self._create_modern_step_button(i, step)
 
-        # Spacer to push expand button to bottom
-        spacer = ttk.Frame(self.buttons_frame)
-        spacer.pack(fill=tk.BOTH, expand=True)
-
-        # Expand/collapse button at bottom
-        self._create_actual_expand_button()
-
     def _create_modern_step_button(self, _step_index: int, step_info: Dict[str, Any]):
         """Create a modern navigation button for a workflow step."""
-        # Get icon from icon manager
-        icon_char = get_icon(step_info["icon"])
-
-        # Create button with icon only or icon + text based on expanded state
-        if self.expanded:
-            button_text = f"{icon_char} {step_info['name']}"
-            button_width = 18
-        else:
-            button_text = icon_char
-            button_width = 4
+        # Create button with step name (no icons)
+        button_text = step_info["name"]
+        button_width = 18
 
         # Use step ID for navigation instead of index
         step_id = step_info["id"]
@@ -196,96 +160,6 @@ class ModernSidebar:
         button.step_info = step_info  # type: ignore[attr-defined]
         self.step_buttons.append(button)
 
-        # Tooltip for collapsed mode - enhanced with accessibility info
-        if not self.expanded:
-            tooltip_text = f"{step_info['name']}\n{step_info['description']}"
-            if not step_info["is_accessible"]:
-                tooltip_text += "\n(Not accessible yet)"
-            self._create_tooltip(button, tooltip_text)
-
-    def _create_tooltip(self, widget, text):
-        """Create a simple tooltip for a widget."""
-
-        def on_enter(event):
-            tooltip = tk.Toplevel()
-            tooltip.wm_overrideredirect(True)
-            tooltip.wm_geometry(f"+{event.x_root+10}+{event.y_root+10}")
-            label = tk.Label(
-                tooltip,
-                text=text,
-                background="lightyellow",
-                relief=tk.SOLID,
-                borderwidth=1,
-                font=("TkDefaultFont", 9),
-            )
-            label.pack()
-            widget.tooltip = tooltip
-
-        def on_leave(event):  # pylint: disable=unused-argument
-            if hasattr(widget, "tooltip"):
-                widget.tooltip.destroy()
-                del widget.tooltip
-
-        widget.bind("<Enter>", on_enter)
-        widget.bind("<Leave>", on_leave)
-
-    def _create_expand_button(self):
-        """Create expand/collapse button at bottom of sidebar."""
-        expand_icon = get_icon("collapse" if self.expanded else "expand")
-        self.expand_button = ttk.Button(
-            self.buttons_frame,
-            text=expand_icon,
-            command=self._toggle_sidebar,
-            width=4 if not self.expanded else 18,
-        )
-
-        # ttk.Button doesn't support font option directly
-
-        self.expand_button.pack(side=tk.BOTTOM, fill=tk.X, pady=(5, 0))
-
-    def _toggle_sidebar(self):
-        """Toggle sidebar expanded/collapsed state."""
-        self.expanded = not self.expanded
-
-        # Recreate sidebar with new state
-        if self.sidebar_frame:  # Check if frame exists before destroying
-            self.sidebar_frame.destroy()
-        self.step_buttons.clear()
-        self.tooltips.clear()
-
-        # Recreate the entire sidebar UI
-        self._create_sidebar_ui()
-
-    def _create_progress_indicator(self):
-        """Create a minimal progress indicator (only in expanded mode)."""
-        if not self.expanded:
-            return
-
-        # Remove any existing progress indicator
-        if hasattr(self, "progress_frame") and self.progress_frame is not None:
-            self.progress_frame.destroy()
-            self.progress_frame = None
-
-        # Create new progress indicator frame at bottom
-        self.progress_frame = ttk.Frame(self.buttons_frame)
-        self.progress_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=(10, 5))
-
-        # Count completed steps using the new workflow navigator
-        visible_steps = self.get_visible_steps()
-        completed_steps = sum(1 for step in visible_steps if step["is_valid"])
-
-        progress_text = f"{completed_steps}/{len(visible_steps)} Complete"
-        progress_label = ttk.Label(
-            self.progress_frame,
-            text=progress_text,
-            font=("TkDefaultFont", 8),
-            foreground="gray",
-        )
-        progress_label.pack()
-
-    def _create_help_text(self):
-        """Help is now handled by tooltips in collapsed mode."""
-
     def _navigate_to_step_by_id(self, step_id: str):
         """Navigate to a specific workflow step by ID."""
         if not workflow_state.navigate_to_step(step_id):
@@ -302,19 +176,8 @@ class ModernSidebar:
         # Refresh navigation states
         self._update_navigation_state()
 
-        # Notify the callback with the new step index
-        self.step_change_callback(step_index)
-
-    def _navigate_to_step(self, step_index: int):
-        """Navigate to a specific workflow step (legacy method for compatibility)."""
-        if not workflow_state.can_navigate_to_step(step_index):
-            self._show_navigation_warning(step_index)
-            return
-
-        self.current_step = step_index
-        workflow_state.current_step = step_index
-        self._update_navigation_state()
-        self.step_change_callback(step_index)
+        # Notify the callback with the step ID instead of index
+        self.step_change_callback(step_id)
 
     def _show_navigation_warning_by_id(self, step_id: str):
         """Show warning when user tries to access unavailable step by ID."""
@@ -365,10 +228,6 @@ class ModernSidebar:
                     else:
                         button.config(state="disabled", style="TButton")
 
-        # Recreate progress indicator if expanded
-        if self.expanded:
-            self._create_progress_indicator()
-
     def _can_navigate_to_step(self, step_index: int) -> bool:
         """Check if user can navigate to a specific step with new workflow."""
         return workflow_state.can_navigate_to_step(step_index)
@@ -388,9 +247,6 @@ class ModernSidebar:
         # Update step styles
         self._update_step_styles()
 
-        # Update progress indicator
-        self._update_progress_indicator()
-
     def _update_step_styles(self):
         """Update visual styles for step buttons."""
         for i, button in enumerate(self.step_buttons):
@@ -398,8 +254,3 @@ class ModernSidebar:
                 button.config(style="Accent.TButton")  # Highlight current step
             else:
                 button.config(style="TButton")
-
-    def _update_progress_indicator(self):
-        """Update progress indicator if expanded."""
-        if self.expanded:
-            self._create_progress_indicator()

@@ -2,7 +2,7 @@
 
 import tkinter as tk
 from tkinter import ttk, scrolledtext
-from typing import Callable, Optional
+from typing import Callable, Optional, Union
 
 from spell_card_generator.ui.workflow_steps.base_step import BaseWorkflowStep
 from spell_card_generator.ui.workflow_state import workflow_state
@@ -15,7 +15,7 @@ class PreviewGenerateStep(BaseWorkflowStep):
         self,
         parent_frame: ttk.Frame,
         step_index: int,
-        navigation_callback: Optional[Callable[[int], None]] = None,
+        navigation_callback: Optional[Callable[[Union[int, str]], None]] = None,
         on_generate: Optional[Callable] = None,
     ):
         super().__init__(parent_frame, step_index, navigation_callback)
@@ -67,28 +67,54 @@ class PreviewGenerateStep(BaseWorkflowStep):
         self.summary_text.tag_configure("warning", foreground="orange")
         self.summary_text.tag_configure("success", foreground="green")
 
-        # Action buttons frame
-        button_frame = ttk.Frame(self.content_frame)
-        button_frame.pack(fill=tk.X, pady=(10, 0))
+        # Note: Initial summary update is done after navigation buttons are created
 
-        # Generate button (prominent on the right)
+    def _create_navigation_area(self):
+        """Override to add custom Generate button instead of Next button."""
+        # Navigation frame at bottom - using grid for priority control
+        self.navigation_frame = ttk.Frame(self.main_frame)
+        self.navigation_frame.grid(
+            row=1, column=0, sticky=(tk.W, tk.E), padx=20, pady=(0, 20)  # type: ignore[arg-type]
+        )
+
+        # Configure navigation frame to expand horizontally
+        self.navigation_frame.columnconfigure(0, weight=1)
+
+        # Button container on the left side for Refresh button
+        left_button_container = ttk.Frame(self.navigation_frame)
+        left_button_container.grid(row=0, column=0, sticky=tk.W)
+
+        # Refresh button (on the left)
+        refresh_button = ttk.Button(
+            left_button_container,
+            text="Refresh Summary",
+            command=self._update_summary,
+        )
+        refresh_button.grid(row=0, column=0, padx=(0, 5))
+
+        # Button container on the right side for Previous and Generate
+        right_button_container = ttk.Frame(self.navigation_frame)
+        right_button_container.grid(row=0, column=1, sticky=tk.E)
+
+        # Previous button (always shown since this is not the first step)
+        self.previous_button = ttk.Button(
+            right_button_container,
+            text="Previous",
+            command=self._go_previous,
+        )
+        self.previous_button.configure(underline=0)
+        self.previous_button.grid(row=0, column=0, padx=(0, 5))
+
+        # Generate button (prominent, in place of Next button)
         self.generate_button = ttk.Button(
-            button_frame,
-            text="🎯 Generate Spell Cards",
+            right_button_container,
+            text="Generate Spell Cards",
             command=self._on_generate_clicked,
             style="Accent.TButton",
         )
-        self.generate_button.pack(side=tk.RIGHT)
+        self.generate_button.grid(row=0, column=1, padx=5)
 
-        # Refresh button (less prominent on the left)
-        refresh_button = ttk.Button(
-            button_frame,
-            text="🔄 Refresh Summary",
-            command=self._update_summary,
-        )
-        refresh_button.pack(side=tk.LEFT)
-
-        # Initial summary update
+        # Now that button is created, update summary
         self._update_summary()
 
     def _update_summary(
@@ -260,7 +286,7 @@ class PreviewGenerateStep(BaseWorkflowStep):
         ready = bool(workflow_state.selected_class and workflow_state.selected_spells)
 
         if ready:
-            insert_line("  ✓ Ready to generate spell cards", "bullet", "success")
+            insert_line("  Ready to generate spell cards", "bullet", "success")
             assert (
                 self.generate_button is not None
             ), "Generate button must be initialized"
@@ -272,7 +298,7 @@ class PreviewGenerateStep(BaseWorkflowStep):
             if not workflow_state.selected_spells:
                 missing.append("spells")
 
-            insert_line(f"  ✗ Missing: {', '.join(missing)}", "bullet", "warning")
+            insert_line(f"  Missing: {', '.join(missing)}", "bullet", "warning")
             insert_line(
                 "    Please complete the previous steps before generating.",
                 "indent",

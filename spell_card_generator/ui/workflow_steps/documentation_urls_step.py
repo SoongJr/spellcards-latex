@@ -2,7 +2,7 @@
 
 import tkinter as tk
 from tkinter import ttk
-from typing import Callable, Optional, Dict
+from typing import Callable, Optional, Dict, Union
 import urllib.request
 import urllib.error
 import urllib.parse
@@ -128,7 +128,7 @@ class DocumentationURLsStep(BaseWorkflowStep):
     STATE_INVALID = "invalid"
     STATE_UNVALIDATED = "unvalidated"
 
-    # Status symbols (Unicode text symbols, not emoji)
+    # Status symbols (Unicode symbols that display correctly in tkinter)
     SYMBOL_VALID = "✓"  # U+2713 Check Mark
     SYMBOL_INVALID = "✗"  # U+2717 Ballot X
     SYMBOL_UNVALIDATED = "○"  # U+25CB White Circle
@@ -137,7 +137,7 @@ class DocumentationURLsStep(BaseWorkflowStep):
         self,
         parent_frame: ttk.Frame,
         step_index: int,
-        navigation_callback: Optional[Callable[[int], None]] = None,
+        navigation_callback: Optional[Callable[[Union[int, str]], None]] = None,
         on_urls_changed: Optional[Callable] = None,
     ):
         super().__init__(parent_frame, step_index, navigation_callback)
