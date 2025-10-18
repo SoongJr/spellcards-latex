@@ -57,6 +57,7 @@ class TestWorkflowStep:
         )
 
         # Can store arbitrary data
+        assert step.step_data is not None, "step_data should be initialized"
         step.step_data["custom_key"] = "custom_value"
         assert step.step_data["custom_key"] == "custom_value"
 
@@ -312,12 +313,15 @@ class TestCreateDefaultWorkflow:
         overwrite_step = navigator.get_step_by_id("overwrite_cards")
 
         # Class selection always visible
+        assert class_step is not None
         assert class_step.condition == StepCondition.ALWAYS_VISIBLE
 
         # Spell selection requires class
+        assert spell_step is not None
         assert spell_step.condition == StepCondition.REQUIRES_CLASS
 
         # Overwrite requires conflicts
+        assert overwrite_step is not None
         assert overwrite_step.condition == StepCondition.REQUIRES_CONFLICTS
 
     def test_default_workflow_navigation(self):
@@ -332,6 +336,7 @@ class TestCreateDefaultWorkflow:
         )
 
         # Start at class selection
+        assert navigator.current_step is not None
         assert navigator.current_step.step_id == "class_selection"
 
         # Can navigate to next
@@ -339,11 +344,14 @@ class TestCreateDefaultWorkflow:
 
         # Navigate through workflow
         navigator.go_to_next()
+        assert navigator.current_step is not None
         assert navigator.current_step.step_id == "spell_selection"
 
         navigator.go_to_next()
+        assert navigator.current_step is not None
         assert navigator.current_step.step_id == "overwrite_cards"
 
         # Can go back
         navigator.go_to_previous()
+        assert navigator.current_step is not None
         assert navigator.current_step.step_id == "spell_selection"

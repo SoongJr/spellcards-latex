@@ -36,9 +36,11 @@ class BaseWorkflowStep(ABC):
         if self.main_frame:
             self.main_frame.destroy()
 
-        # Create main container using grid for better control over resizing priorities
+        # Create main container using grid for better control
         self.main_frame = ttk.Frame(self.parent_frame)
-        self.main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        self.main_frame.grid(
+            row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S)  # type: ignore[arg-type]
+        )
 
         # Configure parent to expand the main frame
         self.parent_frame.rowconfigure(0, weight=1)
@@ -49,10 +51,14 @@ class BaseWorkflowStep(ABC):
         self.main_frame.rowconfigure(1, weight=0)  # Navigation area fixed size
         self.main_frame.columnconfigure(0, weight=1)
 
-        # Create content area (most of the space) - using grid for precise control
+        # Create content area (most of the space)
         self.content_frame = ttk.Frame(self.main_frame)
         self.content_frame.grid(
-            row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=20, pady=20
+            row=0,
+            column=0,
+            sticky=(tk.W, tk.E, tk.N, tk.S),  # type: ignore[arg-type]
+            padx=20,
+            pady=20,
         )
 
         # Create step-specific content
@@ -76,7 +82,7 @@ class BaseWorkflowStep(ABC):
         # Navigation frame at bottom - using grid for priority control
         self.navigation_frame = ttk.Frame(self.main_frame)
         self.navigation_frame.grid(
-            row=1, column=0, sticky=(tk.W, tk.E), padx=20, pady=(0, 20)
+            row=1, column=0, sticky=(tk.W, tk.E), padx=20, pady=(0, 20)  # type: ignore[arg-type]
         )
 
         # Configure navigation frame to expand horizontally

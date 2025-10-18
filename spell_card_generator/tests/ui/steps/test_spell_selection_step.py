@@ -1,8 +1,5 @@
 """Tests for spell selection step."""
 
-# some complaints pylint may throw at us do not apply to test code:
-# pylint: disable=protected-access
-
 from unittest.mock import MagicMock, patch
 from spell_card_generator.ui.workflow_steps.spell_selection_step import (
     SpellSelectionStep,
@@ -383,7 +380,7 @@ class TestSpellSelectionStepInteraction:
             data_loader=mock_data_loader,
             spell_filter=mock_spell_filter,
         )
-        step._go_next = MagicMock()
+        step._go_next = MagicMock()  # type: ignore[method-assign]
 
         # Simulate double-click
         step._on_double_click()
@@ -415,7 +412,7 @@ class TestSpellSelectionStepRefresh:
             data_loader=mock_data_loader,
             spell_filter=mock_spell_filter,
         )
-        step.create_ui = MagicMock()
+        step.create_ui = MagicMock()  # type: ignore[method-assign]
 
         # Simulate class selection (no manager yet)
         step.refresh_ui()

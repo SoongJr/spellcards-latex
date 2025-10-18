@@ -1,6 +1,6 @@
 """Tests for documentation URLs step."""
 
-# pylint: disable=protected-access,unused-argument,too-many-arguments
+# pylint: disable=unused-argument,too-many-arguments
 # pylint: disable=too-many-positional-arguments,too-many-locals,import-outside-toplevel
 
 from unittest.mock import MagicMock, patch

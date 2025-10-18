@@ -52,7 +52,9 @@ class OverwriteCardsStep(BaseWorkflowStep):
 
         # Row 0, Col 0: Description (with dynamic wrapping)
         desc_frame = ttk.Frame(top_container)
-        desc_frame.grid(row=0, column=0, sticky=(tk.W, tk.E), padx=(0, 20))
+        desc_frame.grid(
+            row=0, column=0, sticky=(tk.W, tk.E), padx=(0, 20)  # type: ignore[arg-type]
+        )
         desc_frame.columnconfigure(0, weight=1)
 
         desc_label = ttk.Label(
@@ -64,7 +66,7 @@ class OverwriteCardsStep(BaseWorkflowStep):
             ),
             justify=tk.LEFT,
         )
-        desc_label.grid(row=0, column=0, sticky=(tk.W, tk.E))
+        desc_label.grid(row=0, column=0, sticky=(tk.W, tk.E))  # type: ignore[arg-type]
 
         # Bind to configure event to update wraplength dynamically
         def update_wraplength(event):
@@ -77,6 +79,7 @@ class OverwriteCardsStep(BaseWorkflowStep):
         # pylint: enable=duplicate-code
 
         # Conflicts tree view spans full width below
+        assert self.content_frame is not None, "Content frame must be initialized"
         self._create_conflicts_tree(self.content_frame)
 
         # Populate the tree with current conflicts

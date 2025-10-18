@@ -1,7 +1,7 @@
 """Tests for class selection step."""
 
 # some complaints pylint may throw at us do not apply to test code:
-# pylint: disable=protected-access,unused-argument,too-many-arguments,too-many-positional-arguments
+# pylint: disable=unused-argument,too-many-arguments,too-many-positional-arguments
 
 from unittest.mock import MagicMock, patch
 

@@ -34,6 +34,7 @@ class SpellSelectionStep(BaseWorkflowStep):
     def create_step_content(self):
         """Create the spell selection content."""
         # Configure content frame to expand
+        assert self.content_frame is not None, "Content frame must be initialized"
         self.content_frame.rowconfigure(
             2, weight=1
         )  # Spell interface area should expand

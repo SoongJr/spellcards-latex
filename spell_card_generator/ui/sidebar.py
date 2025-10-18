@@ -193,7 +193,7 @@ class ModernSidebar:
         button.pack(fill=tk.X, pady=(0, 3))
 
         # Store button reference with step info for later updates
-        button.step_info = step_info
+        button.step_info = step_info  # type: ignore[attr-defined]
         self.step_buttons.append(button)
 
         # Tooltip for collapsed mode - enhanced with accessibility info
@@ -248,7 +248,8 @@ class ModernSidebar:
         self.expanded = not self.expanded
 
         # Recreate sidebar with new state
-        self.sidebar_frame.destroy()
+        if self.sidebar_frame:  # Check if frame exists before destroying
+            self.sidebar_frame.destroy()
         self.step_buttons.clear()
         self.tooltips.clear()
 

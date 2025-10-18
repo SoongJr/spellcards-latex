@@ -103,6 +103,7 @@ class PreviewGenerateStep(BaseWorkflowStep):
 
         # Helper function to insert formatted text
         def insert_line(text: str, *tags):
+            assert self.summary_text is not None, "Summary text must be initialized"
             self.summary_text.insert(tk.END, text + "\n", tags)
 
         # === Character Class ===
@@ -121,7 +122,7 @@ class PreviewGenerateStep(BaseWorkflowStep):
             insert_line(f"  Total: {spell_count} spell{plural}", "bullet", "success")
 
             # Group spells by level
-            spells_by_level = {}
+            spells_by_level: dict[str, list[str]] = {}
             for spell_name, class_name, spell_data in workflow_state.selected_spells:
                 level = spell_data.get(class_name, "?")
                 if level not in spells_by_level:
@@ -260,6 +261,9 @@ class PreviewGenerateStep(BaseWorkflowStep):
 
         if ready:
             insert_line("  ✓ Ready to generate spell cards", "bullet", "success")
+            assert (
+                self.generate_button is not None
+            ), "Generate button must be initialized"
             self.generate_button.config(state="normal")
         else:
             missing = []
@@ -274,6 +278,9 @@ class PreviewGenerateStep(BaseWorkflowStep):
                 "indent",
                 "warning",
             )
+            assert (
+                self.generate_button is not None
+            ), "Generate button must be initialized"
             self.generate_button.config(state="disabled")
 
         self.summary_text.config(state=tk.DISABLED)

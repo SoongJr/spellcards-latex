@@ -2,7 +2,7 @@
 
 import re
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional, Any
 import pandas as pd
 
 from spell_card_generator.utils.validators import Validators
@@ -53,19 +53,19 @@ class FileScanner:
         to ensure consistency.
         """
         # Get spell level for the class
-        spell_level = spell_data[class_name]
+        spell_level = str(spell_data[class_name])
 
         # Build path: src/spells/{class}/{level}/{spell_name}.tex
         output_dir = base_directory / "src" / "spells" / class_name / spell_level
 
         # Sanitize filename
         safe_name = Validators.sanitize_filename(spell_name)
-        file_path = output_dir / f"{safe_name}.tex"
+        file_path: Path = output_dir / f"{safe_name}.tex"
 
         return file_path
 
     @staticmethod
-    def analyze_existing_card(file_path: Path) -> Dict[str, any]:
+    def analyze_existing_card(file_path: Path) -> Dict[str, Any]:
         """
         Analyze an existing spell card file for metadata.
 
@@ -159,7 +159,7 @@ class FileScanner:
             }
 
     @staticmethod
-    def get_conflicts_summary(existing_cards: Dict[str, Path]) -> Dict[str, any]:
+    def get_conflicts_summary(existing_cards: Dict[str, Path]) -> Dict[str, Any]:
         """
         Get a summary of conflicts for display to the user.
 

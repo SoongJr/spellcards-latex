@@ -10,7 +10,7 @@ packages = [{include = "spell_card_generator", from = ".."}]
 spell-card-generator = "spell_card_generator.main:main"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 pandas = "^2.0.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -20,6 +20,7 @@ black = "^25.9.0"
 pytest = "^8.4.2"
 pytest-cov = "^7.0.0"
 pytest-mock = "^3.15.1"
+mypy = "^1.18.2"
 
 [build-system]
 requires = ["poetry-core"]
@@ -28,3 +29,15 @@ build-backend = "poetry.core.masonry.api"
 [tool.pylint.format]
 # this config is "Black-compatible", see https://black.readthedocs.io/en/latest/guides/using_black_with_other_tools.html
 max-line-length = "88"
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false  # Will enable this gradually
+check_untyped_defs = true      # Check function bodies even without full annotations
+no_implicit_optional = true    # Require explicit Optional[] for None defaults
+
+[[tool.mypy.overrides]]
+module = "deep_translator.*"
+ignore_missing_imports = true

@@ -1,7 +1,7 @@
 """Tests for overwrite cards step."""
 
 # some complaints pylint may throw at us do not apply to test code:
-# pylint: disable=protected-access,too-many-arguments,too-many-positional-arguments
+# pylint: disable=too-many-arguments,too-many-positional-arguments
 
 from unittest.mock import MagicMock, patch
 from spell_card_generator.ui.workflow_steps.overwrite_cards_step import (
@@ -437,7 +437,7 @@ class TestOverwriteCardsStepValidation:
             navigation_callback=mock_nav_callback,
         )
         step.content_frame = MagicMock()
-        step.on_step_validation_changed = MagicMock()
+        step.on_step_validation_changed = MagicMock()  # type: ignore[method-assign]
         step.create_step_content()
 
         # Verify step was marked as valid
@@ -486,7 +486,7 @@ class TestOverwriteCardsStepValidation:
             navigation_callback=mock_nav_callback,
         )
         step.content_frame = MagicMock()
-        step.on_step_validation_changed = MagicMock()
+        step.on_step_validation_changed = MagicMock()  # type: ignore[method-assign]
         step.create_step_content()
 
         # Verify step was marked as invalid (no decisions made)

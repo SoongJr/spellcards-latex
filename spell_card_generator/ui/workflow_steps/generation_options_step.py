@@ -62,7 +62,7 @@ class GenerationOptionsStep(BaseWorkflowStep):
         dir_entry = ttk.Entry(
             dir_frame, textvariable=self.output_dir_var, state="readonly"
         )
-        dir_entry.grid(row=0, column=0, sticky=(tk.W, tk.E), padx=(0, 10))
+        dir_entry.grid(row=0, column=0, sticky=(tk.W, tk.E), padx=(0, 10))  # type: ignore[arg-type]
 
         browse_button = ttk.Button(
             dir_frame, text="Browse...", command=self._browse_output_directory
@@ -116,6 +116,9 @@ class GenerationOptionsStep(BaseWorkflowStep):
         )
 
         if directory:
+            assert (
+                self.output_dir_var is not None
+            ), "Output directory var must be initialized"
             self.output_dir_var.set(directory)
             workflow_state.output_directory = directory
             self._validate_step()
@@ -125,8 +128,10 @@ class GenerationOptionsStep(BaseWorkflowStep):
 
     def _load_current_values(self):
         """Load current values from workflow state."""
-        if self.output_dir_var:
-            self.output_dir_var.set(workflow_state.output_directory or "")
+        assert (
+            self.output_dir_var is not None
+        ), "Output directory var must be initialized"
+        self.output_dir_var.set(workflow_state.output_directory or "")
 
     def _validate_step(self):
         """Validate the current step configuration."""

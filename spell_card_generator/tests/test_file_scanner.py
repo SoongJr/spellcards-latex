@@ -2,6 +2,8 @@
 
 # pylint: disable=unused-argument,protected-access,import-outside-toplevel
 
+from typing import Any
+
 import pytest
 
 from spell_card_generator.utils.file_scanner import FileScanner
@@ -13,7 +15,7 @@ class TestFileScanner:
 
     def test_detect_existing_cards_empty_list(self, tmp_path):
         """Test detect_existing_cards with empty spell list."""
-        selected_spells = []
+        selected_spells: list[tuple[str, str, Any]] = []
         existing = FileScanner.detect_existing_cards(selected_spells, tmp_path)
 
         assert not existing
@@ -271,7 +273,7 @@ class TestFileScannerConflictsSummary:
 
     def test_get_conflicts_summary_empty(self):
         """Test get_conflicts_summary with no conflicts."""
-        existing_cards = {}
+        existing_cards: dict[str, Any] = {}
         summary = FileScanner.get_conflicts_summary(existing_cards)
 
         assert summary["total_conflicts"] == 0

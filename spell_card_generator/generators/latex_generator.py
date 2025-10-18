@@ -94,12 +94,12 @@ class LaTeXGenerator:
         base_dir = Path(__file__).parent.parent.parent
 
         # Create output directory path
-        spell_level = spell_data[class_name]
+        spell_level = str(spell_data[class_name])
         output_dir = base_dir / "src" / "spells" / class_name / spell_level
 
         # Sanitize filename
         safe_name = Validators.sanitize_filename(spell_name)
-        output_file = output_dir / f"{safe_name}.tex"
+        output_file: Path = output_dir / f"{safe_name}.tex"
 
         return output_file
 

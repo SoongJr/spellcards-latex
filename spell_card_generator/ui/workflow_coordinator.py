@@ -51,8 +51,8 @@ class WorkflowCoordinator:
         self.content_frame: Optional[ttk.Frame] = None
         self.current_step: Optional[object] = None
 
-        # Step instances (created on demand) - mapped by step_id
-        self.step_instances = {}
+        # Step instances (created on demand) - mapped by step_index
+        self.step_instances: dict[int, object] = {}
 
         # Step ID to index mapping for backward compatibility
         self.step_id_to_index = {
@@ -93,6 +93,8 @@ class WorkflowCoordinator:
 
     def _show_step(self, step_index: int):
         """Show a specific workflow step with minimal UI flashing."""
+        assert self.content_frame is not None, "Content frame must be initialized"
+
         # Disable UI updates temporarily to prevent flashing
         self.content_frame.update_idletasks()  # Ensure current state is rendered
 
@@ -128,6 +130,8 @@ class WorkflowCoordinator:
         self, step_index: int
     ):  # pylint: disable=too-many-return-statements
         """Create an instance of a specific step."""
+        assert self.content_frame is not None, "Content frame must be initialized"
+
         if step_index == 0:  # Class Selection
             return ClassSelectionStep(
                 self.content_frame,

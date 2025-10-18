@@ -183,7 +183,9 @@ class DocumentationURLsStep(BaseWorkflowStep):
 
         # Row 0, Col 0: Description (with dynamic wrapping)
         desc_frame = ttk.Frame(top_container)
-        desc_frame.grid(row=0, column=0, sticky=(tk.W, tk.E), padx=(0, 20))
+        desc_frame.grid(
+            row=0, column=0, sticky=(tk.W, tk.E), padx=(0, 20)  # type: ignore[arg-type]
+        )
         desc_frame.columnconfigure(0, weight=1)
 
         desc_label = ttk.Label(
@@ -198,7 +200,7 @@ class DocumentationURLsStep(BaseWorkflowStep):
             ),
             justify=tk.LEFT,
         )
-        desc_label.grid(row=0, column=0, sticky=(tk.W, tk.E))
+        desc_label.grid(row=0, column=0, sticky=(tk.W, tk.E))  # type: ignore[arg-type]
 
         # Bind to configure event to update wraplength dynamically
         def update_wraplength(event):
@@ -211,6 +213,7 @@ class DocumentationURLsStep(BaseWorkflowStep):
         # pylint: enable=duplicate-code
 
         # Progress indicator (initially hidden)
+        assert self.content_frame is not None, "Content frame must be initialized"
         self._create_progress_indicator(self.content_frame)
 
         # Spell URLs table
@@ -275,20 +278,23 @@ class DocumentationURLsStep(BaseWorkflowStep):
             self.progress_label.config(text=message)
             self.progress_bar.config(maximum=maximum, value=0)
             self.progress_frame.pack(fill=tk.X, pady=(0, 10))
+            assert self.content_frame is not None, "Content frame must be initialized"
             self.content_frame.update_idletasks()
 
-    def _update_progress(self, value: int, message: str = None):
+    def _update_progress(self, value: int, message: Optional[str] = None):
         """Update the progress bar value and optionally the message."""
         if self.progress_bar:
             self.progress_bar.config(value=value)
             if message and self.progress_label:
                 self.progress_label.config(text=message)
+            assert self.content_frame is not None, "Content frame must be initialized"
             self.content_frame.update_idletasks()
 
     def _hide_progress(self):
         """Hide the progress indicator."""
         if self.progress_frame:
             self.progress_frame.pack_forget()
+            assert self.content_frame is not None, "Content frame must be initialized"
             self.content_frame.update_idletasks()
 
     def _create_urls_table(self, parent: ttk.Frame):
@@ -464,6 +470,7 @@ class DocumentationURLsStep(BaseWorkflowStep):
         """Show dialog to guess secondary URLs."""
         spell_names = [spell[1] for spell in workflow_state.selected_spells]
 
+        assert self.content_frame is not None, "Content frame must be initialized"
         dialog = URLGuessDialog(self.content_frame.winfo_toplevel(), spell_names)
         self.content_frame.wait_window(dialog)
 
@@ -548,7 +555,7 @@ class DocumentationURLsStep(BaseWorkflowStep):
                 "Mozilla/5.0 (Spell Card Generator) AppleWebKit/537.36",
             )
             with urllib.request.urlopen(req, timeout=5) as response:
-                return response.status == 200
+                return bool(response.status == 200)
         except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError):
             return False
 
