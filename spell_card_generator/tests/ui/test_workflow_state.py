@@ -146,10 +146,10 @@ class TestWorkflowState:
         state.selected_spells.append(("Fireball", "3", spell_series))
         assert state.can_navigate_to_step(3)  # Documentation URLs accessible
 
-        # Overwrite step only accessible when conflicts exist
-        assert not state.can_navigate_to_step(2)  # No conflicts yet
+        # Overwrite step is navigable (will be skipped if no conflicts)
+        assert state.can_navigate_to_step(2)  # Navigable even without conflicts
         state.conflicts_detected = True
-        assert state.can_navigate_to_step(2)  # Now accessible
+        assert state.can_navigate_to_step(2)  # Still accessible with conflicts
 
     def test_step_validation_state(self):
         """Test step validation state management."""

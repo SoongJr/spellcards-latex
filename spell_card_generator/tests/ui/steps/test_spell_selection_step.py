@@ -242,10 +242,7 @@ class TestSpellSelectionStepWithoutClass:
         assert mock_label_class.called
         # Check for warning text in calls
         label_calls = [str(call) for call in mock_label_class.call_args_list]
-        assert any(
-            "No character class" in str(call) or "⚠️" in str(call)
-            for call in label_calls
-        )
+        assert any("No character class" in str(call) for call in label_calls)
 
 
 class TestSpellSelectionStepInteraction:

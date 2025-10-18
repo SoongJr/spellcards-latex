@@ -2,7 +2,7 @@
 
 import tkinter as tk
 from tkinter import ttk
-from typing import Callable, Optional
+from typing import Callable, Optional, Union
 import datetime
 
 from spell_card_generator.ui.workflow_steps.base_step import BaseWorkflowStep
@@ -20,7 +20,7 @@ class OverwriteCardsStep(BaseWorkflowStep):
         self,
         parent_frame: ttk.Frame,
         step_index: int,
-        navigation_callback: Callable[[int], None],
+        navigation_callback: Callable[[Union[int, str]], None],
         on_overwrite_changed: Optional[Callable] = None,
     ):
         super().__init__(parent_frame, step_index, navigation_callback)

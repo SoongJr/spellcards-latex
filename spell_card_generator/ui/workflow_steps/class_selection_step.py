@@ -2,7 +2,7 @@
 
 import tkinter as tk
 from tkinter import ttk
-from typing import Callable, Optional
+from typing import Callable, Optional, Union
 
 from spell_card_generator.ui.workflow_state import workflow_state
 from spell_card_generator.ui.single_class_selection import SingleClassSelectionManager
@@ -18,7 +18,7 @@ class ClassSelectionStep(BaseWorkflowStep):
         parent_frame: ttk.Frame,
         step_index: int,
         data_loader: SpellDataLoader,
-        navigation_callback: Optional[Callable[[int], None]] = None,
+        navigation_callback: Optional[Callable[[Union[int, str]], None]] = None,
         on_class_changed: Optional[Callable] = None,
     ):
         super().__init__(parent_frame, step_index, navigation_callback)

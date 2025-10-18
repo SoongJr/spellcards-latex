@@ -2,7 +2,7 @@
 
 import tkinter as tk
 from tkinter import ttk
-from typing import Callable, Optional
+from typing import Callable, Optional, Union
 
 from spell_card_generator.ui.workflow_state import workflow_state
 from spell_card_generator.ui.spell_tabs import SpellTabManager
@@ -20,7 +20,7 @@ class SpellSelectionStep(BaseWorkflowStep):
         step_index: int,
         data_loader: SpellDataLoader,
         spell_filter: SpellFilter,
-        navigation_callback: Optional[Callable[[int], None]] = None,
+        navigation_callback: Optional[Callable[[Union[int, str]], None]] = None,
         on_selection_changed: Optional[Callable] = None,
     ):
         super().__init__(parent_frame, step_index, navigation_callback)
@@ -98,7 +98,7 @@ class SpellSelectionStep(BaseWorkflowStep):
 
         message_label = ttk.Label(
             prompt_frame,
-            text="⚠️ No character class selected",
+            text="No character class selected",
             font=("TkDefaultFont", 12, "bold"),
             foreground="orange",
         )

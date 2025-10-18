@@ -529,6 +529,10 @@ ignore-signatures=yes
 # Minimum lines number of a similarity.
 min-similarity-lines=4
 
+# Ignore duplicate code in test files (common test setup patterns)
+# Tests often have similar setup/teardown patterns which is acceptable
+ignore-patterns=test_.*\.py
+
 
 [SPELLING]
 

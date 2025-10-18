@@ -57,9 +57,8 @@ class TestWorkflowStep:
         )
 
         # Can store arbitrary data
-        assert step.step_data is not None, "step_data should be initialized"
-        step.step_data["custom_key"] = "custom_value"
-        assert step.step_data["custom_key"] == "custom_value"
+        step.step_data["custom_key"] = "custom_value"  # type: ignore[index]
+        assert step.step_data["custom_key"] == "custom_value"  # type: ignore[index]
 
 
 class TestWorkflowNavigator:
@@ -311,22 +310,23 @@ class TestCreateDefaultWorkflow:
         class_step = navigator.get_step_by_id("class_selection")
         spell_step = navigator.get_step_by_id("spell_selection")
         overwrite_step = navigator.get_step_by_id("overwrite_cards")
+        assert class_step is not None
+        assert spell_step is not None
+        assert overwrite_step is not None
 
         # Class selection always visible
-        assert class_step is not None
         assert class_step.condition == StepCondition.ALWAYS_VISIBLE
 
         # Spell selection requires class
-        assert spell_step is not None
         assert spell_step.condition == StepCondition.REQUIRES_CLASS
 
         # Overwrite requires conflicts
-        assert overwrite_step is not None
         assert overwrite_step.condition == StepCondition.REQUIRES_CONFLICTS
 
     def test_default_workflow_navigation(self):
         """Test navigating through default workflow."""
         navigator = create_default_workflow()
+        assert navigator is not None
 
         # Refresh with all conditions met to make all steps accessible
         navigator.refresh_step_states(
@@ -334,9 +334,9 @@ class TestCreateDefaultWorkflow:
             selected_spells=[("Fireball", "3", None)],
             conflicts_detected=True,
         )
+        assert navigator.current_step is not None
 
         # Start at class selection
-        assert navigator.current_step is not None
         assert navigator.current_step.step_id == "class_selection"
 
         # Can navigate to next
@@ -344,14 +344,11 @@ class TestCreateDefaultWorkflow:
 
         # Navigate through workflow
         navigator.go_to_next()
-        assert navigator.current_step is not None
         assert navigator.current_step.step_id == "spell_selection"
 
         navigator.go_to_next()
-        assert navigator.current_step is not None
         assert navigator.current_step.step_id == "overwrite_cards"
 
         # Can go back
         navigator.go_to_previous()
-        assert navigator.current_step is not None
         assert navigator.current_step.step_id == "spell_selection"

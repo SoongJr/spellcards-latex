@@ -8,7 +8,6 @@ from typing import Optional
 # UI is now managed by the workflow coordinator
 from spell_card_generator.ui.workflow_coordinator import WorkflowCoordinator
 from spell_card_generator.ui.dialogs import DialogManager
-from spell_card_generator.ui.icons import init_icons
 from spell_card_generator.data.loader import SpellDataLoader
 from spell_card_generator.data.filter import SpellFilter
 from spell_card_generator.generators.latex_generator import LaTeXGenerator
@@ -25,9 +24,6 @@ class SpellCardGeneratorApp:
         # Set reasonable default window size to prevent startup sizing issues
         self.root.geometry("900x600")  # Good default size for the application
         self.root.minsize(900, 600)  # Minimum size to ensure usability
-
-        # Initialize icon system first
-        init_icons(root)
 
         # Initialize components (main window layout is now handled by workflow coordinator)
         self.data_loader = SpellDataLoader()
