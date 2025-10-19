@@ -563,10 +563,10 @@ class LaTeXGenerator:
 
         # Handle URL properties separately - URLs are either preserved or generated
         # (no comparison logic or "% original:" comments needed)
-        url_cmd1 = f"\\newcommand{{\\urlenglish}}{{{english_url}}}"
+        url_cmd1 = f"\\newcommand{{\\urlenglish}}{{{english_url}}} % chktex 8"
         property_commands.append(url_cmd1)
 
-        url_cmd2 = f"\\newcommand{{\\urlsecondary}}{{{secondary_url}}}"
+        url_cmd2 = f"\\newcommand{{\\urlsecondary}}{{{secondary_url}}} % chktex 8"
         property_commands.append(url_cmd2)
 
         # Join all property commands
