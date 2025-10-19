@@ -179,9 +179,11 @@ class TestLaTeXGenerator:
     def test_generate_spell_latex(self, sample_spell_series):
         """Test generating LaTeX for a spell."""
         generator = LaTeXGenerator()
-        latex = generator.generate_spell_latex(sample_spell_series, "wizard")
+        latex, conflicts = generator.generate_spell_latex(sample_spell_series, "wizard")
 
         assert isinstance(latex, str)
+        assert isinstance(conflicts, list)
+        assert len(conflicts) == 0
         assert "\\begin{spellcard}" in latex
         assert "\\end{spellcard}" in latex
         assert "Fireball" in latex
@@ -191,10 +193,11 @@ class TestLaTeXGenerator:
         """Test generating LaTeX with custom German URL."""
         generator = LaTeXGenerator()
         custom_url = "https://custom-url.com/spell"
-        latex = generator.generate_spell_latex(
+        latex, conflicts = generator.generate_spell_latex(
             sample_spell_series, "wizard", german_url_template=custom_url
         )
 
+        assert len(conflicts) == 0
         assert custom_url in latex
 
     @patch("spell_card_generator.generators.latex_generator.subprocess.run")
@@ -227,7 +230,7 @@ class TestLaTeXGenerator:
     def test_generate_latex_template(self, sample_spell_series):
         """Test generation of complete LaTeX template."""
         generator = LaTeXGenerator()
-        latex = generator._generate_latex_template(
+        latex, conflicts = generator._generate_latex_template(
             sample_spell_series,
             "wizard",
             "3",
@@ -235,6 +238,8 @@ class TestLaTeXGenerator:
             "https://german.com/spell",
         )
 
+        assert isinstance(conflicts, list)
+        assert len(conflicts) == 0
         assert "\\begin{spellcard}" in latex
         assert "{wizard}" in latex
         assert "{Fireball}" in latex
@@ -256,12 +261,13 @@ class TestLaTeXGenerator:
             output_file = tmp_path / "test.tex"
             mock_path.return_value = output_file
 
-            generated, skipped = generator.generate_cards(
+            generated, skipped, conflicts = generator.generate_cards(
                 selected_spells, overwrite=True
             )
 
             assert len(generated) == 1
             assert len(skipped) == 0
+            assert len(conflicts) == 0
             assert output_file.exists()
 
     def test_generate_cards_skips_existing_without_overwrite(
@@ -279,12 +285,13 @@ class TestLaTeXGenerator:
             output_file.write_text("existing content")
             mock_path.return_value = output_file
 
-            generated, skipped = generator.generate_cards(
+            generated, skipped, conflicts = generator.generate_cards(
                 selected_spells, overwrite=False
             )
 
             assert len(generated) == 0
             assert len(skipped) == 1
+            assert len(conflicts) == 0
             # File should still have original content
             assert output_file.read_text() == "existing content"
 
@@ -303,12 +310,13 @@ class TestLaTeXGenerator:
             output_file.write_text("existing content")
             mock_path.return_value = output_file
 
-            generated, skipped = generator.generate_cards(
+            generated, skipped, conflicts = generator.generate_cards(
                 selected_spells, overwrite=True
             )
 
             assert len(generated) == 1
             assert len(skipped) == 0
+            assert len(conflicts) == 0
             # File should have new content
             assert "existing content" not in output_file.read_text()
             assert "spellcard" in output_file.read_text()
@@ -365,11 +373,12 @@ class TestLaTeXGenerator:
             "spell_card_generator.utils.paths.PathConfig.get_output_base_path",
             return_value=tmp_path,
         ):
-            generated, skipped = generator.generate_cards(
+            generated, skipped, conflicts = generator.generate_cards(
                 selected_spells, overwrite=True
             )
 
             assert len(generated) == 1
+            assert len(conflicts) == 0
 
             # Verify the file was created with the correct name (apostrophe preserved)
             expected_file = (
@@ -400,11 +409,12 @@ class TestLaTeXGenerator:
             "spell_card_generator.utils.paths.PathConfig.get_output_base_path",
             return_value=tmp_path,
         ):
-            generated, skipped = generator.generate_cards(
+            generated, skipped, conflicts = generator.generate_cards(
                 selected_spells, overwrite=True
             )
 
             assert len(generated) == 1
+            assert len(conflicts) == 0
 
             # Verify the file was created with the correct name (comma preserved)
             expected_file = (
@@ -438,11 +448,12 @@ class TestLaTeXGenerator:
             return_value=tmp_path,
         ):
             # First generation
-            generated1, skipped1 = generator.generate_cards(
+            generated1, skipped1, conflicts1 = generator.generate_cards(
                 selected_spells, overwrite=True
             )
             assert len(generated1) == 1
             assert len(skipped1) == 0
+            assert len(conflicts1) == 0
 
             expected_file = (
                 tmp_path
@@ -456,19 +467,21 @@ class TestLaTeXGenerator:
             first_content = expected_file.read_text()
 
             # Try to generate again without overwrite - should skip
-            generated2, skipped2 = generator.generate_cards(
+            generated2, skipped2, conflicts2 = generator.generate_cards(
                 selected_spells, overwrite=False
             )
             assert len(generated2) == 0
             assert len(skipped2) == 1
+            assert len(conflicts2) == 0
             assert expected_file.read_text() == first_content
 
             # Generate again with overwrite - should overwrite the same file
-            generated3, skipped3 = generator.generate_cards(
+            generated3, skipped3, conflicts3 = generator.generate_cards(
                 selected_spells, overwrite=True
             )
             assert len(generated3) == 1
             assert len(skipped3) == 0
+            assert len(conflicts3) == 0
 
             # File should still exist with the same name
             assert expected_file.exists()

@@ -297,6 +297,86 @@ class FileScanner:
             return ""
 
     @staticmethod
+    def extract_properties(file_path: Path) -> Dict[str, Tuple[str, Optional[str]]]:
+        """
+        Extract all \\newcommand property definitions from a .tex file.
+
+        Parses properties in the format:
+        - \\newcommand{\\property}{value}  → (value, None)
+        - \\newcommand{\\property}{value}% original: {original_value}  → (value, original_value)
+
+        Args:
+            file_path: Path to the .tex file
+
+        Returns:
+            Dictionary mapping property names to (current_value, original_comment) tuples.
+            Example: {"range": ("100 ft.", None), "targets": ("NULL", "you or creature")}
+        """
+        if not file_path.exists():
+            return {}
+
+        try:
+            content = file_path.read_text(encoding="utf-8")
+            properties: Dict[str, Tuple[str, Optional[str]]] = {}
+
+            # Pattern to match \newcommand{\property}{value}
+            # with optional % original: {value} comment
+            # We need to handle nested braces in values, so process line by line
+            lines = content.split("\n")
+
+            for line in lines:
+                # Skip lines that don't start with \newcommand
+                stripped = line.strip()
+                if not stripped.startswith(r"\newcommand"):
+                    continue
+
+                # Extract property name first
+                name_match = re.match(r"\\newcommand\{\\(\w+)\}", stripped)
+                if not name_match:
+                    continue
+
+                property_name = name_match.group(1)
+
+                # Find the value by counting braces after the property name
+                # Format: \newcommand{\property}{VALUE}% optional: {ORIGINAL}
+                after_name = stripped[name_match.end() :]
+                if not after_name.startswith("{"):
+                    continue
+
+                # Count braces to find matching close brace for value
+                brace_count = 0
+                value_start = 1  # Skip opening brace
+                value_end = -1
+
+                for i, char in enumerate(after_name):
+                    if char == "{":
+                        brace_count += 1
+                    elif char == "}":
+                        brace_count -= 1
+                        if brace_count == 0:
+                            value_end = i
+                            break
+
+                if value_end == -1:
+                    continue  # Malformed line
+
+                current_value = after_name[value_start:value_end]
+
+                # Check for % original: {VALUE} comment
+                original_value = None
+                remainder = after_name[value_end + 1 :]
+                original_match = re.search(r"%\s*original:\s*\{([^}]*)\}", remainder)
+                if original_match:
+                    original_value = original_match.group(1)
+
+                properties[property_name] = (current_value, original_value)
+
+            return properties
+
+        except (OSError, UnicodeDecodeError, PermissionError):
+            return {}
+
+    @staticmethod
     def get_conflicts_summary(existing_cards: Dict[str, Path]) -> Dict[str, Any]:
         """
         Get a summary of conflicts for display to the user.

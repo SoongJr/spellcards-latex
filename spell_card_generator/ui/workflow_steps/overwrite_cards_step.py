@@ -202,6 +202,26 @@ class OverwriteCardsStep(BaseWorkflowStep):
             command=self._clear_all_preserve_urls,
         ).grid(row=2, column=2, padx=5, pady=5)
 
+        # Row 3: Property Preservation (global setting)
+        # Add separator for visual distinction
+        ttk.Separator(actions_frame, orient=tk.HORIZONTAL).grid(
+            row=3, column=0, columnspan=3, sticky="ew", pady=10
+        )
+
+        # Property preservation checkbox
+        preserve_props_var = tk.BooleanVar(
+            master=actions_frame, value=workflow_state.preserve_properties
+        )
+        preserve_props_check = ttk.Checkbutton(
+            actions_frame,
+            text="Preserve modified properties (global)",
+            variable=preserve_props_var,
+            command=lambda: self._toggle_preserve_properties(preserve_props_var.get()),
+        )
+        preserve_props_check.grid(
+            row=4, column=0, columnspan=3, sticky=tk.W, padx=5, pady=5
+        )
+
     def _populate_conflicts(self):
         """Populate the conflicts tree with current data."""
         if not self.conflicts_tree:
@@ -374,6 +394,12 @@ class OverwriteCardsStep(BaseWorkflowStep):
         for spell_name in workflow_state.existing_cards:
             workflow_state.preserve_urls[spell_name] = False
         self._populate_conflicts()
+        if self.on_overwrite_changed:
+            self.on_overwrite_changed()
+
+    def _toggle_preserve_properties(self, enabled: bool):
+        """Toggle global property preservation setting."""
+        workflow_state.preserve_properties = enabled
         if self.on_overwrite_changed:
             self.on_overwrite_changed()
 

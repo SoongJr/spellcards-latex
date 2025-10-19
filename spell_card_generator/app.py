@@ -10,7 +10,10 @@ from spell_card_generator.ui.workflow_coordinator import WorkflowCoordinator
 from spell_card_generator.ui.dialogs import DialogManager
 from spell_card_generator.data.loader import SpellDataLoader
 from spell_card_generator.data.filter import SpellFilter
-from spell_card_generator.generators.latex_generator import LaTeXGenerator
+from spell_card_generator.generators.latex_generator import (
+    LaTeXGenerator,
+    PreservationOptions,
+)
 from spell_card_generator.utils.exceptions import SpellCardError
 
 
@@ -135,21 +138,33 @@ class SpellCardGeneratorApp:
                 secondary = workflow_state.secondary_language_urls.get(spell_name)
                 url_config[spell_name] = (primary, secondary)
 
-            # Generate cards with workflow state options
-            generated_files, skipped_files = self.latex_generator.generate_cards(
-                selected_spells,
-                overwrite=overwrite,
-                german_url_template=workflow_state.german_url_template,
-                progress_callback=self._update_progress,
+            # Build preservation options from workflow state
+            preservation_opts = PreservationOptions(
                 preserve_description=workflow_state.preserve_description,
                 preserve_urls=workflow_state.preserve_urls,
                 url_configuration=url_config,
+                preserve_properties=workflow_state.preserve_properties,
+            )
+
+            # Generate cards with workflow state options
+            generated_files, skipped_files, conflicts = (
+                self.latex_generator.generate_cards(
+                    selected_spells,
+                    overwrite=overwrite,
+                    german_url_template=workflow_state.german_url_template,
+                    progress_callback=self._update_progress,
+                    preservation_options=preservation_opts,
+                )
             )
 
             # Show results
             result_msg = f"Generated {len(generated_files)} spell cards"
             if skipped_files:
                 result_msg += f"\\nSkipped {len(skipped_files)} existing files"
+            if conflicts:
+                result_msg += (
+                    f"\\n\\n⚠️ Conflicts detected: {len(conflicts)} properties modified"
+                )
 
             if generated_files:
                 # Extract output directory from first generated file

@@ -29,6 +29,10 @@ class SpellDataLoader:
             self.spells_df = pd.read_csv(self.data_file, sep="\t", dtype=str)
             self.spells_df = self.spells_df.fillna(Config.NULL_VALUE)
 
+            # Rename columns: remove underscores to match LaTeX property names
+            # (LaTeX commands cannot contain underscores)
+            self.spells_df.columns = self.spells_df.columns.str.replace("_", "")
+
             self._extract_character_classes()
             self._extract_spell_sources()
 

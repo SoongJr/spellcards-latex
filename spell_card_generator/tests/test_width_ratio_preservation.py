@@ -4,7 +4,10 @@ import pytest
 import pandas as pd
 
 from spell_card_generator.utils.file_scanner import FileScanner
-from spell_card_generator.generators.latex_generator import LaTeXGenerator
+from spell_card_generator.generators.latex_generator import (
+    LaTeXGenerator,
+    PreservationOptions,
+)
 
 
 class TestWidthRatioExtraction:
@@ -111,28 +114,31 @@ class TestWidthRatioGeneration:
     def test_generate_with_custom_width_ratio(self, spell_data):
         """Test generation with preserved custom width ratio."""
         generator = LaTeXGenerator()
-        result = generator.generate_spell_latex(
+        result, conflicts = generator.generate_spell_latex(
             spell_data, "sor", preserved_width_ratio="0.55"
         )
 
+        assert len(conflicts) == 0
         assert "\\spellcardinfo[0.55]{}" in result
         assert "\\spellcardinfo{}" not in result
 
     def test_generate_with_default_width_ratio(self, spell_data):
         """Test generation without custom width ratio (default)."""
         generator = LaTeXGenerator()
-        result = generator.generate_spell_latex(spell_data, "sor")
+        result, conflicts = generator.generate_spell_latex(spell_data, "sor")
 
+        assert len(conflicts) == 0
         assert "\\spellcardinfo{}" in result
         assert "\\spellcardinfo[" not in result
 
     def test_generate_with_none_width_ratio(self, spell_data):
         """Test generation with explicit None width ratio."""
         generator = LaTeXGenerator()
-        result = generator.generate_spell_latex(
+        result, conflicts = generator.generate_spell_latex(
             spell_data, "sor", preserved_width_ratio=None
         )
 
+        assert len(conflicts) == 0
         assert "\\spellcardinfo{}" in result
         assert "\\spellcardinfo[" not in result
 
@@ -195,15 +201,20 @@ class TestWidthRatioPreservationIntegration:
         generator = LaTeXGenerator()
         selected_spells = [("sor", "Test Spell", spell_data)]
 
-        generated, skipped = generator.generate_cards(
+        preservation_opts = PreservationOptions(
+            preserve_description={"Test Spell": False},  # Don't preserve description
+        )
+
+        generated, skipped, conflicts = generator.generate_cards(
             selected_spells,
             overwrite=True,
-            preserve_description={"Test Spell": False},  # Don't preserve description
+            preservation_options=preservation_opts,
         )
 
         # Verify card was generated
         assert len(generated) == 1
         assert len(skipped) == 0
+        assert len(conflicts) == 0
 
         # Read regenerated content
         regenerated_content = existing_card.read_text(encoding="utf-8")
@@ -241,7 +252,9 @@ class TestWidthRatioPreservationIntegration:
         generator = LaTeXGenerator()
         selected_spells = [("sor", "Test Spell", spell_data)]
 
-        generated, skipped = generator.generate_cards(selected_spells, overwrite=True)
+        generated, skipped, conflicts = generator.generate_cards(
+            selected_spells, overwrite=True
+        )
 
         # Read regenerated content
         regenerated_content = existing_card.read_text(encoding="utf-8")
@@ -249,3 +262,4 @@ class TestWidthRatioPreservationIntegration:
         # Verify default ratio is used
         assert "\\spellcardinfo{}" in regenerated_content
         assert "\\spellcardinfo[" not in regenerated_content
+        assert len(conflicts) == 0

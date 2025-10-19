@@ -64,6 +64,7 @@ class WorkflowState:  # pylint: disable=too-many-instance-attributes
         default_factory=dict
     )  # spell_name -> preserve URLs
     preserve_secondary_language: bool = False  # Legacy global setting
+    preserve_properties: bool = True  # Global toggle for property preservation feature
     conflicts_detected: bool = False
 
     # Spell-specific data (preserved when spells are re-selected)
