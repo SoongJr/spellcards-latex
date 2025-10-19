@@ -77,19 +77,24 @@ class LaTeXGenerator:
                     preserved_description = None
                     preserved_primary_url = None
                     preserved_secondary_url = None
+                    preserved_width_ratio = None
 
                     if (
                         should_preserve_desc or should_preserve_urls
                     ) and output_file.exists():
+                        analysis = FileScanner.analyze_existing_card(output_file)
+
                         if should_preserve_desc:
                             preserved_description = FileScanner.extract_description(
                                 output_file
                             )
 
                         if should_preserve_urls:
-                            analysis = FileScanner.analyze_existing_card(output_file)
                             preserved_primary_url = analysis.get("primary_url", "")
                             preserved_secondary_url = analysis.get("secondary_url", "")
+
+                        # Always preserve width ratio if present (automatic)
+                        preserved_width_ratio = analysis.get("width_ratio")
 
                     # Get URL configuration for this spell
                     urls = url_configuration.get(spell_name, (None, None))
@@ -110,6 +115,7 @@ class LaTeXGenerator:
                         preserved_description=preserved_description,
                         custom_primary_url=primary_url,
                         custom_secondary_url=secondary_url,
+                        preserved_width_ratio=preserved_width_ratio,
                     )
 
                     # Write file
@@ -174,6 +180,7 @@ class LaTeXGenerator:
         preserved_description: Optional[str] = None,
         custom_primary_url: Optional[str] = None,
         custom_secondary_url: Optional[str] = None,
+        preserved_width_ratio: Optional[str] = None,
     ) -> str:
         """Generate LaTeX code for a single spell."""
         try:
@@ -195,7 +202,12 @@ class LaTeXGenerator:
 
             # Generate LaTeX content
             latex_content = self._generate_latex_template(
-                processed_data, character_class, spell_level, english_url, german_url
+                processed_data,
+                character_class,
+                spell_level,
+                english_url,
+                german_url,
+                preserved_width_ratio,
             )
 
             return latex_content
@@ -313,6 +325,7 @@ class LaTeXGenerator:
         spell_level: str,
         english_url: str,
         secondary_url: str,
+        preserved_width_ratio: Optional[str] = None,
     ) -> str:
         """Generate the complete LaTeX template for a spell."""
 
@@ -332,6 +345,13 @@ class LaTeXGenerator:
             "\\spellcardqr{\\urlsecondary}"
             if (secondary_url and secondary_url != Config.DEFAULT_GERMAN_URL)
             else "% \\spellcardqr{\\urlsecondary}"
+        )
+
+        # Prepare \spellcardinfo with optional width ratio
+        spellcardinfo_line = (
+            f"\\spellcardinfo[{preserved_width_ratio}]{{}}"
+            if preserved_width_ratio
+            else "\\spellcardinfo{}"
         )
 
         return f"""%%%
@@ -407,7 +427,7 @@ class LaTeXGenerator:
   \\newcommand{{\\urlenglish}}{{{english_url}}}
   \\newcommand{{\\urlsecondary}}{{{secondary_url}}}
   % print the tabular information at the top of the card:
-  \\spellcardinfo{{}}
+  {spellcardinfo_line}
   % draw a QR Code pointing at online resources for this spell on the front face:
   {primary_qr}
   {secondary_qr}

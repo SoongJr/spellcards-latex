@@ -165,8 +165,11 @@ class FileScanner:
         Returns:
             Dictionary with analysis results including:
             - has_secondary_language: bool
+            - primary_url: str
+            - secondary_url: str
             - secondary_language_urls: List[str]
             - qr_codes: List[str]
+            - width_ratio: Optional[str] (e.g., "0.55" from \\spellcardinfo[0.55]{})
             - file_size: int
             - modification_time: float
         """
@@ -185,6 +188,7 @@ class FileScanner:
                 "secondary_url": "",
                 "secondary_language_urls": [],
                 "qr_codes": [],
+                "width_ratio": None,
                 "content_preview": (
                     content[:200] + "..." if len(content) > 200 else content
                 ),
@@ -234,6 +238,20 @@ class FileScanner:
             qr_codes = re.findall(qr_pattern, content)
             analysis["qr_codes"] = qr_codes
 
+            # Extract width ratio from \spellcardinfo[RATIO]{}
+            # Pattern: \spellcardinfo[0.55]{} or \spellcardinfo{}
+            width_ratio_pattern = r"\\spellcardinfo\[([0-9.]+)\]\{\}"
+            width_ratio_match = re.search(width_ratio_pattern, content)
+            if width_ratio_match:
+                ratio_value = width_ratio_match.group(1)
+                # Validate ratio is reasonable (between 0 and 1)
+                try:
+                    ratio_float = float(ratio_value)
+                    if 0 < ratio_float <= 1:
+                        analysis["width_ratio"] = ratio_value
+                except ValueError:
+                    pass  # Invalid ratio, keep as None
+
             return analysis
 
         except (OSError, UnicodeDecodeError, PermissionError) as e:
@@ -246,6 +264,7 @@ class FileScanner:
                 "secondary_url": "",
                 "secondary_language_urls": [],
                 "qr_codes": [],
+                "width_ratio": None,
             }
 
     @staticmethod
