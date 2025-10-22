@@ -250,6 +250,25 @@ class TestLaTeXGenerator:
         assert "\\spellcardinfo" in latex
         assert "\\spellcardqr" in latex
 
+    def test_generate_latex_template_inconclusive_attackroll_adds_fixme(
+        self, sample_spell_series
+    ):
+        """Test that inconclusive attackroll adds FIXME marker."""
+        generator = LaTeXGenerator()
+        latex, conflicts = generator._generate_latex_template(
+            sample_spell_series,
+            "wizard",
+            "3",
+            "https://english.com/spell",
+            "https://german.com/spell",
+            "inconclusive",  # attackroll is inconclusive
+        )
+
+        assert isinstance(conflicts, list)
+        assert len(conflicts) == 0
+        assert r"\newcommand{\attackroll}{inconclusive}" in latex
+        assert r"\FIXME{Could not determine attack type -- please review}" in latex
+
     def test_generate_cards_creates_files(self, tmp_path, sample_spell_data):
         """Test that generate_cards creates files."""
         generator = LaTeXGenerator()

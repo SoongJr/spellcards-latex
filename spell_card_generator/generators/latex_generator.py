@@ -642,6 +642,10 @@ class LaTeXGenerator:
                 # Skip preservation - always use DB value
                 cmd_line = f"\\newcommand{{\\{prop_name}}}{{{db_value}}}"
 
+            # Add FIXME marker for properties requiring manual attention
+            if prop_name == "attackroll" and db_value == "inconclusive":
+                cmd_line += r"\FIXME{Cannot detect, please choose appropiate value: ranged touch, melee touch, ranged, melee or \textbf{none}}"
+
             property_commands.append(cmd_line)
 
         # Handle URL properties separately - URLs are either preserved or generated

@@ -257,6 +257,9 @@ UserWarnRegex
   # else on that line.  With PCRE we could match balanced [] and {},
   # but I wonder if it's worth the complexity...
   (?!#-2:Vertical! rules! in! tables! are! ugly)\\begin\{(array|tabularx?\*?)\}(\[.*\])?\{.*\|.*\}
+
+  # Spell card generator markers - properties requiring manual review
+  (?!#FIXME! marker! requires! manual! review)\\FIXME
 }
 
 

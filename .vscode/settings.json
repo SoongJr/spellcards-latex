@@ -22,6 +22,8 @@
     "files.autoSave": "onWindowChange",
     "editor.formatOnSave": true,
     "chat.tools.terminal.autoApprove": {
+        "chktex": true,
+        "latexmk": true,
         "cd": true,
         "source .venv/bin/activate": true,
         "black": true,
