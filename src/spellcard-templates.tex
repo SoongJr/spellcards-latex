@@ -13,6 +13,48 @@
 \newcommand{\FIXME}[1]{} % Does nothing, just flags for chktex warning
 %
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Deck management commands
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Counter for tracking which deck we're in (for horizontal positioning)
+\newcounter{decknumber}
+\setcounter{decknumber}{0}
+%
+% Variable to store the current deck name
+\newcommand{\currentdeck}{}
+%
+% Command to start a new deck
+\newcommand{\deckname}[1]{%
+  \stepcounter{decknumber}%
+  \renewcommand{\currentdeck}{#1}%
+}
+%
+% Command to clear the current deck
+\newcommand{\cleardeck}{%
+  \renewcommand{\currentdeck}{}%
+}
+%
+% Function for drawing the deck label at the top edge of the card
+% Horizontal positioning based on deck number
+\newcommand{\drawdecklabel}[2]{%
+  % #1 = deck name, #2 = deck number
+  \ifthenelse{\equal{#1}{}}{}{%
+    \begin{tikzpicture}[remember picture, overlay]%
+      % Calculate horizontal position based on deck number
+      % Position from left edge, with spacing for multiple decks
+      \pgfmathparse{mod(#2-1,5)}% support up to 5 decks before wrapping
+      \pgfmathsetmacro{\labelposition}{\fpeval{((1/6 * \pgfmathresult)) * \paperwidth} + 1.5cm}%
+      % Print the deck name at the top edge, horizontally
+      % Use \printermarginy if available (from cardify.tex), otherwise use fixed offset
+      \ifdefined\printermarginy%
+        \node [font=\normalsize\itshape, anchor=south, xshift=\labelposition, yshift=-\printermarginy-2mm] at (current page.north west){#1};%
+      \else%
+        \node [font=\normalsize\itshape, anchor=south, xshift=\labelposition, yshift=-1cm] at (current page.north west){#1};%
+      \fi%
+    \end{tikzpicture}%
+  }%
+}
+%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % environment for formatting a spell card (title-bar, header/footer, etc.)
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % function for drawing the spell marker
@@ -41,6 +83,8 @@
   % Titlebar for spell (spell name and level)
   \section*{\Huge\name\hfill\MakeUppercase{\class}~\spelllevel}%
   %
+  % Deck name is shown at the top edge:
+  \drawdecklabel{\currentdeck}{\value{decknumber}}%
   \drawspellmarker{\spelllevel}%
   \endgroup{}%
 }{%
