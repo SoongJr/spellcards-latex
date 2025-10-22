@@ -130,13 +130,27 @@ class SpellCardGeneratorApp:
             )
 
             # Build URL configuration from workflow state
-            # URLs are stored separately: custom_url_templates (primary),
-            # secondary_language_urls (secondary)
+            # URLs are stored in spell_data_cache with validation status
+            # Structure: spell_name -> [(url, is_valid), ...] where [0] is primary, [1] is secondary
             url_config = {}
             for spell_name in [name for _, name, _ in selected_spells]:
-                primary = workflow_state.custom_url_templates.get(spell_name)
-                secondary = workflow_state.secondary_language_urls.get(spell_name)
-                url_config[spell_name] = (primary, secondary)
+                primary = workflow_state.get_spell_data(spell_name, "primary_url")
+                secondary = workflow_state.get_spell_data(spell_name, "secondary_url")
+                primary_valid = workflow_state.get_spell_data(
+                    spell_name, "primary_url_valid", True
+                )
+                secondary_valid = workflow_state.get_spell_data(
+                    spell_name, "secondary_url_valid", True
+                )
+
+                # Build list of (url, is_valid) tuples
+                urls = []
+                if primary is not None:
+                    urls.append((primary, primary_valid))
+                if secondary is not None:
+                    urls.append((secondary, secondary_valid))
+
+                url_config[spell_name] = urls
 
             # Build preservation options from workflow state
             preservation_opts = PreservationOptions(

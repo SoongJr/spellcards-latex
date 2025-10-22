@@ -345,6 +345,19 @@ class TestDocumentationURLsStepURLValidation:
 
         assert result is True  # Empty URLs are considered valid
 
+    @patch("tkinter.ttk.Frame")
+    def test_validate_url_non_url_text(self, _mock_frame_class):
+        """Test URL validation with arbitrary text (not a URL)."""
+        mock_parent = MagicMock()
+
+        step = DocumentationURLsStep(parent_frame=mock_parent, step_index=3)
+
+        # Non-URL text should be considered valid without validation
+        assert step._validate_url("See Player's Handbook") is True
+        assert step._validate_url("SchwarzeTentakel") is True
+        assert step._validate_url("#1c907baf") is True
+        assert step._validate_url("Not applicable") is True
+
 
 class TestDocumentationURLsStepBulkActions:
     """Test bulk action functionality."""

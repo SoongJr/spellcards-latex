@@ -529,6 +529,11 @@ class DocumentationURLsStep(BaseWorkflowStep):
         if not url:
             return True  # Empty URLs are considered valid
 
+        # Only validate strings that look like URLs
+        # Allow arbitrary text (not URLs) without validation
+        if not url.strip().startswith(("http://", "https://")):
+            return True  # Non-URL text is valid (no validation needed)
+
         try:
             # Encode URL properly for non-ASCII characters (e.g., German umlauts)
             # Parse the URL and encode the path component
@@ -765,6 +770,16 @@ class DocumentationURLsStep(BaseWorkflowStep):
         primary_state = self.primary_validation.get(spell_name, self.STATE_UNVALIDATED)
         secondary_state = self.secondary_validation.get(
             spell_name, self.STATE_UNVALIDATED
+        )
+
+        # Save URLs and validation status to workflow state
+        workflow_state.set_spell_data(spell_name, "primary_url", primary)
+        workflow_state.set_spell_data(
+            spell_name, "primary_url_valid", primary_state == self.STATE_VALID
+        )
+        workflow_state.set_spell_data(spell_name, "secondary_url", secondary)
+        workflow_state.set_spell_data(
+            spell_name, "secondary_url_valid", secondary_state == self.STATE_VALID
         )
 
         # Format URLs with status symbols

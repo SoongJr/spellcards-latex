@@ -236,6 +236,8 @@ class TestLaTeXGenerator:
             "3",
             "https://english.com/spell",
             "https://german.com/spell",
+            True,  # primary_url_valid
+            True,  # secondary_url_valid
             r"\textbf{none}",  # attackroll (already formatted by _detect_attack_roll)
         )
 
@@ -261,13 +263,167 @@ class TestLaTeXGenerator:
             "3",
             "https://english.com/spell",
             "https://german.com/spell",
+            True,  # primary_url_valid
+            True,  # secondary_url_valid
             "inconclusive",  # attackroll is inconclusive
         )
 
         assert isinstance(conflicts, list)
         assert len(conflicts) == 0
         assert r"\newcommand{\attackroll}{inconclusive}" in latex
-        assert r"\FIXME{Could not determine attack type -- please review}" in latex
+        assert r"\FIXME{Cannot detect, please choose" in latex
+
+    def test_generate_latex_template_invalid_primary_url_adds_fixme(
+        self, sample_spell_series
+    ):
+        """Test that invalid primary URL adds FIXME marker on same line."""
+        generator = LaTeXGenerator()
+        latex, conflicts = generator._generate_latex_template(
+            sample_spell_series,
+            "wizard",
+            "3",
+            "https://invalid-url.example.com/spell",
+            "https://german.com/spell",
+            False,  # primary_url_valid - INVALID
+            True,  # secondary_url_valid
+            r"\textbf{none}",  # attackroll
+        )
+
+        assert isinstance(conflicts, list)
+        # Check that FIXME is on the same line as the URL command
+        assert (
+            r"\newcommand{\urlenglish}{https://invalid-url.example.com/spell}"
+            r"\FIXME{URL verification failed - please check if this URL is correct}"
+            r" % chktex 8" in latex
+        )
+        # Secondary URL should NOT have FIXME
+        assert (
+            r"\newcommand{\urlsecondary}{https://german.com/spell} % chktex 8" in latex
+        )
+        assert latex.count(r"\FIXME{URL verification failed") == 1
+
+    def test_generate_latex_template_invalid_secondary_url_adds_fixme(
+        self, sample_spell_series
+    ):
+        """Test that invalid secondary URL adds FIXME marker on same line."""
+        generator = LaTeXGenerator()
+        latex, conflicts = generator._generate_latex_template(
+            sample_spell_series,
+            "wizard",
+            "3",
+            "https://english.com/spell",
+            "https://invalid-secondary.example.com/spell",
+            True,  # primary_url_valid
+            False,  # secondary_url_valid - INVALID
+            r"\textbf{none}",  # attackroll
+        )
+
+        assert isinstance(conflicts, list)
+        # Primary URL should NOT have FIXME
+        assert (
+            r"\newcommand{\urlenglish}{https://english.com/spell} % chktex 8" in latex
+        )
+        # Check that FIXME is on the same line as the secondary URL command
+        assert (
+            r"\newcommand{\urlsecondary}{https://invalid-secondary.example.com/spell}"
+            r"\FIXME{URL verification failed - please check if this URL is correct}"
+            r" % chktex 8" in latex
+        )
+        assert latex.count(r"\FIXME{URL verification failed") == 1
+
+    def test_generate_latex_template_both_invalid_urls_add_fixme(
+        self, sample_spell_series
+    ):
+        """Test that both invalid URLs get FIXME markers."""
+        generator = LaTeXGenerator()
+        latex, conflicts = generator._generate_latex_template(
+            sample_spell_series,
+            "wizard",
+            "3",
+            "https://invalid-primary.example.com/spell",
+            "https://invalid-secondary.example.com/spell",
+            False,  # primary_url_valid - INVALID
+            False,  # secondary_url_valid - INVALID
+            r"\textbf{none}",  # attackroll
+        )
+
+        assert isinstance(conflicts, list)
+        # Both URLs should have FIXME markers
+        assert (
+            r"\newcommand{\urlenglish}{https://invalid-primary.example.com/spell}"
+            r"\FIXME{URL verification failed - please check if this URL is correct}"
+            r" % chktex 8" in latex
+        )
+        assert (
+            r"\newcommand{\urlsecondary}{https://invalid-secondary.example.com/spell}"
+            r"\FIXME{URL verification failed - please check if this URL is correct}"
+            r" % chktex 8" in latex
+        )
+        assert latex.count(r"\FIXME{URL verification failed") == 2
+
+    def test_generate_latex_template_non_url_text_no_fixme(self, sample_spell_series):
+        """Test that non-URL text (arbitrary text) doesn't get FIXME even if invalid."""
+        generator = LaTeXGenerator()
+        latex, conflicts = generator._generate_latex_template(
+            sample_spell_series,
+            "wizard",
+            "3",
+            "See Player's Handbook page 42",  # Not a URL
+            "Refer to GM for details",  # Not a URL
+            False,  # marked invalid but doesn't look like URL
+            False,  # marked invalid but doesn't look like URL
+            r"\textbf{none}",  # attackroll
+        )
+
+        assert isinstance(conflicts, list)
+        # Non-URL text should NOT have FIXME markers even though marked invalid
+        assert r"\FIXME{URL verification failed" not in latex
+        assert "See Player's Handbook page 42" in latex
+        assert "Refer to GM for details" in latex
+
+    def test_generate_latex_template_empty_secondary_url(self, sample_spell_series):
+        """Test that empty secondary URL produces empty command and commented QR."""
+        generator = LaTeXGenerator()
+        latex, conflicts = generator._generate_latex_template(
+            sample_spell_series,
+            "wizard",
+            "3",
+            "https://english.com/spell",
+            "",  # Empty secondary URL
+            True,
+            True,
+            r"\textbf{none}",
+        )
+
+        assert isinstance(conflicts, list)
+        # Secondary URL should be empty, no FIXME
+        assert r"\newcommand{\urlsecondary}{} % chktex 8" in latex
+        assert r"\FIXME{URL verification failed" not in latex
+        # Secondary QR should be commented
+        assert r"% \spellcardqr{\urlsecondary}" in latex
+
+    def test_generate_latex_template_placeholder_secondary_url(
+        self, sample_spell_series
+    ):
+        """Test that placeholder secondary URL produces empty command and commented QR."""
+        generator = LaTeXGenerator()
+        latex, conflicts = generator._generate_latex_template(
+            sample_spell_series,
+            "wizard",
+            "3",
+            "https://english.com/spell",
+            "http://prd.5footstep.de/Grundregelwerk/Zauber/<german-spell-name>",  # Placeholder
+            True,
+            False,  # Even marked invalid, should not add FIXME for placeholder
+            r"\textbf{none}",
+        )
+
+        assert isinstance(conflicts, list)
+        # Secondary URL should be empty, no FIXME
+        assert r"\newcommand{\urlsecondary}{} % chktex 8" in latex
+        assert r"\FIXME{URL verification failed" not in latex
+        # Secondary QR should be commented
+        assert r"% \spellcardqr{\urlsecondary}" in latex
 
     def test_generate_cards_creates_files(self, tmp_path, sample_spell_data):
         """Test that generate_cards creates files."""

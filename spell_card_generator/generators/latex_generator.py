@@ -31,9 +31,9 @@ class PreservationOptions:
         default_factory=dict
     )  # spell_name -> bool
     preserve_urls: Dict[str, bool] = field(default_factory=dict)  # spell_name -> bool
-    url_configuration: Dict[str, Tuple[Optional[str], Optional[str]]] = field(
+    url_configuration: Dict[str, List[Tuple[Optional[str], bool]]] = field(
         default_factory=dict
-    )  # spell_name -> (primary, secondary)
+    )  # spell_name -> [(url, is_valid), ...] where [0] is primary, [1] is secondary, etc.
     preserve_properties: bool = True  # Global toggle for property preservation
 
 
@@ -136,9 +136,21 @@ class LaTeXGenerator:
                         )
 
                     # Get URL configuration for this spell
-                    urls = url_configuration.get(spell_name, (None, None))
-                    primary_url = urls[0] if urls[0] is not None else None
-                    secondary_url = urls[1] if urls[1] is not None else None
+                    # url_configuration is: spell_name -> [(url, is_valid), ...]
+                    # where [0] is primary, [1] is secondary, etc.
+                    url_list = url_configuration.get(spell_name, [])
+
+                    # Extract primary URL (index 0)
+                    primary_url = None
+                    primary_url_valid = True
+                    if len(url_list) > 0 and url_list[0][0] is not None:
+                        primary_url, primary_url_valid = url_list[0]
+
+                    # Extract secondary URL (index 1)
+                    secondary_url = None
+                    secondary_url_valid = True
+                    if len(url_list) > 1 and url_list[1][0] is not None:
+                        secondary_url, secondary_url_valid = url_list[1]
 
                     # Use preserved URLs if requested
                     if should_preserve_urls and preserved_primary_url:
@@ -154,6 +166,8 @@ class LaTeXGenerator:
                         preserved_description=preserved_description,
                         custom_primary_url=primary_url,
                         custom_secondary_url=secondary_url,
+                        primary_url_valid=primary_url_valid,
+                        secondary_url_valid=secondary_url_valid,
                         preserved_width_ratio=preserved_width_ratio,
                         preserved_properties=preserved_properties,
                         spell_name=spell_name,
@@ -217,7 +231,9 @@ class LaTeXGenerator:
 
         return output_file
 
-    def generate_spell_latex(  # pylint: disable=too-many-arguments,too-many-positional-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
+    # pylint: disable=too-many-locals
+    def generate_spell_latex(
         self,
         spell_data: pd.Series,
         character_class: str,
@@ -225,6 +241,8 @@ class LaTeXGenerator:
         preserved_description: Optional[str] = None,
         custom_primary_url: Optional[str] = None,
         custom_secondary_url: Optional[str] = None,
+        primary_url_valid: bool = True,
+        secondary_url_valid: bool = True,
         preserved_width_ratio: Optional[str] = None,
         preserved_properties: Optional[Dict[str, Tuple[str, Optional[str]]]] = None,
         spell_name: Optional[str] = None,
@@ -240,6 +258,8 @@ class LaTeXGenerator:
             preserved_description: Optional preserved description text
             custom_primary_url: Optional custom primary URL
             custom_secondary_url: Optional custom secondary URL
+            primary_url_valid: Whether primary URL passed validation
+            secondary_url_valid: Whether secondary URL passed validation
             preserved_width_ratio: Optional preserved width ratio
             preserved_properties: Optional dict of preserved properties
             spell_name: Optional spell name (defaults to spell_data['name'])
@@ -280,6 +300,8 @@ class LaTeXGenerator:
                 spell_level,
                 english_url,
                 german_url,
+                primary_url_valid,
+                secondary_url_valid,
                 attackroll,  # Pass computed attack roll value
                 preserved_width_ratio,
                 preserved_properties,
@@ -469,6 +491,13 @@ class LaTeXGenerator:
 
         return f"{Config.ENGLISH_URL_BASE}/{first_char}/{clean_name}/"
 
+    @staticmethod
+    def _looks_like_url(text: str) -> bool:
+        """Check if text looks like a URL (starts with http:// or https://)."""
+        if not text:
+            return False
+        return text.strip().startswith(("http://", "https://"))
+
     def _apply_property_preservation_logic(
         self,
         property_name: str,
@@ -525,6 +554,8 @@ class LaTeXGenerator:
         spell_level: str,
         english_url: str,
         secondary_url: str,
+        primary_url_valid: bool,
+        secondary_url_valid: bool,
         attackroll: str,  # Computed attack roll value
         preserved_width_ratio: Optional[str] = None,
         preserved_properties: Optional[Dict[str, Tuple[str, Optional[str]]]] = None,
@@ -644,22 +675,57 @@ class LaTeXGenerator:
 
             # Add FIXME marker for properties requiring manual attention
             if prop_name == "attackroll" and db_value == "inconclusive":
-                cmd_line += r"\FIXME{Cannot detect, please choose appropiate value: ranged touch, melee touch, ranged, melee or \textbf{none}}"
+                fixme_text = (
+                    r"\FIXME{Cannot detect, please choose appropiate value: "
+                    r"ranged touch, melee touch, ranged, melee or \textbf{none}}"
+                )
+                cmd_line += fixme_text
 
             property_commands.append(cmd_line)
 
         # Handle URL properties separately - URLs are either preserved or generated
-        # (no comparison logic or "% original:" comments needed)
-        url_cmd1 = f"\\newcommand{{\\urlenglish}}{{{english_url}}} % chktex 8"
+        # Apply FIXME markers for URLs that look like URLs but failed validation
+
+        # Primary URL
+        url_cmd1 = f"\\newcommand{{\\urlenglish}}{{{english_url}}}"
+        if english_url and self._looks_like_url(english_url) and not primary_url_valid:
+            url_cmd1 += (
+                r"\FIXME{URL verification failed - please check if this URL is correct}"
+            )
+        url_cmd1 += " % chktex 8"
         property_commands.append(url_cmd1)
 
-        url_cmd2 = f"\\newcommand{{\\urlsecondary}}{{{secondary_url}}} % chktex 8"
+        # Secondary URL - treat placeholder/empty URLs as no URL
+        # Check if secondary URL is empty, None, or the default placeholder
+        is_placeholder = (
+            not secondary_url
+            or secondary_url == Config.DEFAULT_GERMAN_URL
+            or "<german-spell-name>" in secondary_url
+        )
+
+        if is_placeholder:
+            # Empty secondary URL - no FIXME needed
+            url_cmd2 = "\\newcommand{\\urlsecondary}{} % chktex 8"
+        else:
+            # Has a secondary URL value
+            url_cmd2 = f"\\newcommand{{\\urlsecondary}}{{{secondary_url}}}"
+            if self._looks_like_url(secondary_url) and not secondary_url_valid:
+                url_cmd2 += r"\FIXME{URL verification failed - please check if this URL is correct}"
+            url_cmd2 += " % chktex 8"
+
         property_commands.append(url_cmd2)
 
         # Join all property commands
         properties_section = "\n  ".join(property_commands)
 
         # Prepare QR code lines (can't use backslashes in f-string expressions)
+        # Check again for placeholder (recompute since it's used here)
+        is_secondary_placeholder = (
+            not secondary_url
+            or secondary_url == Config.DEFAULT_GERMAN_URL
+            or "<german-spell-name>" in secondary_url
+        )
+
         primary_qr = (
             "\\spellcardqr{\\urlenglish}"
             if english_url
@@ -667,7 +733,7 @@ class LaTeXGenerator:
         )
         secondary_qr = (
             "\\spellcardqr{\\urlsecondary}"
-            if (secondary_url and secondary_url != Config.DEFAULT_GERMAN_URL)
+            if not is_secondary_placeholder
             else "% \\spellcardqr{\\urlsecondary}"
         )
 
