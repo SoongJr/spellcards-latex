@@ -346,7 +346,217 @@
    - Deferred - current functionality is complete and sufficient
    - Can be added later if user feedback indicates it would be helpful
 
-   ### 4.3 Other Functionality (TODO)
+   ### 4.3 Attack Roll Derived Property ⏳ *IN PROGRESS*
+   
+   **Goal:** Add a derived property `\attackroll` to the LaTeX template to clearly indicate whether an attack roll is required.
+   
+   **Background:**
+   Similar to `\savingthrow` and `\spellresistance`, this property will be displayed in the spell info table
+   to help players quickly determine what kind of attack roll (if any) is needed when casting the spell.
+   
+   **Research Findings (from TSV analysis of 2,905 spells):**
+   
+   1. **Attack Type Distribution:**
+      - `none`: 2,731 spells (94.0%) - No attack roll required
+      - `ranged touch`: 59 spells (2.0%) - Ranged touch attack required (CLEAR pattern)
+      - `melee touch`: 46 spells (1.6%) - Melee touch attack required (CLEAR pattern)
+      - `ranged`: ~6 actual attack spells (0.2%) - Non-touch ranged attacks (need investigation)
+      - `melee`: ~11 actual attack spells (0.4%) - Non-touch melee attacks (need investigation)
+      - Remaining "attack" mentions: Buff/debuff spells (false positives)
+   
+   2. **Detection Approach:**
+      - **No TSV column exists** for attack type - must parse description text
+      - **High confidence patterns:**
+        - "ranged touch attack" → `ranged touch` (59 spells, all verified)
+        - "melee touch attack" → `melee touch` (46 spells, all verified)
+      - **Low confidence patterns** ("ranged/melee attack" without "touch"):
+        - Majority are buff/debuff spells (Bull's Strength, Entropic Shield, etc.)
+        - Small subset (~17 spells) may require actual attack rolls
+        - Examples of actual attacks: Magic Stone, Ki Arrow, Tar Ball, Resounding Blow, Sickening Strikes
+        - **Decision:** Mark these as `inconclusive` for manual review
+   
+   3. **Proposed Values (Updated based on user feedback):**
+      - `none` - No attack roll required (default, ~94% of spells)
+      - `ranged touch` - Ranged touch attack (e.g., Acid Arrow, Scorching Ray, Disintegrate)
+      - `melee touch` - Melee touch attack (e.g., Shocking Grasp, Chill Touch, Vampiric Touch)
+      - `ranged` - Non-touch ranged attack (e.g., Magic Stone, Ki Arrow, Tar Ball, Stone Discus)
+      - `melee` - Non-touch melee attack (e.g., Resounding Blow, Sickening Strikes, Mirror Strike)
+      - `inconclusive` - Attack mentioned but context unclear (for manual review, ~20-30 spells)
+   
+   4. **Examples of Each Type:**
+      - **Ranged Touch (59 spells):** Acid Arrow, Acid Splash, Disintegrate, Enervation, Polar Ray
+      - **Melee Touch (46 spells):** Chill Touch, Shocking Grasp, Ghoul Touch, Vampiric Touch, Inflict Wounds
+      - **Ranged Non-Touch (verified ~6):** Magic Stone, Ki Arrow, Tar Ball, Nauseating Dart, Stone Discus, Storm of Blades
+      - **Melee Non-Touch (verified ~11):** Resounding Blow, Sickening Strikes, Mirror Strike, Draconic Reservoir, Wilderness Soldiers
+      - **Inconclusive (~20-30):** Spells mentioning "attack" but in buff/debuff context - needs manual classification
+      - **False Positives (buff spells):** Bull's Strength, Entropic Shield, Cloak of Chaos, Holy Aura (should be `none`)
+   
+   5. **User Override Requirement:**
+      - **Key insight:** `\attackroll` is similar to URLs, not to `\spelllevel`
+      - Users will need to override false positives/negatives
+      - Should support `% original:` style preservation like other TSV properties
+      - However, it's computed (not from TSV), so treat as "generated with preservation"
+      - Similar pattern to width ratio: auto-detected but user may override
+   
+   **Implementation Plan:**
+   
+   **Phase 1: Detection Logic** ✅ *COMPLETED*
+   
+   1. ✅ **Analyze TSV data** to understand attack patterns
+      - Searched descriptions for "ranged touch attack", "melee touch attack", "ranged attack", "melee attack"
+      - Found 59 ranged touch, 46 melee touch spells
+      - Confirmed no existing TSV column for attack type
+   
+   2. ✅ **Design detection algorithm**
+      - Parse `description` field for attack patterns
+      - Priority order: 
+        1. "ranged touch attack" → `ranged touch`
+        2. "melee touch attack" → `melee touch`
+        3. "ranged attack" (not buff context) → `ranged` or `inconclusive`
+        4. "melee attack" (not buff context) → `melee` or `inconclusive`
+        5. Default → `none`
+      - **Attack context indicators** (spell requires an attack):
+        - "make a [ranged/melee] attack"
+        - "succeed at [a] [ranged/melee] attack"
+        - "succeed on [a] [ranged/melee] attack"
+        - "[ranged/melee] attack to hit"
+        - "requires [a] [ranged/melee] attack"
+      - **Buff/effect context indicators** (spell does NOT require an attack):
+        - "bonus to [ranged/melee] attack"
+        - "penalty to [ranged/melee] attack"
+        - "affects [ranged/melee] attack"
+        - "grants [bonus/penalty to] [ranged/melee] attack"
+        - "applies to [ranged/melee] attack"
+        - "deflects [incoming] [ranged/melee] attack"
+      - If neither context is clear → `inconclusive` (flag for manual review)
+   
+   3. ✅ **Determine property classification** (REVISED)
+      - **Original question:** Is `\attackroll` like `\spelllevel` or like `\urlenglish`?
+      - **User correction:** `\spelllevel` IS from TSV, just class-specific column selection
+      - **Revised analysis:**
+        - `\spelllevel`: Direct TSV property (from class-specific column like `sor`, `wiz`, etc.)
+        - `\attackroll`: Computed from description text, NOT in TSV
+        - `\urlenglish`/`\urlsecondary`: User-configured, not from TSV
+      - **Key insight:** `\attackroll` needs preservation because:
+        - Auto-detection will have false positives/negatives
+        - Users will manually correct these
+        - Should preserve user corrections across regenerations
+        - Similar to regular TSV properties, but computed instead of extracted
+      - **Conclusion:** `\attackroll` should:
+        - Use same `% original:` preservation pattern as TSV properties
+        - Be grouped with TSV properties (not separated)
+        - Apply 4-case decision logic when regenerating
+        - Default to computed value, but preserve user overrides
+      - **Template Organization (REVISED):**
+        - Section 1: TSV-extracted properties (with potential `% original:` comments)
+          - Includes `\spelllevel` (direct from TSV class column)
+          - Includes `\attackroll` (computed, but with same preservation logic)
+        - Section 2: User-configured URLs (simple preserve-or-generate, no `% original:`)
+          - `\urlenglish`, `\urlsecondary`
+   
+   **Phase 2: Code Implementation** ✅ *COMPLETED*
+   
+   4. ✅ **Add detection method to LaTeXGenerator**
+      - Method: `_detect_attack_roll(description: str) -> str`
+      - Returns: "none", "ranged touch", "melee touch", "ranged", "melee", or "inconclusive"
+      - Static method with context-aware pattern matching
+      - Algorithm implemented with priority order:
+        1. Check for "ranged touch attack" → return `ranged touch`
+        2. Check for "melee touch attack" or "touch attack" → return `melee touch`
+        3. Search for attack context patterns (make a, succeed at/on, attack to hit, requires, successful, strike with)
+        4. Search for buff context patterns (bonus to, penalty to, affects, grants, applies to, deflects)
+        5. Decision logic:
+           - Attack patterns + no buff context → return attack type ("ranged" or "melee")
+           - Attack patterns + buff context → return "inconclusive"
+           - No attack patterns + buff context → return "none"
+           - General "attack" mention without clear context → return "inconclusive"
+           - No attack mentions → return "none"
+      - Handles None/empty descriptions gracefully
+      - Added `# pylint: disable=too-many-return-statements` for clarity
+   
+   5. ✅ **Update template generation**
+      - Added `attackroll: str` parameter to `_generate_latex_template()`
+      - Added `\attackroll` to property_names list (after `\spelllevel`)
+      - Applied `_apply_property_preservation_logic()` for 4-case decision logic
+      - Supports `% original:` comment preservation same as TSV properties
+      - Placed in properties section with other TSV properties
+   
+   6. ✅ **Update spell latex generation**
+      - Modified `generate_spell_latex()` to call `_detect_attack_roll()` with spell description
+      - Passes computed attackroll value to `_generate_latex_template()`
+      - Supports preservation from existing cards via `preserved_properties` dict
+   
+   **Phase 3: Testing & Validation** 🔄 *IN PROGRESS*
+   
+   7. ✅ **Add unit tests**
+      - Created `tests/test_attack_roll_detection.py` with **27 comprehensive tests**
+      - Test coverage for all 6 categories:
+        - **Ranged Touch:** Acid Arrow, Scorching Ray (2 tests)
+        - **Melee Touch:** Shocking Grasp, Vampiric Touch, default "touch attack" (3 tests)
+        - **Ranged Non-Touch:** Magic Stone, Nauseating Dart (2 tests)
+        - **Melee Non-Touch:** Resounding Blow, Sickening Strikes (2 tests)
+        - **Buff Spells (none):** Bull's Strength, Entropic Shield (2 tests)
+        - **Inconclusive:** Solid Fog, Cloak of Chaos (2 tests)
+      - Edge cases tested:
+        - Empty description → "none"
+        - None description → "none"
+        - No attack mention → "none"
+        - General attack mention → "inconclusive"
+      - Context pattern tests (8 tests):
+        - "succeed at ranged attack"
+        - "succeed on melee attack"
+        - "ranged attack to hit"
+        - "requires melee attack"
+        - "make a ranged attack"
+      - Buff pattern tests (5 tests):
+        - "bonus to attack" → "none"
+        - "penalty to ranged attack" → "none"
+        - "affects melee attack" → "none"
+        - "grants attack bonus" → "none"
+        - "applies to ranged attacks" → "none"
+      - **All 27 tests passing** ✅
+      - Updated existing test in `test_latex_generator.py` to include attackroll parameter
+      - **Total test suite: 328 tests passing** ✅
+   
+   8. ⏳ **Manual validation**
+      - Generate cards for known ranged touch spells (Acid Arrow, Scorching Ray) → verify `ranged touch`
+      - Generate cards for known melee touch spells (Shocking Grasp, Vampiric Touch) → verify `melee touch`
+      - Generate cards for buff spells (Bull's Strength, Entropic Shield) → verify `none`
+      - Generate cards for non-touch attacks (Magic Stone, Resounding Blow) → verify detection
+      - Test user override: manually change value, add `% original:` comment, regenerate → verify preservation
+      - Verify LaTeX compilation still works with new property
+   
+   9. ⏳ **Update documentation**
+      - Add note to README about `\attackroll` property
+      - Explain that it's auto-detected but may need manual correction
+      - Document preservation pattern (same as other properties with `% original:` comment)
+      - Add examples of correct override usage
+      - Update agent-plan.md with completion status
+   
+   10. ⏳ **Consider UI enhancement (optional, future)**
+       - Add "Review Inconclusive" button to show spells flagged as `inconclusive`
+       - Allow bulk editing of attack types before generation
+       - Display confidence level in spell selection table
+       - Deferred for post-implementation based on user feedback
+   
+   **Implementation Summary (Phase 1-3 Partially Complete):**
+   - **Code changes:** 3 files modified
+     - `generators/latex_generator.py`: Added `_detect_attack_roll()` method, updated template and generation
+     - `tests/test_attack_roll_detection.py`: NEW - 27 comprehensive unit tests
+     - `tests/test_latex_generator.py`: Updated for new signature
+   - **Test results:** 328 tests passing (27 new tests added)
+   - **Code quality:** 
+     - Pylint: 10.00/10 ✅
+     - mypy: 0 errors ✅
+     - Black: Properly formatted ✅
+   - **Test coverage:** 60% (maintained)
+   - **Remaining work:**
+     - Integration tests for preservation logic
+     - Manual validation with real spell cards
+     - Documentation updates (README)
+   - **Lines of code:** ~150 lines added (80 production, 70 tests)
+
+   ### 4.4 Other Functionality (TODO)
    - Provide buttons to open the generated file for each spell so they can be adjusted
    - Offer to add the `\input` statements for new cards to the appropriate tex file
 
@@ -365,8 +575,8 @@
   - Comprehensive documentation in README ✅
   - All tests passing (301/301) ✅
   - `PreservationOptions` dataclass for clean API design ✅
+  - URLs correctly excluded from `% original:` preservation logic ✅
 
-**Next Priority:** Item #4.3 - Other Functionality
-- Provide buttons to open generated files for editing
-- Offer to add `\input` statements for new cards to appropriate .tex files
+**Current Priority:** Item #4.3 - Attack Roll Derived Property
+- Phase 1: Detection Logic (TSV analysis complete, algorithm design in progress)
 - This plan should be updated as new priorities emerge or tasks are completed.

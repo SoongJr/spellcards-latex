@@ -256,6 +256,10 @@ class LaTeXGenerator:
             # Get spell level for the selected class
             spell_level = spell_data[character_class]
 
+            # Detect attack roll requirement from description
+            description = spell_data.get("description", "")
+            attackroll = self._detect_attack_roll(description)
+
             # Apply LaTeX fixes to relevant fields
             processed_data = self._process_spell_data(spell_data, preserved_description)
 
@@ -276,6 +280,7 @@ class LaTeXGenerator:
                 spell_level,
                 english_url,
                 german_url,
+                attackroll,  # Pass computed attack roll value
                 preserved_width_ratio,
                 preserved_properties,
                 spell_name,
@@ -379,6 +384,79 @@ class LaTeXGenerator:
 
         return description_fallback or ""
 
+    @staticmethod
+    def _detect_attack_roll(description: str) -> str:
+        """
+        Detect attack roll requirement from spell description.
+
+        Returns one of: "none", "ranged touch", "melee touch", "ranged",
+                        "melee", or "inconclusive"
+
+        Priority order:
+        1. Ranged touch attack (high confidence)
+        2. Melee touch attack (high confidence)
+        3. Context-based ranged/melee attack detection
+        4. Inconclusive (mentions attacks but unclear context, or missing description)
+        5. None (no attack mention)
+        """
+        if not description:
+            return "inconclusive"
+
+        desc_lower = description.lower()
+
+        # HIGH CONFIDENCE: Touch attacks
+        if "ranged touch attack" in desc_lower:
+            return "ranged touch"
+        if "melee touch attack" in desc_lower or "touch attack" in desc_lower:
+            # "touch attack" defaults to melee unless "ranged" is nearby
+            return "melee touch"
+
+        # Define context patterns
+        attack_patterns = [
+            # makes normal attack
+            r"\bmake(?:s)?\s+a\s+(?:\w+\s+)?(ranged|melee)\s+attack\b",
+            r"\bsucceed\s+(?:at|on)\s+(?:a\s+)?(ranged|melee)\s+attack\b",
+            r"\b(ranged|melee)\s+attack\s+to\s+hit\b",
+            r"\brequires?\s+(?:a\s+)?(ranged|melee)\s+attack\b",
+            r"\bsuccessful\s+(ranged|melee)\s+attack\b",
+            r"\bstrike\s+with\s+a\s+(ranged|melee)\s+attack\b",  # strike with attack
+        ]
+
+        buff_patterns = [
+            r"\bbonus\s+to\s+(?:.*?\s+)?(ranged|melee)?\s*attack",
+            r"\bpenalty\s+to\s+(?:.*?\s+)?(ranged|melee)?\s*attack",
+            r"\baffects?\s+(?:.*?\s+)?(ranged|melee)?\s*attack",
+            r"\bgrants?\s+(?:.*?\s+)?(ranged|melee)?\s*attack",
+            r"\bapplies\s+to\s+(?:.*?\s+)?(ranged|melee)?\s*attack",
+            r"\bdeflects?\s+(?:incoming\s+)?(?:.*?\s+)?(ranged|melee)?\s*attack",
+        ]
+
+        # Check for attack context (spell requires an attack)
+        attack_matches = []
+        for pattern in attack_patterns:
+            for match in re.finditer(pattern, desc_lower):
+                # Extract the attack type (ranged or melee) from the first capture group
+                attack_type = match.group(1)
+                if attack_type:
+                    attack_matches.append(attack_type)
+
+        # Check for buff context (spell doesn't require attack)
+        has_buff_context = any(
+            re.search(pattern, desc_lower) for pattern in buff_patterns
+        )
+
+        # Decision logic
+        if attack_matches:
+            if has_buff_context:
+                return "inconclusive"  # Ambiguous - both attack and buff context
+            return attack_matches[0]  # Clear attack context - "ranged" or "melee"
+
+        # Check for general attack mentions without clear context
+        if not has_buff_context and re.search(r"\battack\b", desc_lower):
+            return "inconclusive"
+
+        return r"\textbf{none}"  # Only buff context or no mention of "attack" at all
+
     def _generate_english_url(self, spell_name: str) -> str:
         """Generate English D20PFSRD URL for spell."""
         first_char = spell_name[0].lower()
@@ -447,6 +525,7 @@ class LaTeXGenerator:
         spell_level: str,
         english_url: str,
         secondary_url: str,
+        attackroll: str,  # Computed attack roll value
         preserved_width_ratio: Optional[str] = None,
         preserved_properties: Optional[Dict[str, Tuple[str, Optional[str]]]] = None,
         spell_name: Optional[str] = None,
@@ -491,6 +570,7 @@ class LaTeXGenerator:
             "shapeable",
             "savingthrow",
             "spellresistance",
+            "attackroll",  # Special: computed from description, not from data
             "source",
             "verbal",
             "somatic",
@@ -545,6 +625,9 @@ class LaTeXGenerator:
             if prop_name == "spelllevel":
                 # Special case: use the spell level parameter, not from data
                 db_value = spell_level
+            elif prop_name == "attackroll":
+                # Special case: use computed attack roll value, not from data
+                db_value = attackroll
             else:
                 db_value = get_field(prop_name)
 

@@ -64,32 +64,32 @@ class TestLaTeXGenerator:
         generator = LaTeXGenerator()
         # The regex uses word boundaries, so it needs to be a complete word
         result = generator._format_saving_throw("none or Will negates")
-        assert "\\textbf{none}" in result or "none" in result
+        assert r"\textbf{none}" in result or "none" in result
 
     def test_format_saving_throw_null(self):
         """Test formatting of NULL saving throw."""
         generator = LaTeXGenerator()
         result = generator._format_saving_throw("NULL")
-        assert "\\textbf{none}" in result
+        assert r"\textbf{none}" in result
 
     def test_format_saving_throw_empty(self):
         """Test formatting of empty saving throw."""
         generator = LaTeXGenerator()
         result = generator._format_saving_throw("")
-        assert "\\textbf{none}" in result
+        assert r"\textbf{none}" in result
 
     def test_format_spell_resistance_no(self):
         """Test formatting of 'no' spell resistance."""
         generator = LaTeXGenerator()
         # The regex uses word boundaries, so it needs to be a complete word
         result = generator._format_spell_resistance("no or yes")
-        assert "\\textbf{no}" in result or "no" in result
+        assert r"\textbf{no}" in result or "no" in result
 
     def test_format_spell_resistance_null(self):
         """Test formatting of NULL spell resistance."""
         generator = LaTeXGenerator()
         result = generator._format_spell_resistance("NULL")
-        assert "\\textbf{no}" in result
+        assert r"\textbf{no}" in result
 
     def test_generate_english_url_simple(self):
         """Test generation of English URL for simple spell name."""
@@ -236,11 +236,12 @@ class TestLaTeXGenerator:
             "3",
             "https://english.com/spell",
             "https://german.com/spell",
+            r"\textbf{none}",  # attackroll (already formatted by _detect_attack_roll)
         )
 
         assert isinstance(conflicts, list)
         assert len(conflicts) == 0
-        assert "\\begin{spellcard}" in latex
+        assert r"\begin{spellcard}" in latex
         assert "{wizard}" in latex
         assert "{Fireball}" in latex
         assert "{3}" in latex
