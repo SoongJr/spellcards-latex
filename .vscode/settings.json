@@ -87,6 +87,7 @@
         "find": true,
         "/^find\\b.*-(delete|exec|execdir|fprint|fprintf|fls|ok|okdir)\\b/": false,
         "sort": true,
+        "uniq": true,
         "/^sort\\b.*-(o|S)\\b/": false,
         "tree": true,
         "/^tree\\b.*-o\\b/": false,
