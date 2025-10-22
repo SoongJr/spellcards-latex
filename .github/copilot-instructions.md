@@ -44,30 +44,27 @@ before then using poetry to install app dependencies into that same venv.
 ⚠️ **MANDATORY**: Every Python/Poetry operation MUST follow this pattern:
 
 ```bash
-[[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator && source .venv/bin/activate && poetry run [command]
+cd spell_card_generator; source .venv/bin/activate && poetry run [command]
 ```
 
 #### Working Directory Challenges
 **Problem**: Terminals may start at different locations (repository root or `spell_card_generator`), and reused terminals may already be in the subdirectory.
 
 **Solution**: Use the conditional directory change pattern above:
-- `[[ "$(dirname $(pwd))" != latex-spell-cards ]]` - checks if we're NOT in the repo root
-- If true, `cd spell_card_generator` navigates to the subdirectory
-- If already in `spell_card_generator`, the cd is skipped (no error)
+- Opportunistically run `cd spell_card_generator` but ignore the exit code
+- If already in `spell_card_generator`, the cd will have no effect (ignore the failure!)
 - Always activate `.venv` to ensure the virtual environment is active
 
 This pattern is **idempotent** - it works whether starting from repo root or already in the subdirectory.
 
 #### Application Execution
 ```bash
-[[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator
-source .venv/bin/activate && poetry run spell-card-generator
+cd spell_card_generator; source .venv/bin/activate && poetry run spell-card-generator
 ```
 
 #### Alternative (if needed)
 ```bash
-[[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator
-source .venv/bin/activate && [command]
+cd spell_card_generator; source .venv/bin/activate && [command]
 ```
 
 **NEVER run Python commands without:**
@@ -167,38 +164,30 @@ except SomeError as e:
 
 #### Running the Application
 ```bash
-[[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator
-poetry run spell-card-generator
+cd spell_card_generator; poetry run spell-card-generator
 ```
 
 #### Adding Dependencies
 ```bash
-[[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator
-poetry add [--dev] <package-name>
+cd spell_card_generator; poetry add [--dev] <package-name>
 ```
 
 #### Code Quality Checks
 ```bash
 # Format code
-[[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator
-poetry run black .
+cd spell_card_generator; poetry run black .
 
 # Lint code (maintain 10.00/10 pylint score, no flake8 warnings)
-[[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator
-poetry run flake8 .
-poetry run pylint .
+cd spell_card_generator; poetry run flake8 . && poetry run pylint .
 
 # Type checking
-[[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator
-poetry run mypy .
+cd spell_card_generator; poetry run mypy .
 
 # Run tests
-[[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator
-poetry run pytest
+cd spell_card_generator; poetry run pytest
 
 # Run tests with coverage
-[[ "$(dirname $(pwd))" != latex-spell-cards ]] && cd spell_card_generator
-poetry run pytest --cov --cov-report=html
+cd spell_card_generator; poetry run pytest --cov --cov-report=html
 
 ### Testing Strategy
 
