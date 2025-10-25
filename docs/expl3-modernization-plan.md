@@ -626,7 +626,7 @@ class LaTeXGenerator:
 7. **Validation**: Check for required fields, warn on missing data (message system ready)
 8. **Cross-References**: Link related spells automatically
 
-## Current Status Summary (October 25, 2025)
+## Current Status Summary (October 25, 2025 - End of Day)
 
 ### Completed ✅
 - **Phase 1**: Foundation and Infrastructure
@@ -653,14 +653,69 @@ class LaTeXGenerator:
   - Validation and error handling
   - Integration with TikZ
 
+- **Modern Spell File Format**: Property list-based spell definitions
+  - Created `spells-expl3/` directory with modern format
+  - Converted Acid Splash and Magic Missile as examples
+  - Uses `\spellprop{key}{value}` instead of 60+ `\newcommand` statements
+  - Test file `test-expl3-spell.tex` successfully compiles
+
 ### In Progress 🚧
-- **Phase 5**: Integration and Testing (next step)
-  - Test with real spell card files
-  - Validate PDF output
-  - Performance verification
+- **Decorative Elements**: Spell markers and deck labels
+  - ✅ Drawing functions implemented: `\spellcard_draw_spell_marker:n` and `\spellcard_draw_deck_label:nn`
+  - ✅ Functions integrated into `\spellcard` environment (called from line 1247)
+  - ❌ **CONFIRMED NOT RENDERING**: User visually verified markers do not appear on right edge
+  - 🐛 **BUG**: Despite function calls in place, TikZ overlays not producing visible output
+  - 🔍 Possible causes:
+    * TikZ overlay may need to be called outside `\section*` or after page layout settles
+    * `remember picture, overlay` positioning may not work inside expl3 environment start
+    * May need `\leavevmode` or other mode switching before TikZ
+    * Dimension calculations might be evaluating incorrectly (zero or off-page)
+  
+- **QR Code Positioning Issue**: User reported QR codes render at ~25% from top instead of bottom
+  - 🔍 Investigation needed - code uses `south west`/`south east` anchors (correct)
+  - 🔍 May be same root cause as marker issue (TikZ overlay timing/context)
+  - 🔍 QR codes ARE rendering but in wrong position (unlike markers which don't render at all)
+  - ⏸️ Paused for next session
+
+### Next Session Tasks 📋
+1. **Debug Spell Marker Rendering** (HIGH PRIORITY - BLOCKING)
+   - Functions called but no visible output in PDF
+   - Check if TikZ overlay works inside `\bool_if:NT` block in expl3 environment
+   - Try moving TikZ calls outside section or add `\leavevmode`
+   - Verify dimension calculations produce valid values (add debug output)
+   - Test minimal example: single TikZ overlay in spellcard environment
+   
+2. **Debug QR Code Positioning** (HIGH PRIORITY)
+   - QR codes render but at wrong location (25% from top vs bottom)
+   - Both issues likely share root cause (TikZ overlay context/timing)
+   - Check if QR codes have same context issue as markers
+   - May need to defer all TikZ overlays to end of page/environment
+   
+3. **Investigate Compilation Warnings** (LOW PRIORITY)
+   - Clean build showed warnings/errors (exit code during rebuild)
+   - Check full log for actual errors
+   - May be bibtex-related or reference warnings
+   
+4. **Phase 5 Preparation**: Once layout issues resolved
+   - Test with more spell files
+   - Update Python generator for expl3 format
+   - Comprehensive testing with full deck
+
+### Known Issues 🐛
+1. **Spell markers**: Functions implemented and called but NOT RENDERING (confirmed visually)
+   - Drawing functions exist (lines 540-595)
+   - Functions called from environment (line 1247)
+   - No visible output in PDF - TikZ overlay context issue suspected
+   
+2. **QR codes**: Render but position incorrectly at ~25% from top instead of bottom
+   - Uses correct anchors (`south west`/`south east`)
+   - Likely same TikZ overlay issue affecting both features
+   
+3. **Compilation**: Some warnings/errors during clean build (needs investigation)
 
 ### Planned 📋
 - **Phase 3.2**: Key-Value Spell Interface (deferred until after Phase 5)
+- **Phase 5**: Integration and Testing
 - **Phase 6**: Documentation and Cleanup
 
 ## Conclusion

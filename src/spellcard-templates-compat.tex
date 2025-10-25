@@ -17,6 +17,13 @@
 \providecommand{\clearcard}{\clearpage}
 % cardify.tex overrides this to cleardoublepage so each card will have a backside.
 
+% Spell attribute rendering with NULL filtering
+% Note: Cannot be used as the bottom-most line of a table (use \spellattributelast for that)
+\providecommand{\spellattribute}[2]{%
+  \ifthenelse{\equal{#2}{NULL}}{}{\textbf{#1:} & #2 \\ \midrule}%
+}
+\providecommand{\spellattributelast}[2]{\textbf{#1:} & #2 \\ \bottomrule}
+
 % Function for drawing the deck label at the top edge of the card
 % Horizontal positioning based on deck number
 \providecommand{\drawdecklabel}[2]{%
@@ -63,8 +70,21 @@
 
 % Spell card environment (expl3 doesn't provide this yet - it expects templates to)
 % This is a minimal version that works with expl3's deck tracking
+% NOTE: Does NOT use grouping - spell commands persist across cards to allow reuse
 \ifx\spellcard\undefined
   \newenvironment{spellcard}[3]{%
+    % Make \newcommand work like \def (unconditionally define, overwriting if needed)
+    % This is needed because spell files use \newcommand for all attributes,
+    % and we need each spell to overwrite the previous spell's values
+    \let\oldnewcommand\newcommand%
+    \renewcommand{\newcommand}[2]{%
+      \ifcsname ##1\endcsname%
+        \expandafter\def\csname ##1\endcsname{##2}%
+      \else%
+        \oldnewcommand{##1}{##2}%
+      \fi%
+    }%
+    % Now render title using environment parameters (in a group so they don't persist)
     \begingroup{}%
     \def\class{#1}%
     \def\name{#2}%
@@ -114,8 +134,17 @@
   \ifthenelse{\equal{\targets}{NULL}\AND\equal{\effect}{NULL}}{% omit the table if nothing to display
   }{\\
     \begin{tabularx}{\textwidth}{r>{\raggedright\arraybackslash}X}%
-      \spellattribute{Target}{\targets}%
-      \spellattribute{Effect}{\effect}%
+      \toprule%
+      \ifthenelse{\equal{\targets}{NULL}}{}{%
+        \ifthenelse{\equal{\effect}{NULL}}{%
+      \textbf{Target:} & \targets{} \\ \bottomrule% Last row
+        }{%
+      \textbf{Target:} & \targets{} \\ \midrule% More rows follow
+        }%
+      }%
+      \ifthenelse{\equal{\effect}{NULL}}{}{%
+      \textbf{Effect:} & \effect{}  \\ \bottomrule% Last row (or only row)
+      }%
     \end{tabularx}%
   }%
   \vspace{1ex} \\

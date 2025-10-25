@@ -537,6 +537,163 @@
   { 19mm }
 }
 
+%%% Draw spell level marker on right edge of page
+%%% #1 = spell level
+\cs_new_protected:Npn \spellcard_draw_spell_marker:n #1
+{
+  % Calculate marker position
+  \spellcard_calculate_marker_position:n { #1 }
+
+  \begin{tikzpicture}[remember~ picture,~ overlay]
+    % Draw the spell level number at the right edge
+    \node [font=\Large, anchor=center,
+      xshift=-\spellcard_get_marker_xshift:,
+      yshift=-\l_spellcard_marker_position_dim]
+    at~ (current~ page.north~ east) {\textbf{#1}};
+
+    % Draw guide lines for highlighting
+    \draw[lightgray, dotted, line~ width=1pt]
+    (current~ page.north~ east)
+    ++(0cm, -\l_spellcard_marker_position_dim + 8mm)
+    -- ++(-\spellcard_get_marker_guide_width:, 0)
+    -- ++(0, -16mm)
+    -- ++(\spellcard_get_marker_guide_width:, 0);
+  \end{tikzpicture}
+}
+
+%%% Draw deck label at top edge of page
+%%% #1 = deck number, #2 = deck name
+\cs_new_protected:Npn \spellcard_draw_deck_label:nn #1 #2
+{
+  % Deck 0 (unnamed deck) has no label
+  \int_compare:nNnF { #1 } = { 0 }
+    {
+      % Calculate label position
+      \spellcard_calculate_label_position:n { #1 }
+
+      \begin{tikzpicture}[remember~ picture,~ overlay]
+        % Draw deck name at top edge
+        \node [font=\normalsize\itshape, anchor=west,
+          xshift=\fp_to_dim:N \l_spellcard_label_position_fp,
+          yshift=-\spellcard_get_label_yshift:]
+        at~ (current~ page.north~ west) {#2};
+      \end{tikzpicture}
+    }
+}
+
+%%% Helper to get y-shift for deck label based on printer margins
+\cs_new:Nn \spellcard_get_label_yshift:
+{
+  \bool_if:NTF \l_spellcard_has_printer_margin_bool
+  { 7mm }
+  { 15mm }
+}
+
+%% ============================================================================
+%% Spell Card Rendering Functions
+%% ============================================================================
+%%% Functions for rendering spell information from property lists
+
+%%% Helper to check if a property value is NULL or empty
+\prg_new_conditional:Npnn \spellcard_is_null:n #1 { T, F, TF }
+{
+  \tl_set:Nx \l_tmpa_tl { \prop_item:Nn \l_spellcard_spell_props { #1 } }
+  \tl_if_eq:NNTF \l_tmpa_tl \c_spellcard_null_value_tl
+  { \prg_return_true: }
+  {
+    \tl_if_empty:NTF \l_tmpa_tl
+    { \prg_return_true: }
+    { \prg_return_false: }
+  }
+}
+
+%%% Render a spell property row if not NULL (with midrule)
+\cs_new:Npn \spellcard_render_if_not_null:nn #1 #2
+{
+  \spellcard_is_null:nF { #2 }
+  {
+    \textbf{#1:} & \prop_item:Nn \l_spellcard_spell_props { #2 } \\ \midrule
+  }
+}
+
+%%% Render a spell property row if not NULL (with bottomrule, for last row)
+\cs_new:Npn \spellcard_render_last_if_not_null:nn #1 #2
+{
+  \spellcard_is_null:nF { #2 }
+  {
+    \textbf{#1:} & \prop_item:Nn \l_spellcard_spell_props { #2 } \\ \bottomrule
+  }
+}
+
+%%% Render the school row with optional descriptor
+\cs_new:Npn \spellcard_render_school_row:
+{
+  \textbf{School:} &
+  \prop_item:Nn \l_spellcard_spell_props { school }
+  \spellcard_is_null:nF { descriptor }
+  {
+    ~ ( \prop_item:Nn \l_spellcard_spell_props { descriptor } )
+  }
+  \\ \bottomrule
+}%%% Render target/effect table if either is non-NULL
+\cs_new:Npn \spellcard_render_target_effect_table:
+{
+  % Check if both are NULL - if so, skip table entirely
+  \bool_lazy_and:nnF
+  { \spellcard_is_null:nT { targets } { \c_true_bool } }
+  { \spellcard_is_null:nT { effect } { \c_true_bool } }
+  {
+    \\
+    \begin{tabularx}{\textwidth}{r>{\raggedright\arraybackslash}X}
+      \toprule
+      \spellcard_is_null:nF { targets }
+      {
+      \textbf{Target:} & \prop_item:Nn \l_spellcard_spell_props { targets }
+        \spellcard_is_null:nTF { effect }
+      {                                                                     \\ \bottomrule }
+      {                                                                     \\ \midrule }
+      }
+      \spellcard_is_null:nF { effect }
+      {
+      \textbf{Effect:} & \prop_item:Nn \l_spellcard_spell_props { effect }  \\ \bottomrule
+      }
+    \end{tabularx}
+  }
+}
+
+%%% Internal function to render spell card info
+\cs_new_protected:Npn \spellcard_render_info:n #1
+{
+  \normalsize
+  \noindent
+
+  % Left table (casting info)
+  \begin{tabularx}{#1\textwidth}[b]{r>{\raggedright\arraybackslash}X}
+    \toprule
+    \spellcard_render_if_not_null:nn {Casting~Time} {castingtime}
+    \spellcard_render_if_not_null:nn {Saving~Throw} {savingthrow}
+    \spellcard_render_if_not_null:nn {Spell~Resist} {spellresistance}
+    \spellcard_render_last_if_not_null:nn {Attack~Roll} {attackroll}
+  \end{tabularx}
+  \hfill
+
+  % Right table (school/duration info)
+  \begin{tabularx}{0.49\textwidth}[b]{r>{\raggedright\arraybackslash}X}
+    \toprule
+    \spellcard_render_if_not_null:nn {Duration} {duration}
+    \spellcard_render_if_not_null:nn {Area} {area}
+    \spellcard_render_if_not_null:nn {Range} {range}
+    \spellcard_render_if_not_null:nn {Comp.} {components}
+    \spellcard_render_school_row:
+  \end{tabularx}
+
+  % Target/Effect table (if either is non-NULL)
+  \spellcard_render_target_effect_table:
+
+  \vspace{1ex} \\
+  \raggedright\Large
+}
+
 %% ============================================================================
 %% QR Code Management System
 %% ============================================================================
@@ -1047,6 +1204,62 @@
   \spellcard_add_qr_code:n { #1 }
 }
 
+%%% Set a spell property (used within spell files)
+%%% Usage: \spellprop{school}{evocation}
+\NewDocumentCommand{\spellprop}{mm}
+{
+  \prop_put:Nnn \l_spellcard_spell_props { #1 } { #2 }
+}
+
+% Create user-accessible version of the internal function
+\cs_new_eq:NN \spellcard_user_render_info:n \spellcard_render_info:n
+
+%%% Render spell card information tables
+%%% Usage: \spellcardinfo or \spellcardinfo[0.4] (for custom width ratio)
+\NewDocumentCommand{\spellcardinfo}{O{0.5}}
+{
+  \spellcard_user_render_info:n { #1 }
+}
+
+\ExplSyntaxOff
+
+%%% Spell card environment
+%%% Usage: \begin{spellcard}{class}{name}{level} ... \end{spellcard}
+%%% This environment renders a complete spell card from property list data
+\ExplSyntaxOn
+\NewDocumentEnvironment{spellcard}{mmm}
+{
+  % Clear property list for this spell
+  \prop_clear:N \l_spellcard_spell_props
+
+  % Store basic spell metadata
+  \tl_set:Nn \l_spellcard_class_tl { #1 }
+  \tl_set:Nn \l_spellcard_name_tl { #2 }
+  \int_set:Nn \l_spellcard_spell_level_int { #3 }
+
+  % Render title and decorative elements
+  \bool_if:NT \g_spellcard_print_card_bool
+  {
+    \section*{\Huge #2 \hfill \MakeUppercase{#1}~#3}
+    \spellcard_draw_deck_label:nn
+    { \int_use:N \g_spellcard_deck_number_int }
+    { \tl_use:N \l_spellcard_current_deck_name_tl }
+    \spellcard_draw_spell_marker:n { #3 }
+  }
+}
+{
+  % End of spell card
+  \bool_if:NT \g_spellcard_print_card_bool
+  {
+    \clearpage
+  }
+
+  % Reset counters
+  \setcounter{page}{1}
+  \setcounter{table}{0}
+  \setcounter{figure}{0}
+  \spellcard_reset_qr_counter:
+}
 \ExplSyntaxOff
 
 %% ============================================================================

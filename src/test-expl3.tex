@@ -149,7 +149,7 @@ After~setting~true: \bool_if:NTF \g_spellcard_print_card_bool { TRUE } { FALSE }
 
 Print~flag~before:~\ExplSyntaxOn{} \bool_if:NTF \g_spellcard_print_card_bool { TRUE } { FALSE } \ExplSyntaxOff{}
 
-\includespell{test-spell.tex}
+\includespell{test-data/spell.tex}
 
 Print~flag~after:~\ExplSyntaxOn{} \bool_if:NTF \g_spellcard_print_card_bool { TRUE } { FALSE } \ExplSyntaxOff{}
 
@@ -157,7 +157,7 @@ Print~flag~after:~\ExplSyntaxOn{} \bool_if:NTF \g_spellcard_print_card_bool { TR
 
 Print~flag~before:~\ExplSyntaxOn{} \bool_if:NTF \g_spellcard_print_card_bool { TRUE } { FALSE } \ExplSyntaxOff{}
 
-\includespell[noprint]{test-spell.tex}
+\includespell[noprint]{test-data/spell.tex}
 
 Print~flag~after:~\ExplSyntaxOn{} \bool_if:NTF \g_spellcard_print_card_bool { TRUE } { FALSE } \ExplSyntaxOff{}
 
@@ -165,7 +165,7 @@ Print~flag~after:~\ExplSyntaxOn{} \bool_if:NTF \g_spellcard_print_card_bool { TR
 
 Print~flag~before:~\ExplSyntaxOn{} \bool_if:NTF \g_spellcard_print_card_bool { TRUE } { FALSE } \ExplSyntaxOff{}
 
-\includespell[print=false]{test-spell.tex}
+\includespell[print=false]{test-data/spell.tex}
 
 Print~flag~after:~\ExplSyntaxOn{} \bool_if:NTF \g_spellcard_print_card_bool { TRUE } { FALSE } \ExplSyntaxOff{}
 
@@ -173,7 +173,7 @@ Print~flag~after:~\ExplSyntaxOn{} \bool_if:NTF \g_spellcard_print_card_bool { TR
 
 Print~flag~before:~\ExplSyntaxOn{} \bool_if:NTF \g_spellcard_print_card_bool { TRUE } { FALSE } \ExplSyntaxOff{}
 
-\noprint{\input{test-spell.tex}}
+\noprint{\input{test-data/spell.tex}}
 
 Print~flag~after:~\ExplSyntaxOn{} \bool_if:NTF \g_spellcard_print_card_bool { TRUE } { FALSE } \ExplSyntaxOff{}
 
