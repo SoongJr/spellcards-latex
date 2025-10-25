@@ -1,4 +1,33 @@
 ##
+##  ChkTeX configuration for LaTeX Spell Cards Project
+##  Customized to work with hybrid LaTeX2e + expl3 codebase
+##
+##  ============================================================================
+##  PROJECT-SPECIFIC EXCLUSIONS
+##  ============================================================================
+##
+##  Exclude expl3 files - chktex doesn't understand LaTeX3 syntax
+##  These files use \ExplSyntaxOn which changes catcodes for _ and :
+##  chktex will produce false positives on these files
+##
+##  Run chktex on:
+##    ✓ src/spellcards.tex (main document)
+##    ✓ src/cardify.tex (LaTeX2e layout code)
+##    ✓ src/spells/**/*.tex (generated spell cards)
+##    ✓ src/spells/*.tex (deck definition files like sor.tex)
+##
+##  Do NOT run chktex on:
+##    ✗ src/*-expl3.sty (expl3 package code)
+##    ✗ src/*-expl3.tex (expl3 test documents)
+##    ✗ src/test-*.tex (any test documents)
+##
+##  Note: File exclusions are handled via command line or wrapper scripts
+##  This config file focuses on warning customization
+##
+##  ============================================================================
+##  ORIGINAL CHKTEX DOCUMENTATION FOLLOWS
+##  ============================================================================
+##
 ##  ChkTeX, example resource file for ChkTeX.
 ##  Copyright (C) 1995-96 Jens T. Berger Thielemann
 ##

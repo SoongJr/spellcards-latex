@@ -1,5 +1,29 @@
 # format all files in workspace:
 # find . -name "*.tex" -exec latexindent --local --silent --outputfile={} {} \;
+#
+# ============================================================================
+# EXPL3 PROTECTION
+# ============================================================================
+# latexindent doesn't understand LaTeX3 (expl3) syntax and will break code
+# inside \ExplSyntaxOn...\ExplSyntaxOff blocks by reformatting:
+#   - Function names with underscores (e.g., \l_spellcard_name_tl)
+#   - Function signatures with colons (e.g., \cs_new:Npn)
+#   - Indentation that makes expl3 code readable
+#
+# Solution: Treat \ExplSyntaxOn...\ExplSyntaxOff as verbatim (don't touch it)
+# ============================================================================
+fileContentsEnvironments:
+  ExplSyntax:
+    name: 'expl3 code block'
+    begin: '\\ExplSyntaxOn'
+    end: '\\ExplSyntaxOff'
+    lookForThis: 1
+    # Keep verbatim - don't reformat anything inside
+    verbatim: 1
+
+# ============================================================================
+# TRADITIONAL LATEX2E FORMATTING RULES
+# ============================================================================
 defaultIndent: '  '
 indentPreamble: 1
 specialBeginEnd:

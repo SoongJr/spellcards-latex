@@ -1,0 +1,376 @@
+%%
+%% This is file `spellcard-expl3.sty'
+%%
+%% LaTeX3 (expl3) implementation for spell card generation
+%% Modern replacement for traditional LaTeX2e macros
+%%
+%% Copyright (C) 2025 SoongJr
+%% License: Open Source (see LICENSE file)
+%%
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage
+{spellcard-expl3}                    % Package name
+{2025/10/25}                         % Release date
+{1.0.0}                              % Version
+{LaTeX3 implementation for spell cards} % Description
+
+%% ============================================================================
+%% Package Dependencies
+%% ============================================================================
+
+\RequirePackage{xparse}      % For \NewDocumentCommand and \NewDocumentEnvironment
+\RequirePackage{tikz}         % For drawing markers and labels
+\RequirePackage{qrcode}       % For QR code generation
+\RequirePackage{booktabs}     % For table formatting
+\RequirePackage{tabularx}     % For flexible tables
+\RequirePackage{longtable}    % For multi-page tables
+
+%% ============================================================================
+%% expl3 Programming Environment
+%% ============================================================================
+
+\ExplSyntaxOn
+
+%% ============================================================================
+%% Module Configuration
+%% ============================================================================
+%% All internal functions and variables use the prefix: spellcard_
+%% Naming conventions:
+%%   - Functions: \spellcard_function_name:nn
+%%   - Variables: \l_spellcard_variable_name_type or \g_spellcard_variable_name_type
+%%   - Constants: \c_spellcard_constant_name_type
+%%   - l_ prefix: local scope
+%%   - g_ prefix: global scope
+%%   - c_ prefix: constant (unchanging)
+
+%% ============================================================================
+%% Boolean Variables
+%% ============================================================================
+%% Modern replacements for \newif constructs
+
+% Flag to control whether a spell card should be printed
+% Replaces: \ifprintcard
+\bool_new:N \g_spellcard_print_card_bool
+\bool_gset_true:N \g_spellcard_print_card_bool
+
+% Flag to detect nested spelldeck environments
+% Used for validation to prevent nesting errors
+\bool_new:N \g_spellcard_in_deck_bool
+\bool_gset_false:N \g_spellcard_in_deck_bool
+
+% Flag to track if printer margins are defined (from cardify.tex)
+\bool_new:N \l_spellcard_has_printer_margin_bool
+\bool_set_false:N \l_spellcard_has_printer_margin_bool
+
+%% ============================================================================
+%% Integer Variables
+%% ============================================================================
+%% Modern replacements for \newcounter constructs
+
+% Current deck number (0 = unnamed/main deck, 1+ = named decks)
+% Replaces: \currentdecknumber counter
+\int_new:N \g_spellcard_deck_number_int
+\int_gzero:N \g_spellcard_deck_number_int
+
+% QR code counter for tracking codes on current page (max 2)
+% Replaces: \qrCode counter
+\int_new:N \g_spellcard_qr_code_int
+\int_gzero:N \g_spellcard_qr_code_int
+
+% Current spell level for marker positioning
+\int_new:N \l_spellcard_spell_level_int
+\int_zero:N \l_spellcard_spell_level_int
+
+%% ============================================================================
+%% Token List Variables
+%% ============================================================================
+%% Modern replacements for \newcommand string macros
+
+% Current deck name (empty for deck 0, non-empty for other decks)
+% Replaces: \currentdeckname
+\tl_new:N \l_spellcard_current_deck_name_tl
+\tl_clear:N \l_spellcard_current_deck_name_tl
+
+% Spell card properties - basic identification
+\tl_new:N \l_spellcard_class_tl           % Character class (sor, wiz, etc.)
+\tl_new:N \l_spellcard_name_tl            % Spell name
+\tl_new:N \l_spellcard_school_tl          % School of magic
+\tl_new:N \l_spellcard_subschool_tl       % Subschool if applicable
+\tl_new:N \l_spellcard_descriptor_tl      % Spell descriptor
+
+% Spell card properties - casting information
+\tl_new:N \l_spellcard_casting_time_tl    % Casting time
+\tl_new:N \l_spellcard_components_tl      % Components (V, S, M, F, DF)
+\tl_new:N \l_spellcard_range_tl           % Range
+\tl_new:N \l_spellcard_duration_tl        % Duration
+\tl_new:N \l_spellcard_area_tl            % Area of effect
+\tl_new:N \l_spellcard_effect_tl          % Effect
+\tl_new:N \l_spellcard_targets_tl         % Targets
+
+% Spell card properties - game mechanics
+\tl_new:N \l_spellcard_saving_throw_tl    % Saving throw
+\tl_new:N \l_spellcard_spell_resistance_tl % Spell resistance
+\tl_new:N \l_spellcard_attack_roll_tl     % Attack roll
+
+% URLs for QR codes
+\tl_new:N \l_spellcard_url_english_tl     % Primary URL (English)
+\tl_new:N \l_spellcard_url_secondary_tl   % Secondary URL (e.g., German)
+
+% Temporary token lists for processing
+\tl_new:N \l_spellcard_qr_code_content_tl % Content for QR code being generated
+\tl_new:N \l_tmpa_spellcard_tl            % Temporary token list A
+\tl_new:N \l_tmpb_spellcard_tl            % Temporary token list B
+
+%% ============================================================================
+%% Floating Point Variables
+%% ============================================================================
+%% For precise positioning calculations
+
+% Marker positioning on right edge (spell level indicator)
+\fp_new:N \l_spellcard_marker_position_fp
+\fp_zero:N \l_spellcard_marker_position_fp
+
+% Label positioning at top edge (deck name)
+\fp_new:N \l_spellcard_label_position_fp
+\fp_zero:N \l_spellcard_label_position_fp
+
+% Printer margins (from cardify.tex)
+\fp_new:N \l_spellcard_printer_margin_x_fp
+\fp_new:N \l_spellcard_printer_margin_y_fp
+
+% QR code positioning
+\fp_new:N \l_spellcard_qr_shift_fp
+\fp_zero:N \l_spellcard_qr_shift_fp
+
+% Temporary floating point variables
+\fp_new:N \l_tmpa_spellcard_fp
+\fp_new:N \l_tmpb_spellcard_fp
+
+%% ============================================================================
+%% Dimension Variables
+%% ============================================================================
+%% For layout and spacing calculations
+
+% Card dimensions
+\dim_new:N \l_spellcard_card_width_dim
+\dim_new:N \l_spellcard_card_height_dim
+
+% Printer margins (converted from FP when needed)
+\dim_new:N \l_spellcard_printer_margin_x_dim
+\dim_new:N \l_spellcard_printer_margin_y_dim
+
+% Positioning dimensions (calculated from FP)
+\dim_new:N \l_spellcard_marker_position_dim
+\dim_new:N \l_spellcard_label_position_dim
+\dim_new:N \l_spellcard_qr_shift_dim
+
+% Table widths for spell info
+\dim_new:N \l_spellcard_first_table_width_dim
+\dim_new:N \l_spellcard_second_table_width_dim
+
+%% ============================================================================
+%% Property Lists
+%% ============================================================================
+%% Structured data storage for spell properties
+
+% Main property list for current spell's data
+% This replaces the need for 60+ individual \newcommand definitions
+\prop_new:N \l_spellcard_spell_props
+
+%% ============================================================================
+%% Constants
+%% ============================================================================
+
+% Maximum QR codes per page
+\int_const:Nn \c_spellcard_max_qr_codes_int { 2 }
+
+% Maximum deck columns before wrapping
+\int_const:Nn \c_spellcard_max_deck_columns_int { 6 }
+
+% NULL value indicator (used in TSV data)
+\tl_const:Nn \c_spellcard_null_value_tl { NULL }
+
+% Marker spacing parameters
+\fp_const:Nn \c_spellcard_marker_spacing_fp { 1/16 }
+\fp_const:Nn \c_spellcard_marker_offset_fp { 2.5 }
+
+% Label spacing parameters
+\fp_const:Nn \c_spellcard_label_spacing_fp { 1/8 }
+
+%% ============================================================================
+%% Message System
+%% ============================================================================
+%% Modern error, warning, and info messages
+
+%%% Deck Management Errors
+\msg_new:nnn { spellcard } { nested-decks }
+{
+  Nested~spell~decks~are~not~supported.\\
+  You~may~have~forgotten~to~close~a~spelldeck~environment.
+}
+
+\msg_new:nnn { spellcard } { first-deck-must-be-unnamed }
+{
+  The~first~spell~deck~must~have~an~empty~name.\\
+  Found~deck~name:~'\l_spellcard_current_deck_name_tl'
+}
+
+\msg_new:nnn { spellcard } { only-first-deck-unnamed }
+{
+  Only~the~first~spell~deck~may~have~an~empty~name.\\
+  All~subsequent~decks~must~be~named.
+}
+
+%%% Layout and Rendering Errors
+\msg_new:nnn { spellcard } { too-many-qr-codes }
+{
+  Too~many~QR~codes~on~page~\int_use:N \c@page.\\
+  Maximum~\int_use:N \c_spellcard_max_qr_codes_int~per~page.\\
+  Consider~using~\token_to_str:N\clearpage~to~move~code~to~back~face.
+}
+
+%%% Data Completeness Warnings
+%%% These warn about missing spell properties that may affect rendering
+
+\msg_new:nnn { spellcard } { missing-school }
+{
+  Spell~'#1':~school~information~is~missing~or~NULL.\\
+  This~property~is~required~for~proper~card~formatting.
+}
+
+\msg_new:nnn { spellcard } { missing-level }
+{
+  Spell~'#1':~level~information~is~missing.\\
+  Spell~level~markers~cannot~be~drawn~without~this~property.
+}
+
+\msg_new:nnn { spellcard } { missing-components }
+{
+  Spell~'#1':~components~information~is~missing~or~NULL.\\
+  Consider~specifying~at~least~'V',~'S',~or~'M'.
+}
+
+\msg_new:nnn { spellcard } { missing-casting-time }
+{
+  Spell~'#1':~casting~time~is~missing~or~NULL.\\
+  Standard~action~is~a~common~default.
+}
+
+\msg_new:nnn { spellcard } { missing-duration }
+{
+  Spell~'#1':~duration~is~missing~or~NULL.\\
+  This~is~important~tactical~information.
+}
+
+\msg_new:nnn { spellcard } { missing-range }
+{
+  Spell~'#1':~range~is~missing~or~NULL.\\
+  Specify~'personal',~'touch',~or~a~distance.
+}
+
+%%% Data Quality Warnings
+%%% These warn about potentially incorrect or unusual spell properties
+
+\msg_new:nnn { spellcard } { empty-description }
+{
+  Spell~'#1':~description~appears~to~be~empty.\\
+  This~will~result~in~a~nearly~blank~card.
+}
+
+\msg_new:nnn { spellcard } { all-targets-null }
+{
+  Spell~'#1':~area,~effect,~and~targets~are~all~NULL.\\
+  At~least~one~of~these~should~be~specified.
+}
+
+\msg_new:nnn { spellcard } { suspicious-saving-throw }
+{
+  Spell~'#1':~saving~throw~is~'NULL'.\\
+  Consider~using~'none'~if~no~save~is~allowed.
+}
+
+\msg_new:nnn { spellcard } { suspicious-spell-resistance }
+{
+  Spell~'#1':~spell~resistance~is~'NULL'.\\
+  Consider~using~'no'~or~'yes'~explicitly.
+}
+
+%%% QR Code Issues
+\msg_new:nnn { spellcard } { invalid-url }
+{
+  QR~code~URL~appears~malformed:~'#1'\\
+  QR~codes~work~best~with~valid~http/https~URLs.
+}
+
+\msg_new:nnn { spellcard } { empty-qr-url }
+{
+  Spell~'#1':~QR~code~URL~is~empty~or~NULL.\\
+  No~QR~code~will~be~generated~for~this~spell.
+}
+
+%%% Informational Messages
+\msg_new:nnn { spellcard } { using-default-school }
+{
+  Spell~'#1':~using~default~school~'Universal'.
+}
+
+\msg_new:nnn { spellcard } { skipping-null-attribute }
+{
+  Spell~'#1':~skipping~NULL~attribute~'#2'.
+}%% ============================================================================
+%% Utility Functions
+%% ============================================================================
+
+%%% Check if printer margins are defined (set by cardify.tex)
+%%% Updates \l_spellcard_has_printer_margin_bool
+\cs_new:Nn \spellcard_check_printer_margins:
+{
+  \cs_if_exist:NTF \printermarginx
+  {
+    \bool_set_true:N \l_spellcard_has_printer_margin_bool
+    \fp_set:Nn \l_spellcard_printer_margin_x_fp
+    { \dim_to_fp:n { \printermarginx } }
+    \fp_set:Nn \l_spellcard_printer_margin_y_fp
+    { \dim_to_fp:n { \printermarginy } }
+  }
+  {
+    \bool_set_false:N \l_spellcard_has_printer_margin_bool
+    \fp_zero:N \l_spellcard_printer_margin_x_fp
+    \fp_zero:N \l_spellcard_printer_margin_y_fp
+  }
+}%%% Check if a value is NULL (used for optional spell properties)
+%%% \spellcard_if_not_null:nTF { value } { true-code } { false-code }
+\prg_new_conditional:Npnn \spellcard_if_not_null:n #1 { p, T, F, TF }
+{
+  \str_if_eq:nnTF { #1 } { NULL }
+  { \prg_return_false: }
+  { \prg_return_true: }
+}
+
+%% ============================================================================
+%% Initialization
+%% ============================================================================
+
+% Check for printer margins at package load
+\AtBeginDocument
+{
+  \spellcard_check_printer_margins:
+}
+
+%% ============================================================================
+%% End of expl3 Programming Environment
+%% ============================================================================
+
+\ExplSyntaxOff
+
+%% ============================================================================
+%% Document-Level Interface (LaTeX2e compatibility)
+%% ============================================================================
+%% These commands will be implemented in subsequent phases
+%% For now, we provide the foundation
+
+\endinput
+%%
+%% End of file `spellcard-expl3.sty'.
+%%

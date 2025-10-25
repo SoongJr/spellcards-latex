@@ -1,0 +1,105 @@
+%%
+%% Test document for spellcard-expl3.sty
+%% Verifies that the package loads and basic variables are accessible
+%%
+
+\documentclass[
+  a4paper,
+  fontsize=12pt,
+]{scrartcl}
+
+\usepackage[utf8]{inputenc}
+
+% Load the new expl3 package
+\usepackage{spellcard-expl3}
+
+\begin{document}
+
+\section*{expl3 Package Test Document}
+
+This document tests that the \texttt{spellcard-expl3.sty} package loads correctly
+and that all variables are properly initialized.
+
+\ExplSyntaxOn{}
+
+\subsection*{Boolean Variables}
+\begin{itemize}
+  \item Print~card~flag: \bool_if:NTF \g_spellcard_print_card_bool { TRUE } { FALSE }
+  \item In~deck~flag: \bool_if:NTF \g_spellcard_in_deck_bool { TRUE } { FALSE }
+  \item Has~printer~margin: \bool_if:NTF \l_spellcard_has_printer_margin_bool { TRUE } { FALSE }
+\end{itemize}
+
+\subsection*{Integer Variables}
+\begin{itemize}
+  \item Deck~number: \int_use:N \g_spellcard_deck_number_int
+  \item QR~code~count: \int_use:N \g_spellcard_qr_code_int
+  \item Spell~level: \int_use:N \l_spellcard_spell_level_int
+\end{itemize}
+
+\subsection*{Constants}
+\begin{itemize}
+  \item Max~QR~codes~per~page: \int_use:N \c_spellcard_max_qr_codes_int
+  \item Max~deck~columns: \int_use:N \c_spellcard_max_deck_columns_int
+  \item NULL~value: ``\tl_use:N \c_spellcard_null_value_tl''
+\end{itemize}
+
+\subsection*{Test: NULL Detection}
+Testing~the~\texttt{\token_to_str:N\spellcard_if_not_null:nTF}~predicate:
+\begin{itemize}
+  \item Value~``test'': \spellcard_if_not_null:nTF { test } { NOT~NULL } { IS~NULL }
+  \item Value~``NULL'': \spellcard_if_not_null:nTF { NULL } { NOT~NULL } { IS~NULL }
+  \item Empty~value: \spellcard_if_not_null:nTF { } { NOT~NULL } { IS~NULL }
+\end{itemize}
+
+\subsection*{Test: Token Lists}
+\tl_set:Nn \l_spellcard_name_tl { Fireball }
+\tl_set:Nn \l_spellcard_class_tl { sor }
+\tl_set:Nn \l_spellcard_school_tl { evocation }
+
+Spell~name: \tl_use:N \l_spellcard_name_tl \\
+Class: \tl_use:N \l_spellcard_class_tl \\
+School: \tl_use:N \l_spellcard_school_tl
+
+\subsection*{Test: Property List}
+\prop_put:Nnn \l_spellcard_spell_props { name } { Magic~Missile }
+\prop_put:Nnn \l_spellcard_spell_props { level } { 1 }
+\prop_put:Nnn \l_spellcard_spell_props { school } { evocation }
+
+Reading~from~property~list:
+\begin{itemize}
+  \item Name: \prop_item:Nn \l_spellcard_spell_props { name }
+  \item Level: \prop_item:Nn \l_spellcard_spell_props { level }
+  \item School: \prop_item:Nn \l_spellcard_spell_props { school }
+\end{itemize}
+
+\subsection*{Test: Integer Operations}
+Initial~deck~number: \int_use:N \g_spellcard_deck_number_int \\
+\int_gincr:N \g_spellcard_deck_number_int
+After~increment: \int_use:N \g_spellcard_deck_number_int \\
+\int_gincr:N \g_spellcard_deck_number_int
+After~second~increment: \int_use:N \g_spellcard_deck_number_int
+
+\subsection*{Test: Floating Point Calculations}
+\fp_set:Nn \l_tmpa_spellcard_fp { 1/8 }
+\fp_set:Nn \l_tmpb_spellcard_fp { 2.5 }
+\fp_set:Nn \l_spellcard_marker_position_fp
+{ \l_tmpa_spellcard_fp + \l_tmpb_spellcard_fp }
+
+${1}/{8} + 2.5 = {}\fp_use:N \l_spellcard_marker_position_fp{}$
+
+\subsection*{Test: String Comparison}
+\str_if_eq:nnTF { NULL } { NULL }
+{ String~``NULL''~equals~``NULL'': TRUE }
+{ String~``NULL''~equals~``NULL'': FALSE } \\
+\str_if_eq:nnTF { test } { NULL }
+{ String~``test''~equals~``NULL'': TRUE }
+{ String~``test''~equals~``NULL'': FALSE }
+
+\ExplSyntaxOff{}
+
+\subsection*{Conclusion}
+
+If this document compiles without errors, the \texttt{spellcard-expl3.sty} package
+is working correctly and ready for Phase 2 implementation.
+
+\end{document}
