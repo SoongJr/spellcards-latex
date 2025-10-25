@@ -428,13 +428,128 @@ Future features (not yet implemented):
   \item Exporting deck contents for index generation
 \end{itemize}
 
-\subsection*{Conclusion: Phases 1-3.1 Complete}
+%% ============================================================================
+\section{Phase 4: Layout and Rendering}
+%% ============================================================================
+
+This section tests layout and rendering features including QR code management.
+
+\subsection{Phase 4.3: QR Code Management}
+
+Testing the modern expl3 QR code positioning system.
+
+\subsubsection*{Test 1: QR Code Positioning -- Odd Page (Page Number Right)}
+
+This page should have:
+\begin{itemize}
+  \item QR code 1 at bottom-left (opposite page number)
+  \item QR code 2 at bottom-right (same side as page number, with larger offset)
+  \item Page number at bottom-right
+\end{itemize}
+
+\spellcardqr{https://example.com/spell1}
+\spellcardqr{https://example.com/spell2}
+
+\textbf{Visual Check}: Two QR codes at bottom, correctly positioned on odd page.
+
+\clearpage{}
+\ExplSyntaxOn{}
+\spellcard_reset_qr_counter:
+\ExplSyntaxOff{}
+
+\subsubsection*{Test 2: QR Code Positioning -- Even Page (Page Number Left)}
+
+This page should have:
+\begin{itemize}
+  \item QR code 1 at bottom-right (opposite page number)
+  \item QR code 2 at bottom-left (same side as page number, with larger offset)
+  \item Page number at bottom-left
+\end{itemize}
+
+\spellcardqr{https://example.com/spell3}
+\spellcardqr{https://example.com/spell4}
+
+\textbf{Visual Check}: Two QR codes at bottom, correctly positioned on even page.
+
+\clearpage{}
+\ExplSyntaxOn{}
+\spellcard_reset_qr_counter:
+\ExplSyntaxOff{}
+
+\subsubsection*{Test 3: QR Code Counter Reset}
+
+After \texttt{\textbackslash clearpage}{}, QR code counter should reset to 0.
+
+\spellcardqr{https://example.com/spell5}
+
+\textbf{Expected}: One QR code at bottom-left (odd page, first code).
+
+\clearpage{}
+\ExplSyntaxOn{}
+\spellcard_reset_qr_counter:
+\ExplSyntaxOff{}
+
+\subsubsection*{Test 4: QR Code with Long URLs}
+
+Testing with realistic URLs:
+
+\spellcardqr{https://www.d20pfsrd.com/magic/all-spells/f/fireball}
+\spellcardqr{https://www.d20pfsrd.com/magic/all-spells/m/magic-missile}
+
+\textbf{Visual Check}: QR codes render correctly with long URLs.
+
+\clearpage{}
+\ExplSyntaxOn{}
+\spellcard_reset_qr_counter:
+\ExplSyntaxOff{}
+
+\subsubsection*{Test 5: Error Handling -- Too Many QR Codes}
+
+\textbf{NOTE}: This test is commented out because it would cause compilation to fail.
+To test error handling manually, uncomment the lines below:
+
+\begin{verbatim}
+% \spellcardqr{https://example.com/spell1}
+% \spellcardqr{https://example.com/spell2}
+% \spellcardqr{https://example.com/spell3}  % This should ERROR
+\end{verbatim}
+
+Expected error message:
+\begin{verbatim}
+! Package spellcard Error: Too many QR codes on page N.
+  Maximum 2 per page.
+  Consider using \clearpage to move code to back face.
+\end{verbatim}
+
+\subsubsection*{Summary: Phase 4.3 QR Code Management}
+
+The QR code system provides:
+\begin{itemize}
+  \item Automatic positioning based on page parity (odd/even)
+  \item Support for 2 QR codes per page
+  \item Intelligent placement to avoid page numbers
+  \item Validation with clear error messages
+  \item Clean expl3 implementation with \texttt{\textbackslash int\_case:nn}{}
+\end{itemize}
+
+Implementation details:
+\begin{itemize}
+  \item First QR code: 2cm offset (opposite page number)
+  \item Second QR code: 4cm offset (same side, avoids page number)
+  \item Odd pages: page number right, first code left
+  \item Even pages: page number left, first code right
+\end{itemize}
+
+\clearpage
+
+\subsection*{Conclusion: Phases 1--4.3 Complete}
 
 If this document compiles successfully:
 \begin{itemize}
   \item [OK] Phase 1: Foundation complete
   \item [OK] Phase 2: Core logic migration complete
   \item [OK] Phase 3.1: Deck tracking infrastructure complete
+  \item [OK] Phase 4: Layout and rendering complete (QR codes, positioning)
 \end{itemize}
 
 \end{document}

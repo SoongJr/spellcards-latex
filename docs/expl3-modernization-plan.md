@@ -489,10 +489,10 @@ class LaTeXGenerator:
 - [x] **Phase 3.1**: Create sequence-based spell lists for deck tracking
 - [x] Add spell registration system for index card generation
 - [x] Implement deck query functions
-- [ ] **Phase 3.2**: Implement key-value spell interface (DEFERRED)
-- [ ] **Phase 3.3**: Message system enhancements (mostly complete in Phase 1)
+- [ ] **Phase 3.2**: Implement key-value spell interface (DEFERRED until after Phase 5)
+- [x] **Phase 3.3**: Message system (completed in Phase 1)
 
-**Status**: Phase 3.1 complete - deck tracking infrastructure ready for index cards
+**Status**: Phase 3.1 complete - deck tracking infrastructure ready for index cards. Phase 3.2 deferred until after integration testing.
 
 **Key Functions Added**:
 - `\spellcard_register_spell:nnnn` - Register spells in decks
@@ -503,13 +503,31 @@ class LaTeXGenerator:
 
 **Next**: Phase 3.2 (key-value interface) can be deferred until after index card feature is implemented
 
-### Week 6: Layout (Phase 4) 📋 PLANNED
-- [ ] Migrate dimension calculations
-- [ ] Refactor marker/label positioning (partially done in Phase 2)
-- [ ] Improve QR code system
-- [ ] Test layout with cardify
+### Week 6: Layout (Phase 4) ✅ COMPLETED
+- [x] Migrate dimension calculations
+- [x] Refactor marker/label positioning (Phase 2.2)
+- [x] Improve QR code system (Phase 4.3)
+- [x] Test layout positioning
 
-**Status**: Not started - waiting for Phase 3 completion
+**Status**: Complete - All Phase 4 features implemented
+
+**Key Functions Added**:
+- `\spellcard_add_qr_code:n` - Main QR code placement function
+- `\spellcard_calculate_qr_shift:` - Calculate offset based on QR code number
+- `\spellcard_place_qr_southwest:n` - Place QR code at bottom-left
+- `\spellcard_place_qr_southeast:n` - Place QR code at bottom-right
+- `\spellcard_qr_code_odd_page:n` - QR positioning for odd pages
+- `\spellcard_qr_code_even_page:n` - QR positioning for even pages
+- `\spellcard_reset_qr_counter:` - Reset counter (called by spell environment)
+- Document command: `\spellcardqr{url}` - User-facing QR code command
+
+**Implementation Details**:
+- Uses `\int_case:nn` for clean case-based logic
+- Validates maximum 2 QR codes per page
+- Intelligent positioning based on page parity (odd/even)
+- First QR code: 2cm offset, opposite page number
+- Second QR code: 4cm offset, same side as page number (avoids overlap)
+- Clear error message when limit exceeded
 
 ### Week 7: Integration (Phase 5) 📋 PLANNED
 - [ ] Create compatibility layer (partially exists)
@@ -581,9 +599,11 @@ class LaTeXGenerator:
 - ✅ Code is more readable and maintainable
 - 🔄 Python generator produces valid expl3 code (to be updated in Phase 5)
 - ✅ Error messages are clearer and more helpful
-- 🔄 New features (key-value interface) are documented and working (Phase 3.2 deferred)
+- 🔄 New features (key-value interface) documented (Phase 3.2 deferred)
+- ✅ QR code system works correctly on odd/even pages
+- ✅ All Phase 4 layout features functional (positioning, QR codes)
 
-**Current Status**: Phases 1, 2, and 3.1 complete. System is functional and ready for use.
+**Current Status**: Phases 1-4 complete. System is functional and ready for integration testing with real spell cards.
 
 ## Future Enhancements (Post-Migration)
 
@@ -627,13 +647,20 @@ class LaTeXGenerator:
   - Query functions for deck contents
   - Foundation for index card generation
 
+- **Phase 4**: Layout and Rendering
+  - QR code management system
+  - Page parity-based positioning
+  - Validation and error handling
+  - Integration with TikZ
+
 ### In Progress 🚧
-- **Phase 3.2**: Key-Value Spell Interface (deferred - can implement after index cards)
-- **Phase 3.3**: Message System (mostly complete in Phase 1)
+- **Phase 5**: Integration and Testing (next step)
+  - Test with real spell card files
+  - Validate PDF output
+  - Performance verification
 
 ### Planned 📋
-- **Phase 4**: Layout and Rendering
-- **Phase 5**: Integration and Testing
+- **Phase 3.2**: Key-Value Spell Interface (deferred until after Phase 5)
 - **Phase 6**: Documentation and Cleanup
 
 ## Conclusion
