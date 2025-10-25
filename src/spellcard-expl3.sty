@@ -1066,6 +1066,44 @@
   % Restore previous print state
   \bool_gset_eq:NN \g_spellcard_print_card_bool \l_tmpa_bool
 }
+
+%% ============================================================================
+%% Legacy Compatibility Exports
+%% ============================================================================
+%% Provide LaTeX2e-style access to expl3 internal state for legacy templates
+\ExplSyntaxOff
+
+% Export deck number as a LaTeX counter
+\newcounter{currentdecknumber}
+\ExplSyntaxOn
+% Sync the counter value with expl3 variable after each deck operation
+\cs_set_eq:NN \spellcard_original_deck_end: \spellcard_deck_end:
+\cs_set:Npn \spellcard_deck_end:
+{
+  \spellcard_original_deck_end:
+  \setcounter{currentdecknumber}{\int_use:N \g_spellcard_deck_number_int}
+}
+\ExplSyntaxOff
+
+% Export deck name as a LaTeX macro
+\providecommand{\currentdeckname}{}
+\ExplSyntaxOn
+\cs_set_eq:NN \spellcard_original_deck_begin:n \spellcard_deck_begin:n
+\cs_set:Npn \spellcard_deck_begin:n #1
+{
+  \spellcard_original_deck_begin:n { #1 }
+  \tl_set_eq:NN \currentdeckname \l_spellcard_current_deck_name_tl
+}
+\ExplSyntaxOff
+
+% Export print card flag
+\newif\ifprintcard
+\ExplSyntaxOn
+\AtBeginDocument{
+  \bool_if:NTF \g_spellcard_print_card_bool
+  { \printcardtrue }
+  { \printcardfalse }
+}
 \ExplSyntaxOff
 
 \endinput
