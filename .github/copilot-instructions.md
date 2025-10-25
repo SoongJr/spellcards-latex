@@ -35,6 +35,12 @@ latexmk -view=none -pdf src/spellcards.tex
 ```
 
 **Critical Rules**:
+- ✅ while working on LaTeX files, auto-building MUST be disabled in VSCode settings:
+  ```json
+  "latex-workshop.latex.autoBuild.run": "never"
+  ```
+  Please make this change at the start of a session and double-check it
+  if you encounter your changes to files not being applied.
 - ✅ chktex MUST be run before considering work complete
 - ❌ NEVER disable warnings without explicit discussion with the developer
 - ❌ Do not use `% chktex-file` or inline `% chktex` comments without approval
