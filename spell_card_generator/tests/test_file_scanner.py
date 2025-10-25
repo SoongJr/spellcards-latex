@@ -1,6 +1,6 @@
 """Tests for spell_card_generator.utils.file_scanner module."""
 
-# pylint: disable=unused-argument,protected-access,import-outside-toplevel
+# pylint: disable=unused-argument,protected-access,import-outside-toplevel,duplicate-code
 
 from typing import Any
 

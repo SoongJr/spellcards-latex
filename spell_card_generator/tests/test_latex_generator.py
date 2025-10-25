@@ -2,7 +2,7 @@
 
 # some complaints pylint may throw at us do not apply to test code:
 # pylint: disable=too-many-arguments
-# pylint: disable=too-many-positional-arguments,unused-argument,too-many-public-methods
+# pylint: disable=too-many-positional-arguments,unused-argument,too-many-public-methods,duplicate-code
 
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -549,7 +549,7 @@ class TestLaTeXGenerator:
             "spell_card_generator.utils.paths.PathConfig.get_output_base_path",
             return_value=tmp_path,
         ):
-            generated, skipped, conflicts = generator.generate_cards(
+            generated, _skipped, conflicts = generator.generate_cards(
                 selected_spells, overwrite=True
             )
 
@@ -585,7 +585,7 @@ class TestLaTeXGenerator:
             "spell_card_generator.utils.paths.PathConfig.get_output_base_path",
             return_value=tmp_path,
         ):
-            generated, skipped, conflicts = generator.generate_cards(
+            generated, _skipped, conflicts = generator.generate_cards(
                 selected_spells, overwrite=True
             )
 

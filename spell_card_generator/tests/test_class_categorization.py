@@ -1,5 +1,7 @@
 """Tests for spell_card_generator.utils.class_categorization module."""
 
+# pylint: disable=duplicate-code
+
 import pytest
 
 from spell_card_generator.utils.class_categorization import categorize_character_classes

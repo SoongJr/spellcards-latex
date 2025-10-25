@@ -1,5 +1,7 @@
 """Tests for attack roll detection functionality."""
 
+# pylint: disable=duplicate-code,too-many-public-methods
+
 import pytest
 from spell_card_generator.generators.latex_generator import LaTeXGenerator
 

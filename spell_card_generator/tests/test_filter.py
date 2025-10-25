@@ -1,5 +1,7 @@
 """Tests for spell_card_generator.data.filter module."""
 
+# pylint: disable=duplicate-code
+
 import pytest
 
 from spell_card_generator.data.filter import SpellFilter

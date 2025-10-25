@@ -1,5 +1,7 @@
 """Tests for property extraction from existing spell cards."""
 
+# pylint: disable=duplicate-code
+
 from spell_card_generator.utils.file_scanner import FileScanner
 
 
@@ -135,7 +137,7 @@ class TestPropertyExtraction:
 
         properties = FileScanner.extract_properties(card_file)
 
-        assert properties == {}
+        assert not properties
 
     def test_extract_nonexistent_file(self, tmp_path):
         """Test extraction from nonexistent file."""
@@ -143,7 +145,7 @@ class TestPropertyExtraction:
 
         properties = FileScanner.extract_properties(nonexistent)
 
-        assert properties == {}
+        assert not properties
 
     def test_extract_ignores_non_newcommand_lines(self, tmp_path):
         """Test that non-\\newcommand lines are ignored."""

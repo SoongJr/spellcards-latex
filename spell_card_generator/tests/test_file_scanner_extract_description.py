@@ -6,7 +6,7 @@ These tests verify that the method correctly handles indentation:
 - Empty descriptions should be handled gracefully
 """
 
-# pylint: disable=line-too-long
+# pylint: disable=line-too-long,duplicate-code
 
 import pytest
 

@@ -1,5 +1,7 @@
 """Tests for width ratio preservation feature."""
 
+# pylint: disable=duplicate-code
+
 import pytest
 import pandas as pd
 
@@ -88,7 +90,7 @@ class TestWidthRatioExtraction:
         """Test analyze_existing_card with nonexistent file."""
         nonexistent = tmp_path / "nonexistent.tex"
         analysis = FileScanner.analyze_existing_card(nonexistent)
-        assert analysis == {}
+        assert not analysis
 
 
 class TestWidthRatioGeneration:
@@ -252,7 +254,7 @@ class TestWidthRatioPreservationIntegration:
         generator = LaTeXGenerator()
         selected_spells = [("sor", "Test Spell", spell_data)]
 
-        generated, skipped, conflicts = generator.generate_cards(
+        _generated, _skipped, conflicts = generator.generate_cards(
             selected_spells, overwrite=True
         )
 

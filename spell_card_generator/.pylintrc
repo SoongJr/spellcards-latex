@@ -530,9 +530,11 @@ ignore-signatures=yes
 # Minimum lines number of a similarity.
 min-similarity-lines=4
 
-# Ignore duplicate code in test files (common test setup patterns)
-# Tests often have similar setup/teardown patterns which is acceptable
-ignore-patterns=test_.*\.py
+# Note: Similarity checking (duplicate-code, R0801) may flag test files
+# due to common test patterns. This is acceptable. To completely disable
+# similarity checks for test files, you would need to use per-file configuration
+# via command-line: pylint --disable=duplicate-code tests/
+# Or add duplicate-code to the global disable list in [MESSAGES CONTROL]
 
 
 [SPELLING]

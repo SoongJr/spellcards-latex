@@ -1,6 +1,6 @@
 """Tests for FileScanner.find_all_existing_cards() method."""
 
-# pylint: disable=unused-argument
+# pylint: disable=unused-argument,duplicate-code
 
 import pandas as pd
 import pytest

@@ -1,6 +1,6 @@
 """Tests for preview and generate step."""
 
-# pylint: disable=unused-argument,import-outside-toplevel,protected-access
+# pylint: disable=unused-argument,import-outside-toplevel,protected-access,duplicate-code
 
 from unittest.mock import MagicMock, patch
 import pandas as pd

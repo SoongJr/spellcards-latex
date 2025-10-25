@@ -1,5 +1,7 @@
 """Tests for spell_card_generator.utils.validators module."""
 
+# pylint: disable=duplicate-code
+
 import pytest
 
 from spell_card_generator.utils.validators import Validators

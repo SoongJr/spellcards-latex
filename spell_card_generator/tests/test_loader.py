@@ -1,5 +1,7 @@
 """Tests for spell_card_generator.data.loader module."""
 
+# pylint: disable=duplicate-code
+
 import pandas as pd
 import pytest
 

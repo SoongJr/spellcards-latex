@@ -1,5 +1,7 @@
 """Tests for spell_card_generator.models.spell module."""
 
+# pylint: disable=duplicate-code
+
 import pytest
 
 from spell_card_generator.models.spell import Spell
