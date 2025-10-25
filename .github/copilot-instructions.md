@@ -20,6 +20,50 @@ and formats it according to the LaTeX typesetting system.
 - **Output**: `src/out/spellcards.pdf` - final PDF with spell cards
 - **Workflow**: Python generates `.tex` files → user edits `{class}.tex` to organize spells → compile with `latexmk`
 
+#### Modern expl3 Package Features
+
+**Spell Inclusion (`\includespell`)**:
+The modern interface for including spell card files with optional print control:
+
+```latex
+% Include and print a spell card (default)
+\includespell{spells/sor/1/MagicMissile.tex}
+
+% Include but don't print (for deck organization without output)
+\includespell[noprint]{spells/sor/1/MagicMissile.tex}
+\includespell[print=false]{spells/sor/1/MagicMissile.tex}  % equivalent
+
+% Explicitly print (unnecessary, this is the default)
+\includespell[print=true]{spells/sor/1/MagicMissile.tex}
+```
+
+**Benefits over legacy `\input`**:
+- Declarative: Clear intent with options
+- Encapsulated: Users don't need to know about `\input`
+- Type-safe: Options validated by l3keys
+- Error handling: File existence checking
+- Extensible: Easy to add future options (deck assignment, filtering, etc.)
+
+**Legacy compatibility**: `\noprint{\input{...}}` still works but is deprecated
+
+**Deck Management**:
+```latex
+% Start a deck (unnamed for first deck, named for subsequent decks)
+\begin{spelldeck}[Combat Spells]
+  \includespell{spells/sor/1/MagicMissile.tex}
+  \includespell[noprint]{spells/sor/1/Sleep.tex}  % in deck but not printed
+\end{spelldeck}
+```
+
+**Package Options**:
+```latex
+% Printer margin configuration (choose one approach)
+\usepackage[printer-margin=5mm]{spellcard-expl3}           % uniform margin
+\usepackage[printer-margin-x=3mm,printer-margin-y=5mm]{spellcard-expl3}  % separate x/y
+
+% Priority: printer-margin overrides printer-margin-x/printer-margin-y if both specified
+```
+
 ### LaTeX Development Guidelines
 
 #### Code Quality - chktex Linting

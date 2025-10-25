@@ -63,6 +63,10 @@
 \bool_new:N \l_spellcard_has_printer_margin_bool
 \bool_set_false:N \l_spellcard_has_printer_margin_bool
 
+% Flag for includespell command options (whether to print)
+\bool_new:N \l_spellcard_include_print_bool
+\bool_set_true:N \l_spellcard_include_print_bool
+
 %% ============================================================================
 %% Integer Variables
 %% ============================================================================
@@ -263,6 +267,13 @@
   All~subsequent~decks~must~be~named.
 }
 
+%%% Spell File Errors
+\msg_new:nnn { spellcard } { spell-file-not-found }
+{
+  Spell~file~not~found:~'#1'\\
+  Check~that~the~file~path~is~correct~and~the~file~exists.
+}
+
 %%% Layout and Rendering Errors
 \msg_new:nnn { spellcard } { too-many-qr-codes }
 {
@@ -459,6 +470,46 @@
 }
 
 %% ============================================================================
+%% Print Control System
+%% ============================================================================
+
+%%% Keys for spell inclusion options
+\keys_define:nn { spellcard / includespell }
+{
+  % Whether to print the spell card (default: true)
+  print .bool_set:N = \l_spellcard_include_print_bool,
+  print .initial:n = true,
+  print .default:n = true,
+
+  % Alias: noprint sets print to false
+  noprint .bool_set_inverse:N = \l_spellcard_include_print_bool,
+  noprint .default:n = true,
+}
+
+%%% Internal function to include a spell file with options
+%%% #1 = file path (relative to document root)
+\cs_new:Nn \spellcard_include_spell:n
+{
+  % Save current print state
+  \bool_set_eq:NN \l_tmpa_bool \g_spellcard_print_card_bool
+
+  % Set print state based on the 'print' option
+  \bool_gset_eq:NN \g_spellcard_print_card_bool \l_spellcard_include_print_bool
+
+  % Check if file exists before including
+  \file_if_exist:nTF { #1 }
+  {
+    \file_input:n { #1 }
+  }
+  {
+    \msg_error:nnn { spellcard } { spell-file-not-found } { #1 }
+  }
+
+  % Restore previous print state
+  \bool_gset_eq:NN \g_spellcard_print_card_bool \l_tmpa_bool
+}
+
+%% ============================================================================
 %% Initialization
 %% ============================================================================
 
@@ -491,10 +542,45 @@
 }
 \ExplSyntaxOff
 
+%%% Spell Inclusion Command
+%%% Usage: 
+%%%   \includespell{spells/sor/1/MagicMissile}           % print the spell
+%%%   \includespell[noprint]{spells/sor/1/MagicMissile}  % include without printing
+%%%   \includespell[print=false]{spells/sor/1/MagicMissile}  % same as noprint
+\ExplSyntaxOn
+\NewDocumentCommand{\includespell}{O{} m}
+{
+  % Process options
+  \keys_set:nn { spellcard / includespell } { #1 }
+
+  % Include the spell file
+  \spellcard_include_spell:n { #2 }
+}
+\ExplSyntaxOff
+
 %% ============================================================================
 %% Legacy Interface (will be removed in future phases)
 %% ============================================================================
 %% These commands provide compatibility with existing templates
+
+%%% Legacy \noprint command for backwards compatibility
+%%% New code should use \includespell[noprint]{...} instead
+\ExplSyntaxOn
+\NewDocumentCommand{\noprint}{m}
+{
+  % Save current print state
+  \bool_set_eq:NN \l_tmpa_bool \g_spellcard_print_card_bool
+
+  % Temporarily disable printing
+  \bool_gset_false:N \g_spellcard_print_card_bool
+
+  % Execute the code (typically \input{spellfile})
+  #1
+
+  % Restore previous print state
+  \bool_gset_eq:NN \g_spellcard_print_card_bool \l_tmpa_bool
+}
+\ExplSyntaxOff
 
 \endinput
 %%

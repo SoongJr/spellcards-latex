@@ -128,6 +128,55 @@ Current deck number: \ExplSyntaxOn \int_use:N \g_spellcard_deck_number_int \Expl
 After third deck: \\
 Current deck number: \ExplSyntaxOn \int_use:N \g_spellcard_deck_number_int \ExplSyntaxOff
 
+\subsection*{Phase 2: Print Control Tests}
+
+Testing the print control system with \texttt{\textbackslash{}includespell}:
+
+\ExplSyntaxOn
+
+Initial~print~flag: \bool_if:NTF \g_spellcard_print_card_bool { TRUE } { FALSE } \\
+
+% Test setting the flag
+\bool_gset_false:N \g_spellcard_print_card_bool
+After~setting~false: \bool_if:NTF \g_spellcard_print_card_bool { TRUE } { FALSE } \\
+
+\bool_gset_true:N \g_spellcard_print_card_bool
+After~setting~true: \bool_if:NTF \g_spellcard_print_card_bool { TRUE } { FALSE } \\
+
+\ExplSyntaxOff
+
+\subsubsection*{Test 1: Default behavior (print enabled)}
+
+Print~flag~before:~\ExplSyntaxOn{} \bool_if:NTF \g_spellcard_print_card_bool { TRUE } { FALSE } \ExplSyntaxOff{}
+
+\includespell{test-spell.tex}
+
+Print~flag~after:~\ExplSyntaxOn{} \bool_if:NTF \g_spellcard_print_card_bool { TRUE } { FALSE } \ExplSyntaxOff{}
+
+\subsubsection*{Test 2: Using [noprint] option}
+
+Print~flag~before:~\ExplSyntaxOn{} \bool_if:NTF \g_spellcard_print_card_bool { TRUE } { FALSE } \ExplSyntaxOff{}
+
+\includespell[noprint]{test-spell.tex}
+
+Print~flag~after:~\ExplSyntaxOn{} \bool_if:NTF \g_spellcard_print_card_bool { TRUE } { FALSE } \ExplSyntaxOff{}
+
+\subsubsection*{Test 3: Using [print=false] option}
+
+Print~flag~before:~\ExplSyntaxOn{} \bool_if:NTF \g_spellcard_print_card_bool { TRUE } { FALSE } \ExplSyntaxOff{}
+
+\includespell[print=false]{test-spell.tex}
+
+Print~flag~after:~\ExplSyntaxOn{} \bool_if:NTF \g_spellcard_print_card_bool { TRUE } { FALSE } \ExplSyntaxOff{}
+
+\subsubsection*{Test 4: Legacy {\textbackslash}noprint command}
+
+Print~flag~before:~\ExplSyntaxOn{} \bool_if:NTF \g_spellcard_print_card_bool { TRUE } { FALSE } \ExplSyntaxOff{}
+
+\noprint{\input{test-spell.tex}}
+
+Print~flag~after:~\ExplSyntaxOn{} \bool_if:NTF \g_spellcard_print_card_bool { TRUE } { FALSE } \ExplSyntaxOff{}
+
 \subsection*{Conclusion}
 
 If this document compiles without errors, the \texttt{spellcard-expl3.sty} package
