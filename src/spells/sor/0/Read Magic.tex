@@ -71,25 +71,27 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/r/read-magic} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/MagieLesen} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  You can decipher magical inscriptions on objects-books, scrolls, weapons,
-  and the like-that would otherwise be unintelligible.
-  This deciphering does not normally invoke the magic contained in the writing,
-  although it may do so in the case of a cursed or trapped scroll.
-  Furthermore, once the spell is cast and you have read the magical inscription,
-  you are thereafter able to read that particular writing without recourse to the use of \emph{read magic.}
-  You can read at the rate of one page (250 words) per minute.
-  The spell allows you to identify a \emph{glyph of warding} with a DC 13 Spellcraft check,
-  a greater \emph{glyph of warding} with a DC 16 Spellcraft check,
-  or any \emph{symbol} spell with a Spellcraft check (DC 10 + spell level).
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    You can decipher magical inscriptions on objects-books, scrolls, weapons,
+    and the like-that would otherwise be unintelligible.
+    This deciphering does not normally invoke the magic contained in the writing,
+    although it may do so in the case of a cursed or trapped scroll.
+    Furthermore, once the spell is cast and you have read the magical inscription,
+    you are thereafter able to read that particular writing without recourse to the use of \emph{read magic.}
+    You can read at the rate of one page (250 words) per minute.
+    The spell allows you to identify a \emph{glyph of warding} with a DC 13 Spellcraft check,
+    a greater \emph{glyph of warding} with a DC 16 Spellcraft check,
+    or any \emph{symbol} spell with a Spellcraft check (DC 10 + spell level).
 
-  \emph{Read magic} can be made permanent with a \emph{permanency} spell.
-  % SPELL DESCRIPTION END
-  %
+    \emph{Read magic} can be made permanent with a \emph{permanency} spell.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

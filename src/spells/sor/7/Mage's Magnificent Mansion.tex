@@ -71,36 +71,38 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/m/mage-s-magnificent-mansion} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/DesMagiersHerrlichesHerrenhaus} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  You conjure up an extradimensional dwelling that has a single entrance
-  on the plane from which the spell was cast. The entry point looks like a
-  faint shimmering in the air that is 4 feet wide and 8 feet high.\\
-  Only those you designate may enter the mansion, and the portal is shut
-  and made invisible behind you when you enter. You may open it again from
-  your own side at will.\\
-  Once observers have passed beyond the entrance, they are in a magnificent
-  foyer with numerous chambers beyond. The atmosphere is clean, fresh, and warm.
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    You conjure up an extradimensional dwelling that has a single entrance
+    on the plane from which the spell was cast. The entry point looks like a
+    faint shimmering in the air that is 4 feet wide and 8 feet high.\\
+    Only those you designate may enter the mansion, and the portal is shut
+    and made invisible behind you when you enter. You may open it again from
+    your own side at will.\\
+    Once observers have passed beyond the entrance, they are in a magnificent
+    foyer with numerous chambers beyond. The atmosphere is clean, fresh, and warm.
 
-  \medskip
-  You can create any floor plan you desire to the limit of the spell's
-  effect. The place is furnished and contains sufficient foodstuffs to
-  serve a nine-course banquet to a dozen people per caster level.
+    \medskip
+    You can create any floor plan you desire to the limit of the spell's
+    effect. The place is furnished and contains sufficient foodstuffs to
+    serve a nine-course banquet to a dozen people per caster level.
 
-  A staff of near-transparent servants (two per caster level),
-  liveried and obedient, wait upon all who enter. The servants function as
-  \emph{unseen servant} spells except that they are visible and can go
-  anywhere in the mansion.
+    A staff of near-transparent servants (two per caster level),
+    liveried and obedient, wait upon all who enter. The servants function as
+    \emph{unseen servant} spells except that they are visible and can go
+    anywhere in the mansion.
 
-  \medskip
-  Since the place can be entered only through its special portal, outside
-  conditions do not affect the mansion, nor do conditions inside it pass
-  to the plane beyond.
-  % SPELL DESCRIPTION END
-  %
+    \medskip
+    Since the place can be entered only through its special portal, outside
+    conditions do not affect the mansion, nor do conditions inside it pass
+    to the plane beyond.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

@@ -71,27 +71,29 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/d/dancing-lights} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/TanzendeLichter} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  Depending on the version selected, you create up to four lights that resemble lanterns or torches
-  (and cast that amount of light), or up to four glowing spheres of light (which look like will-o'-wisps),
-  or one faintly glowing, vaguely humanoid shape.
-  The \emph{dancing lights} must stay within a 10-foot-radius area in relation to each other
-  but otherwise move as you desire (no concentration required):
-  forward or back, up or down, straight or turning corners, or the like.
-  The lights can move up to 100 feet per round.
-  A light winks out if the distance between you and it exceeds the spell's range.
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    Depending on the version selected, you create up to four lights that resemble lanterns or torches
+    (and cast that amount of light), or up to four glowing spheres of light (which look like will-o'-wisps),
+    or one faintly glowing, vaguely humanoid shape.
+    The \emph{dancing lights} must stay within a 10-foot-radius area in relation to each other
+    but otherwise move as you desire (no concentration required):
+    forward or back, up or down, straight or turning corners, or the like.
+    The lights can move up to 100 feet per round.
+    A light winks out if the distance between you and it exceeds the spell's range.
 
-  You can only have one \emph{dancing lights} spell active at any one time.
-  If you cast this spell while another casting is still in effect, the previous casting is dispelled.
-  If you make this spell permanent, it does not count against this limit.
+    You can only have one \emph{dancing lights} spell active at any one time.
+    If you cast this spell while another casting is still in effect, the previous casting is dispelled.
+    If you make this spell permanent, it does not count against this limit.
 
-  \emph{Dancing lights} can be made permanent with a \emph{permanency} spell.
-  % SPELL DESCRIPTION END
-  %
+    \emph{Dancing lights} can be made permanent with a \emph{permanency} spell.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

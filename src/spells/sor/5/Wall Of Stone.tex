@@ -71,34 +71,36 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/w/wall-of-stone} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/Steinwand} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  This spell creates a wall of rock that merges into adjoining rock surfaces.
-  A \emph{wall of stone} is 1 inch thick per four caster levels and extends up to one 5-foot square per level.
-  You can double the wall's area by halving its thickness.
-  The wall cannot be conjured so that it occupies the same space as a creature or another object.
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    This spell creates a wall of rock that merges into adjoining rock surfaces.
+    A \emph{wall of stone} is 1 inch thick per four caster levels and extends up to one 5-foot square per level.
+    You can double the wall's area by halving its thickness.
+    The wall cannot be conjured so that it occupies the same space as a creature or another object.
 
-  Unlike a \emph{wall of iron}, you can create a \emph{wall of stone} in almost any shape you desire.
-  The wall does not need a firm foundation, but it must merge with and be solidly supported by existing stone.
-  It can be used to bridge a chasm or as a ramp,but to span more than 20 feet,
-  it must be arched and buttressed, which reduces the spell's area by half.
-  The wall can be crudely shaped to allow crenellations, battlements,
-  and so forth by likewise reducing the area.
+    Unlike a \emph{wall of iron}, you can create a \emph{wall of stone} in almost any shape you desire.
+    The wall does not need a firm foundation, but it must merge with and be solidly supported by existing stone.
+    It can be used to bridge a chasm or as a ramp,but to span more than 20 feet,
+    it must be arched and buttressed, which reduces the spell's area by half.
+    The wall can be crudely shaped to allow crenellations, battlements,
+    and so forth by likewise reducing the area.
 
-  Once the wall is erected, it is a normal, non-magical stone wall and can be destroyed
-  by a \emph{disintegrate} spell or any other means that would tear down a normal wall.
+    Once the wall is erected, it is a normal, non-magical stone wall and can be destroyed
+    by a \emph{disintegrate} spell or any other means that would tear down a normal wall.
 
-  Each 5-foot square of the wall has hardness 8 and 15 hit points per inch of thickness.
-  A section of wall whose hit points drop to 0 is breached.
-  To break through the wall with a single attack requires a Strength check with DC 20 + 2 per inch of thickness.
+    Each 5-foot square of the wall has hardness 8 and 15 hit points per inch of thickness.
+    A section of wall whose hit points drop to 0 is breached.
+    To break through the wall with a single attack requires a Strength check with DC 20 + 2 per inch of thickness.
 
-  It is possible, but difficult, to trap mobile opponents within or under a \emph{wall of stone}
-  Creatures can avoid entrapment with successful Reflex saves.
-  % SPELL DESCRIPTION END
-  %
+    It is possible, but difficult, to trap mobile opponents within or under a \emph{wall of stone}
+    Creatures can avoid entrapment with successful Reflex saves.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

@@ -71,17 +71,19 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/a/acid-splash} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/Säurespritzer} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  You fire a small orb of acid at the target.
-  You must succeed on a ranged touch attack to hit your target.
-  The orb deals 1d3 points of acid damage.
-  This acid disappears after 1 round.
-  % SPELL DESCRIPTION END
-  %
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    You fire a small orb of acid at the target.
+    You must succeed on a ranged touch attack to hit your target.
+    The orb deals 1d3 points of acid damage.
+    This acid disappears after 1 round.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

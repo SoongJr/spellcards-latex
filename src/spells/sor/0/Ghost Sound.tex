@@ -71,30 +71,32 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/g/ghost-sound} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/GeisterhaftesGeräusch} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  \emph{Ghost sound} allows you to create a volume of sound that rises,
-  recedes, approaches, or remains at a fixed place.
-  You choose what type of sound \emph{ghost sound} creates when casting it
-  and cannot thereafter change the sound's basic character.
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    \emph{Ghost sound} allows you to create a volume of sound that rises,
+    recedes, approaches, or remains at a fixed place.
+    You choose what type of sound \emph{ghost sound} creates when casting it
+    and cannot thereafter change the sound's basic character.
 
-  The volume of sound created depends on your level.
-  You can produce as much noise as four normal humans per caster level (maximum 40 humans).
-  Thus, talking, singing, shouting, walking, marching, or running sounds can be created.
-  The noise a \emph{ghost sound} spell produces can be virtually any type of sound within the volume limit.
-  A horde of rats running and squeaking is about the same volume as eight humans running and shouting.
-  A roaring lion is equal to the noise from 16 humans,
-  while a roaring dragon is equal to the noise from 32 humans.
-  Anyone who hears a \emph{ghost sound} receives a Will save to disbelieve.
+    The volume of sound created depends on your level.
+    You can produce as much noise as four normal humans per caster level (maximum 40 humans).
+    Thus, talking, singing, shouting, walking, marching, or running sounds can be created.
+    The noise a \emph{ghost sound} spell produces can be virtually any type of sound within the volume limit.
+    A horde of rats running and squeaking is about the same volume as eight humans running and shouting.
+    A roaring lion is equal to the noise from 16 humans,
+    while a roaring dragon is equal to the noise from 32 humans.
+    Anyone who hears a \emph{ghost sound} receives a Will save to disbelieve.
 
-  \emph{Ghost sound} can enhance the effectiveness of a \emph{silent image} spell.
+    \emph{Ghost sound} can enhance the effectiveness of a \emph{silent image} spell.
 
-  \emph{Ghost sound} can be made permanent with a \emph{permanency} spell.
-  % SPELL DESCRIPTION END
-  %
+    \emph{Ghost sound} can be made permanent with a \emph{permanency} spell.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

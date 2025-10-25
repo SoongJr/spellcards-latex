@@ -71,33 +71,35 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/g/grease} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/Schmieren} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  A \emph{grease} spell covers a solid surface with a layer of slippery grease.
-  Any creature in the area when the spell is cast must make a successful Reflex save or fall.
-  A creature can walk within or through the area of \emph{grease}
-  at half normal speed with a DC 10 Acrobatics check.
-  Failure by 5 or more means it falls (see the Acrobatics skill for details),
-  failure by less than 5 means allows the creature to make a Reflex save to prevent a fall
-  (it cannot move this round regardless).
-  Creatures that do not move on their turn do not need to make this check and are not considered flat-footed.
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    A \emph{grease} spell covers a solid surface with a layer of slippery grease.
+    Any creature in the area when the spell is cast must make a successful Reflex save or fall.
+    A creature can walk within or through the area of \emph{grease}
+    at half normal speed with a DC 10 Acrobatics check.
+    Failure by 5 or more means it falls (see the Acrobatics skill for details),
+    failure by less than 5 means allows the creature to make a Reflex save to prevent a fall
+    (it cannot move this round regardless).
+    Creatures that do not move on their turn do not need to make this check and are not considered flat-footed.
 
-  The spell can also be used to create a greasy coating on an item.
+    The spell can also be used to create a greasy coating on an item.
 
-  Material objects not in use are always affected by this spell,
-  while an object wielded or employed by a creature requires its bearer
-  to make a Reflex saving throw to avoid the effect.
-  If the initial saving throw fails, the creature immediately drops the item.
-  A saving throw must be made in each round that the creature attempts
-  to pick up or use the \emph{grease}d item.
-  A creature wearing \emph{grease}d armor or clothing gains a +10 circumstance bonus
-  on Escape Artist checks and combat maneuver checks made to escape a grapple,
-  and to their CMD to avoid being grappled.
-  % SPELL DESCRIPTION END
-  %
+    Material objects not in use are always affected by this spell,
+    while an object wielded or employed by a creature requires its bearer
+    to make a Reflex saving throw to avoid the effect.
+    If the initial saving throw fails, the creature immediately drops the item.
+    A saving throw must be made in each round that the creature attempts
+    to pick up or use the \emph{grease}d item.
+    A creature wearing \emph{grease}d armor or clothing gains a +10 circumstance bonus
+    on Escape Artist checks and combat maneuver checks made to escape a grapple,
+    and to their CMD to avoid being grappled.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

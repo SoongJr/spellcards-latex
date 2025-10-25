@@ -71,33 +71,35 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/e/elemental-body} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/ElementargestaltII} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  When you cast this spell, you can assume the form of a Medium air, earth, fire, or water elemental.
-  The abilities you gain depend upon the type of elemental into which you change.
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    When you cast this spell, you can assume the form of a Medium air, earth, fire, or water elemental.
+    The abilities you gain depend upon the type of elemental into which you change.
 
-  \vfill{}
-  \emph{Air elemental}:\\
-  You gain a +4 size bonus to your Dexterity and a +3 natural armor bonus.
-  You also gain fly 60 feet (perfect), darkvision 60 feet, and the ability to create a whirlwind.
+    \vfill{}
+    \emph{Air elemental}:\\
+    You gain a +4 size bonus to your Dexterity and a +3 natural armor bonus.
+    You also gain fly 60 feet (perfect), darkvision 60 feet, and the ability to create a whirlwind.
 
-  \emph{Earth elemental}:\\
-  You gain a +4 size bonus to your Strength and a +5 natural armor bonus.
-  You also gain darkvision 60 feet, the push ability, and the ability to earth glide.
+    \emph{Earth elemental}:\\
+    You gain a +4 size bonus to your Strength and a +5 natural armor bonus.
+    You also gain darkvision 60 feet, the push ability, and the ability to earth glide.
 
-  \emph{Fire elemental}:\\
-  You gain a +4 size bonus to your Dexterity and a +3 natural armor bonus.
-  You gain darkvision 60 feet, resist fire 20, vulnerability to cold, and the burn ability.
+    \emph{Fire elemental}:\\
+    You gain a +4 size bonus to your Dexterity and a +3 natural armor bonus.
+    You gain darkvision 60 feet, resist fire 20, vulnerability to cold, and the burn ability.
 
-  \emph{Water elemental}:\\
-  You gain a +4 size bonus to your Constitution and a +5 natural armor bonus.
-  You also gain swim 60 feet, darkvision 60 feet, the ability to create a vortex, and the ability to breathe water.
-  \vfill{}
-  % SPELL DESCRIPTION END
-  %
+    \emph{Water elemental}:\\
+    You gain a +4 size bonus to your Constitution and a +5 natural armor bonus.
+    You also gain swim 60 feet, darkvision 60 feet, the ability to create a vortex, and the ability to breathe water.
+    \vfill{}
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

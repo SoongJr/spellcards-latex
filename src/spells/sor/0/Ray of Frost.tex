@@ -71,17 +71,19 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/r/ray-of-frost} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/Kältestrahl} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  A ray of freezing air and ice projects from your pointing finger.
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    A ray of freezing air and ice projects from your pointing finger.
 
-  You must succeed on a ranged touch attack with the ray to deal damage to a target.
-  The ray deals 1d3 points of cold damage.
-  % SPELL DESCRIPTION END
-  %
+    You must succeed on a ranged touch attack with the ray to deal damage to a target.
+    The ray deals 1d3 points of cold damage.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

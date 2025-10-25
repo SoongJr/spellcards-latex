@@ -71,22 +71,24 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/t/tongues} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/Zungen} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  Speak and understand the language of any intelligent creature,
-  whether it is a racial tongue or a regional dialect.
-  The subject can speak only one language at a time,
-  although it may be able to understand several languages.\\
-  \emph{Tongues} does not enable the subject to speak with creatures who don't speak.
-  The subject can make itself understood as far as its voice carries.\\
-  This spell does not predispose any creature addressed toward the subject in any way.
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    Speak and understand the language of any intelligent creature,
+    whether it is a racial tongue or a regional dialect.
+    The subject can speak only one language at a time,
+    although it may be able to understand several languages.\\
+    \emph{Tongues} does not enable the subject to speak with creatures who don't speak.
+    The subject can make itself understood as far as its voice carries.\\
+    This spell does not predispose any creature addressed toward the subject in any way.
 
-  \emph{Tongues} can be made permanent with a \emph{permanency} spell.
-  % SPELL DESCRIPTION END
-  %
+    \emph{Tongues} can be made permanent with a \emph{permanency} spell.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

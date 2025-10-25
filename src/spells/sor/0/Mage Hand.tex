@@ -71,16 +71,18 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/m/mage-hand} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/Magierhand} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  You point your finger at an object and can lift it and move it at will from a distance.
-  As a move action, you can propel the object as far as 15 feet in any direction,
-  though the spell ends if the distance between you and the object ever exceeds the spell's range.
-  % SPELL DESCRIPTION END
-  %
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    You point your finger at an object and can lift it and move it at will from a distance.
+    As a move action, you can propel the object as far as 15 feet in any direction,
+    though the spell ends if the distance between you and the object ever exceeds the spell's range.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

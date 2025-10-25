@@ -71,26 +71,28 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/p/permanency} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/Dauerhaftigkeit} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  You first cast the desired spell and then the \emph{permanency} spell.
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    You first cast the desired spell and then the \emph{permanency} spell.
 
-  Depending on the spell, you must be of a minimum caster level and must
-  expend a specific gp value of diamond dust as a material component.
+    Depending on the spell, you must be of a minimum caster level and must
+    expend a specific gp value of diamond dust as a material component.
 
-  \bigskip
-  Permanent spells on other targets are vulnerable to \emph{dispel magic}.\\
-  Permanent spells on yourself can be dispelled only by a caster
-  of higher level than you were when you cast the spell.
+    \bigskip
+    Permanent spells on other targets are vulnerable to \emph{dispel magic}.\\
+    Permanent spells on yourself can be dispelled only by a caster
+    of higher level than you were when you cast the spell.
 
-  \bigskip
-  \emph{See full tables of spells that can be made permanent online}.\\
-  The GM may allow other spells to be made permanent.
-  % SPELL DESCRIPTION END
-  %
+    \bigskip
+    \emph{See full tables of spells that can be made permanent online}.\\
+    The GM may allow other spells to be made permanent.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

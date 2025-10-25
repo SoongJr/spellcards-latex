@@ -71,43 +71,45 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/t/transmute-rock-to-mud} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/FelszuSchlammverwandeln} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  Turn natural, uncut, unworked, non-magical rock of any sort
-  into an equal volume of mud, up to 10 feet deep.\\
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    Turn natural, uncut, unworked, non-magical rock of any sort
+    into an equal volume of mud, up to 10 feet deep.\\
 
-  \medskip
-  A creature unable to fly or otherwise free itself sinks in,
-  reducing its speed to 5 feet and its AC by -2.
-  Brush or similar material thrown atop the mud can
-  support creatures able to climb on top of it. Creatures large enough to
-  walk on the bottom can wade through the area at a speed of 5 feet.
+    \medskip
+    A creature unable to fly or otherwise free itself sinks in,
+    reducing its speed to 5 feet and its AC by -2.
+    Brush or similar material thrown atop the mud can
+    support creatures able to climb on top of it. Creatures large enough to
+    walk on the bottom can wade through the area at a speed of 5 feet.
 
-  If \emph{transmute rock to mud} is cast upon the ceiling of a cavern or
-  tunnel, the mud falls to the floor and spreads out in a pool at a depth
-  of 5 feet. The falling mud and the ensuing cave-in deal 8d6 points of
-  bludgeoning damage to anyone caught directly beneath the targeted area
-  (Reflex save halves).
+    If \emph{transmute rock to mud} is cast upon the ceiling of a cavern or
+    tunnel, the mud falls to the floor and spreads out in a pool at a depth
+    of 5 feet. The falling mud and the ensuing cave-in deal 8d6 points of
+    bludgeoning damage to anyone caught directly beneath the targeted area
+    (Reflex save halves).
 
-  Large stone buildings are generally immune to the effect of the spell,
-  since it cannot affect worked stone and doesn't reach deep enough to
-  undermine such buildings' foundations.
-  However, small buildings often rest upon foundations shallow enough
-  to be damaged or even partially toppled by this spell.
+    Large stone buildings are generally immune to the effect of the spell,
+    since it cannot affect worked stone and doesn't reach deep enough to
+    undermine such buildings' foundations.
+    However, small buildings often rest upon foundations shallow enough
+    to be damaged or even partially toppled by this spell.
 
-  The mud remains until a successful \emph{dispel magic} or
-  \emph{transmute mud to rock} spell restores its substance -- but not
-  necessarily its form.
-  Evaporation turns the mud to normal dirt over a period of days,
-  depending on exposure to the sun, wind, and normal drainage.
+    The mud remains until a successful \emph{dispel magic} or
+    \emph{transmute mud to rock} spell restores its substance -- but not
+    necessarily its form.
+    Evaporation turns the mud to normal dirt over a period of days,
+    depending on exposure to the sun, wind, and normal drainage.
 
-  \medskip
-  This spell counters and dispels \emph{transmute mud to rock}.
-  % SPELL DESCRIPTION END
-  %
+    \medskip
+    This spell counters and dispels \emph{transmute mud to rock}.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

@@ -71,30 +71,32 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/k/knock} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/Klopfen} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  \emph{Knock} opens stuck, barred, or locked doors, as well as those subject to \emph{hold portal} or \emph{arcane lock}.
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    \emph{Knock} opens stuck, barred, or locked doors, as well as those subject to \emph{hold portal} or \emph{arcane lock}.
 
-  When you complete the casting of this spell, make a caster level check against the DC of the lock with a +10 bonus.
-  If successful, \emph{knock} opens up to two means of closure.
+    When you complete the casting of this spell, make a caster level check against the DC of the lock with a +10 bonus.
+    If successful, \emph{knock} opens up to two means of closure.
 
-  This spell opens secret doors, as well as locked or trick-opening boxes or chests.
-  It also loosens welds, shackles, or chains (provided they serve to hold something shut).
+    This spell opens secret doors, as well as locked or trick-opening boxes or chests.
+    It also loosens welds, shackles, or chains (provided they serve to hold something shut).
 
-  If used to open an \emph{arcane lock}ed door,
-  the spell does not remove the \emph{arcane lock} but simply suspends its functioning for 10 minutes.
-  In all other cases, the door does not relock itself or become stuck again on its own.
+    If used to open an \emph{arcane lock}ed door,
+    the spell does not remove the \emph{arcane lock} but simply suspends its functioning for 10 minutes.
+    In all other cases, the door does not relock itself or become stuck again on its own.
 
-  \emph{Knock} does not raise barred gates or similar impediments (such as a portcullis),
-  nor does it affect ropes, vines, and the like.
+    \emph{Knock} does not raise barred gates or similar impediments (such as a portcullis),
+    nor does it affect ropes, vines, and the like.
 
-  The effect is limited by the area.
-  Each casting can undo as many as two means of preventing access.
-  % SPELL DESCRIPTION END
-  %
+    The effect is limited by the area.
+    Each casting can undo as many as two means of preventing access.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

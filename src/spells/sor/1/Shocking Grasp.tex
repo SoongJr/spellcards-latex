@@ -71,17 +71,19 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/s/shocking-grasp} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/Schockgriff} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  Your successful melee touch attack deals 1d6 points of electricity damage per caster level (maximum 5d6).
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    Your successful melee touch attack deals 1d6 points of electricity damage per caster level (maximum 5d6).
 
-  When delivering the jolt, you gain a +3 bonus on attack rolls if the opponent is wearing metal armor
-  (or is carrying a metal weapon or is made of metal).
-  % SPELL DESCRIPTION END
-  %
+    When delivering the jolt, you gain a +3 bonus on attack rolls if the opponent is wearing metal armor
+    (or is carrying a metal weapon or is made of metal).
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

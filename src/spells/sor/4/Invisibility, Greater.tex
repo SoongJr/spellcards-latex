@@ -71,32 +71,34 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/i/invisibility} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/Unsichtbarkeit\#h16029-1} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo[0.55]{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  This spell functions like \emph{invisibility,} except that it doesn't end if the subject attacks:
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo[0.55]{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    This spell functions like \emph{invisibility,} except that it doesn't end if the subject attacks:
 
-  The creature or object touched becomes invisible.
-  If the recipient is a creature carrying gear, that vanishes, too.
-  If you cast the spell on someone else, neither you nor your allies can see the subject,
-  unless you can normally see invisible things or you employ magic to do so.
+    The creature or object touched becomes invisible.
+    If the recipient is a creature carrying gear, that vanishes, too.
+    If you cast the spell on someone else, neither you nor your allies can see the subject,
+    unless you can normally see invisible things or you employ magic to do so.
 
-  Items dropped or put down by an invisible creature become visible;
-  items picked up disappear if tucked into the clothing or pouches worn by the creature.
-  Light, however, never becomes invisible, although a source of light can become so
-  (thus, the effect is that of a light with no visible source).
-  Any part of an item that the subject carries but that extends more than 10 feet from it becomes visible.
+    Items dropped or put down by an invisible creature become visible;
+    items picked up disappear if tucked into the clothing or pouches worn by the creature.
+    Light, however, never becomes invisible, although a source of light can become so
+    (thus, the effect is that of a light with no visible source).
+    Any part of an item that the subject carries but that extends more than 10 feet from it becomes visible.
 
-  Of course, the subject is not magically silenced, and certain other conditions
-  can render the recipient detectable (such as swimming in water or stepping in a puddle).
-  If a check is required, a stationary invisible creature has a +40 bonus on its Stealth checks.
-  This bonus is reduced to +20 if the creature is moving.
+    Of course, the subject is not magically silenced, and certain other conditions
+    can render the recipient detectable (such as swimming in water or stepping in a puddle).
+    If a check is required, a stationary invisible creature has a +40 bonus on its Stealth checks.
+    This bonus is reduced to +20 if the creature is moving.
 
-  \emph{Invisibility} can be made permanent (on objects only) with a \emph{permanency} spell.
-  % SPELL DESCRIPTION END
-  %
+    \emph{Invisibility} can be made permanent (on objects only) with a \emph{permanency} spell.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

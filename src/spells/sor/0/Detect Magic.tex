@@ -71,70 +71,72 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/d/detect-magic} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/MagieEntdecken} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  You detect magical auras.
-  The amount of information revealed depends on how long you study a particular area or subject.
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    You detect magical auras.
+    The amount of information revealed depends on how long you study a particular area or subject.
 
-  \emph{1\textsuperscript{st} Round}:
-  Presence or absence of magical auras.
+    \emph{1\textsuperscript{st} Round}:
+    Presence or absence of magical auras.
 
-  \emph{2\textsuperscript{nd} Round}:
-  Number of different magical auras and the power of the most potent aura.
+    \emph{2\textsuperscript{nd} Round}:
+    Number of different magical auras and the power of the most potent aura.
 
-  \emph{3\textsuperscript{rd} Round}:
-  The strength and location of each aura.
-  If the items or creatures bearing the auras are in line of sight,
-  you can make Knowledge (arcana) skill checks to determine the school of magic involved in each.
-  (Make one check per aura: DC 15 + spell level, or 15 + 1/2 caster level for a nonspell effect.)
-  If the aura emanates from a magic item, you can attempt to identify its properties (see Spellcraft).
+    \emph{3\textsuperscript{rd} Round}:
+    The strength and location of each aura.
+    If the items or creatures bearing the auras are in line of sight,
+    you can make Knowledge (arcana) skill checks to determine the school of magic involved in each.
+    (Make one check per aura: DC 15 + spell level, or 15 + 1/2 caster level for a nonspell effect.)
+    If the aura emanates from a magic item, you can attempt to identify its properties (see Spellcraft).
 
-  Magical areas, multiple types of magic,
-  or strong local magical emanations may distort or conceal weaker auras.
+    Magical areas, multiple types of magic,
+    or strong local magical emanations may distort or conceal weaker auras.
 
-  \subsection*{Aura Strength}
-  An aura's power depends on a spell's functioning spell level or an item's caster level;
-  see the accompanying table.
-  If an aura falls into more than one category, detect magic indicates the stronger of the two.
+    \subsection*{Aura Strength}
+    An aura's power depends on a spell's functioning spell level or an item's caster level;
+    see the accompanying table.
+    If an aura falls into more than one category, detect magic indicates the stronger of the two.
 
-  \begin{longtable}[]{@{}lllll@{}}
-    \caption{Aura power based on spell- or caster-level}                                                                                                                                                          \\
-    \toprule
-    Spell or Object & Faint                           & Moderate                                     & Strong                                        & Overwhelming \tabularnewline\midrule
-    \endhead{}
-    Spell effect    & \(\leq{}\)3\textsuperscript{rd} & 4\textsuperscript{th}-6\textsuperscript{th}  & 7\textsuperscript{th}-9\textsuperscript{th}   & \(\geq{}\)10\textsuperscript{th}\tabularnewline{}
-    Magic item      & \(\leq{}\)5\textsuperscript{th} & 6\textsuperscript{th}-11\textsuperscript{th} & 12\textsuperscript{th}-20\textsuperscript{th} & \(\geq{}\)21\textsuperscript{st}\tabularnewline\bottomrule
-  \end{longtable}
+    \begin{longtable}[]{@{}lllll@{}}
+      \caption{Aura power based on spell- or caster-level}                                                                                                                                                          \\
+      \toprule
+      Spell or Object & Faint                           & Moderate                                     & Strong                                        & Overwhelming \tabularnewline\midrule
+      \endhead{}
+      Spell effect    & \(\leq{}\)3\textsuperscript{rd} & 4\textsuperscript{th}-6\textsuperscript{th}  & 7\textsuperscript{th}-9\textsuperscript{th}   & \(\geq{}\)10\textsuperscript{th}\tabularnewline{}
+      Magic item      & \(\leq{}\)5\textsuperscript{th} & 6\textsuperscript{th}-11\textsuperscript{th} & 12\textsuperscript{th}-20\textsuperscript{th} & \(\geq{}\)21\textsuperscript{st}\tabularnewline\bottomrule
+    \end{longtable}
 
-  \subsection*{Lingering Aura}
-  A magical aura lingers after its original source dissipates (in the case of a spell)
-  or is destroyed (in the case of a magic item).
-  If \emph{detect magic} is cast and directed at such a location,
-  the spell indicates an aura strength of dim (even weaker than a faint aura).
-  How long the aura lingers at this dim level depends on its original power:
+    \subsection*{Lingering Aura}
+    A magical aura lingers after its original source dissipates (in the case of a spell)
+    or is destroyed (in the case of a magic item).
+    If \emph{detect magic} is cast and directed at such a location,
+    the spell indicates an aura strength of dim (even weaker than a faint aura).
+    How long the aura lingers at this dim level depends on its original power:
 
-  \begin{longtable}[]{@{}ll@{}}
-    \toprule
-    Original Strength & Duration of Lingering Aura\tabularnewline\midrule
-    \endhead{}
-    Faint             & 1d6 rounds\tabularnewline{}
-    Moderate          & 1d6 minutes\tabularnewline{}
-    Strong            & 1d6\(\times{}\)10 minutes\tabularnewline{}
-    Overwhelming      & 1d6 days\tabularnewline\bottomrule
-  \end{longtable}
+    \begin{longtable}[]{@{}ll@{}}
+      \toprule
+      Original Strength & Duration of Lingering Aura\tabularnewline\midrule
+      \endhead{}
+      Faint             & 1d6 rounds\tabularnewline{}
+      Moderate          & 1d6 minutes\tabularnewline{}
+      Strong            & 1d6\(\times{}\)10 minutes\tabularnewline{}
+      Overwhelming      & 1d6 days\tabularnewline\bottomrule
+    \end{longtable}
 
-  Outsiders and elementals are not magical in themselves, but if they are summoned,
-  the conjuration spell registers.
-  Each round, you can turn to detect magic in a new area.
-  The spell can penetrate barriers, but 1 foot of stone, 1 inch of common metal,
-  a thin sheet of lead, or 3 feet of wood or dirt blocks it.
+    Outsiders and elementals are not magical in themselves, but if they are summoned,
+    the conjuration spell registers.
+    Each round, you can turn to detect magic in a new area.
+    The spell can penetrate barriers, but 1 foot of stone, 1 inch of common metal,
+    a thin sheet of lead, or 3 feet of wood or dirt blocks it.
 
-  \emph{Detect magic} can be made permanent with a \emph{permanency} spell.
-  % SPELL DESCRIPTION END
-  %
+    \emph{Detect magic} can be made permanent with a \emph{permanency} spell.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

@@ -71,20 +71,22 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/s/scorching-ray} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/SengenderStrahl} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  You blast your enemies with a searing beam of fire.
-  You may fire one ray, plus one additional ray for every four levels beyond 3\textsuperscript{rd}
-  (to a maximum of three rays at 11\textsuperscript{th} level).
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    You blast your enemies with a searing beam of fire.
+    You may fire one ray, plus one additional ray for every four levels beyond 3\textsuperscript{rd}
+    (to a maximum of three rays at 11\textsuperscript{th} level).
 
-  Each ray requires a ranged touch attack to hit and deals 4d6 points of fire damage.
-  The rays may be fired at the same or different targets,
-  but all rays must be aimed at targets within 30 feet of each other and fired simultaneously.
-  % SPELL DESCRIPTION END
-  %
+    Each ray requires a ranged touch attack to hit and deals 4d6 points of fire damage.
+    The rays may be fired at the same or different targets,
+    but all rays must be aimed at targets within 30 feet of each other and fired simultaneously.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

@@ -71,24 +71,26 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/s/see-invisibility} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/UnsichtbaresSehen} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  You can see any objects or beings that are invisible within your range of vision,
-  as well as any that are ethereal, as if they were normally visible.
-  Such creatures are visible to you as translucent shapes,
-  allowing you easily to discern the difference between visible, invisible, and ethereal creatures.
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    You can see any objects or beings that are invisible within your range of vision,
+    as well as any that are ethereal, as if they were normally visible.
+    Such creatures are visible to you as translucent shapes,
+    allowing you easily to discern the difference between visible, invisible, and ethereal creatures.
 
-  The spell does not reveal the method used to obtain \emph{invisibility}.
+    The spell does not reveal the method used to obtain \emph{invisibility}.
 
-  It does not reveal illusions or enable you to see through opaque objects.
-  It does not reveal creatures who are simply hiding, concealed, or otherwise hard to see.
+    It does not reveal illusions or enable you to see through opaque objects.
+    It does not reveal creatures who are simply hiding, concealed, or otherwise hard to see.
 
-  \emph{See invisibility} can be made permanent with a \emph{permanency} spell.
-  % SPELL DESCRIPTION END
-  %
+    \emph{See invisibility} can be made permanent with a \emph{permanency} spell.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

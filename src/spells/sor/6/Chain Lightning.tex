@@ -71,27 +71,29 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/c/chain-lightning} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/Kugelblitz} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  This spell creates an electrical discharge that begins as a single stroke commencing from your fingertips.
-  Unlike \emph{lightning bolt}, \emph{chain lightning} strikes one object or creature initially,
-  then arcs to other targets.
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    This spell creates an electrical discharge that begins as a single stroke commencing from your fingertips.
+    Unlike \emph{lightning bolt}, \emph{chain lightning} strikes one object or creature initially,
+    then arcs to other targets.
 
-  The bolt deals 1d6 points of electricity damage per caster level (maximum 20d6) to the primary target.
-  Then it arcs to a number of secondary targets equal to your caster level (maximum 20).
-  The secondary bolts each strike one target and deal as much damage as the primary bolt.
+    The bolt deals 1d6 points of electricity damage per caster level (maximum 20d6) to the primary target.
+    Then it arcs to a number of secondary targets equal to your caster level (maximum 20).
+    The secondary bolts each strike one target and deal as much damage as the primary bolt.
 
-  Each target can attempt a Reflex saving throw for half damage.
-  The Reflex DC to halve the damage of the secondary bolts is 2 lower than for the primary bolt.
+    Each target can attempt a Reflex saving throw for half damage.
+    The Reflex DC to halve the damage of the secondary bolts is 2 lower than for the primary bolt.
 
-  You choose secondary targets as you like, but they must all be within 30 feet of the primary target,
-  and no target can be struck more than once.
-  You can choose to affect fewer secondary targets than the maximum.
-  % SPELL DESCRIPTION END
-  %
+    You choose secondary targets as you like, but they must all be within 30 feet of the primary target,
+    and no target can be struck more than once.
+    You can choose to affect fewer secondary targets than the maximum.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

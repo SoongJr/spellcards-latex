@@ -71,21 +71,23 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/p/protection-from-energy} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/SchutzVorEnergien} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  \emph{Protection from energy} grants temporary immunity to the type of energy you specify when you cast it
-  (acid, cold, electricity, fire, or sonic).
-  When the spell absorbs 12 points per caster level of energy damage
-  (to a maximum of 120 points at 10\textsuperscript{th} level), it is discharged.
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    \emph{Protection from energy} grants temporary immunity to the type of energy you specify when you cast it
+    (acid, cold, electricity, fire, or sonic).
+    When the spell absorbs 12 points per caster level of energy damage
+    (to a maximum of 120 points at 10\textsuperscript{th} level), it is discharged.
 
-  \emph{Protection from energy} overlaps with \emph{resist energy}:
-  If a character is warded by both \emph{protection from energy} and \emph{resist energy},
-  the \emph{protection} spell absorbs damage until its power is exhausted.
-  % SPELL DESCRIPTION END
-  %
+    \emph{Protection from energy} overlaps with \emph{resist energy}:
+    If a character is warded by both \emph{protection from energy} and \emph{resist energy},
+    the \emph{protection} spell absorbs damage until its power is exhausted.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

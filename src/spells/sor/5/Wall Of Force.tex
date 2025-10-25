@@ -71,38 +71,40 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/w/wall-of-force} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/Energiewand} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  A \emph{wall of force} creates an invisible wall of pure force.
-  The wall cannot move and is not easily destroyed.
-  A \emph{wall of force} is immune to \emph{dispel magic},
-  although a mage's disjunction can still dispel it.
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    A \emph{wall of force} creates an invisible wall of pure force.
+    The wall cannot move and is not easily destroyed.
+    A \emph{wall of force} is immune to \emph{dispel magic},
+    although a mage's disjunction can still dispel it.
 
-  A \emph{wall of force} can be damaged by spells as normal, except for \emph{disintegrate},
-  which automatically destroys it.
-  It can be damaged by weapons and supernatural abilities,
-  but a \emph{wall of force} has hardness 30 and a number of hit points equal to 20 per caster level.
-  Contact with a \emph{sphere of annihilation} or \emph{rod of cancellation}
-  instantly destroys a \emph{wall of force}.
+    A \emph{wall of force} can be damaged by spells as normal, except for \emph{disintegrate},
+    which automatically destroys it.
+    It can be damaged by weapons and supernatural abilities,
+    but a \emph{wall of force} has hardness 30 and a number of hit points equal to 20 per caster level.
+    Contact with a \emph{sphere of annihilation} or \emph{rod of cancellation}
+    instantly destroys a \emph{wall of force}.
 
-  Breath weapons and spells cannot pass through a \emph{wall of force} in either direction,
-  although \emph{dimension door}, \emph{teleport}, and similar effects can bypass the barrier.
-  It blocks ethereal creatures as well as material ones
-  (though ethereal creatures can usually circumvent the wall by going around it,
-  through material floors and ceilings).
+    Breath weapons and spells cannot pass through a \emph{wall of force} in either direction,
+    although \emph{dimension door}, \emph{teleport}, and similar effects can bypass the barrier.
+    It blocks ethereal creatures as well as material ones
+    (though ethereal creatures can usually circumvent the wall by going around it,
+    through material floors and ceilings).
 
-  Gaze attacks can operate through a \emph{wall of force}.
+    Gaze attacks can operate through a \emph{wall of force}.
 
-  The caster can form the wall into a flat, vertical plane whose area is up to one 10-foot square per level.
-  The wall must be continuous and unbroken when formed.
-  If its surface is broken by any object or creature, the spell fails.
+    The caster can form the wall into a flat, vertical plane whose area is up to one 10-foot square per level.
+    The wall must be continuous and unbroken when formed.
+    If its surface is broken by any object or creature, the spell fails.
 
-  \emph{Wall of force} can be made permanent with a \emph{permanency} spell.
-  % SPELL DESCRIPTION END
-  %
+    \emph{Wall of force} can be made permanent with a \emph{permanency} spell.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

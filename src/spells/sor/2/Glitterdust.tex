@@ -71,19 +71,21 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/g/glitterdust} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/Glitzerstaub} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  A cloud of golden particles covers everyone and everything in the area,
-  causing creatures to become blinded and visibly outlining invisible things for the duration of the spell.
-  All within the area are covered by the dust, which cannot be removed and continues to sparkle until it fades.
-  Each round at the end of their turn, blinded creatures may attempt new saving throws to end the blindness effect.
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    A cloud of golden particles covers everyone and everything in the area,
+    causing creatures to become blinded and visibly outlining invisible things for the duration of the spell.
+    All within the area are covered by the dust, which cannot be removed and continues to sparkle until it fades.
+    Each round at the end of their turn, blinded creatures may attempt new saving throws to end the blindness effect.
 
-  Any creature covered by the dust takes a -40 penalty on Stealth checks.
-  % SPELL DESCRIPTION END
-  %
+    Any creature covered by the dust takes a -40 penalty on Stealth checks.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

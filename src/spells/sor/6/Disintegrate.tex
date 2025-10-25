@@ -71,32 +71,34 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/d/disintegrate} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/Aufloesung} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  A thin, green ray springs from your pointing finger.\\
-  You must make a successful ranged touch attack to hit.
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    A thin, green ray springs from your pointing finger.\\
+    You must make a successful ranged touch attack to hit.
 
-  \medskip
-  Any creature struck by the ray takes 2d6 points of damage per caster level (to a maximum of 40d6).\\
-  A successful Fortitude save restricts this to 5d6 points of damage.\\
-  Any creature thus reduced to 0 or fewer hit points is disintegrated entirely,
-  leaving behind only its equipment and a trace of fine dust.
+    \medskip
+    Any creature struck by the ray takes 2d6 points of damage per caster level (to a maximum of 40d6).\\
+    A successful Fortitude save restricts this to 5d6 points of damage.\\
+    Any creature thus reduced to 0 or fewer hit points is disintegrated entirely,
+    leaving behind only its equipment and a trace of fine dust.
 
-  \medskip
-  When used against an object, the ray simply disintegrates as much as a 10-foot cube of nonliving matter.
+    \medskip
+    When used against an object, the ray simply disintegrates as much as a 10-foot cube of nonliving matter.
 
-  The ray affects even objects constructed entirely of force, such as \emph{forceful hand}
-  or a \emph{wall of force}, but not magical effects such as a \emph{globe of invulnerability}
-  or an \emph{antimagic field}.
+    The ray affects even objects constructed entirely of force, such as \emph{forceful hand}
+    or a \emph{wall of force}, but not magical effects such as a \emph{globe of invulnerability}
+    or an \emph{antimagic field}.
 
-  \medskip
-  Only the first creature or object struck can be affected;
-  that is, the ray affects only one target per casting.
-  % SPELL DESCRIPTION END
-  %
+    \medskip
+    Only the first creature or object struck can be affected;
+    that is, the ray affects only one target per casting.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

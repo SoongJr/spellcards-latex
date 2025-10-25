@@ -71,18 +71,20 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/e/expeditious-retreat} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/RascherRückzug} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  This spell increases your base land speed by 30 feet.\\
-  This adjustment is treated as an enhancement bonus.\\
-  There is no effect on other modes of movement, such as burrow, climb, fly, or swim.\\
-  As with any effect that increases your speed, this spell does affect your jumping distance
-  (see the Acrobatics skill).
-  % SPELL DESCRIPTION END
-  %
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    This spell increases your base land speed by 30 feet.\\
+    This adjustment is treated as an enhancement bonus.\\
+    There is no effect on other modes of movement, such as burrow, climb, fly, or swim.\\
+    As with any effect that increases your speed, this spell does affect your jumping distance
+    (see the Acrobatics skill).
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

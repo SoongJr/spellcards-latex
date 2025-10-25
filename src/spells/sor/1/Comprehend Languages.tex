@@ -71,27 +71,29 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/c/comprehend-languages} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/Sprachenverstehen} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  You can understand the spoken words of creatures or read otherwise
-  incomprehensible written messages.\\
-  The ability to read does not necessarily impart insight into the material,
-  merely its literal meaning.\\
-  The spell enables you to understand or read an unknown language,
-  not speak or write it.
-  \\
-  Written material can be read at the rate of one page (250 words) per minute.\\
-  Magical writing cannot be read, though the spell reveals that it is magical.
-  This spell can be foiled by certain warding magic (such as the \emph{secret page}
-  and \emph{illusory script} spells).\\
-  It does not decipher codes or reveal messages concealed in otherwise normal text.
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    You can understand the spoken words of creatures or read otherwise
+    incomprehensible written messages.\\
+    The ability to read does not necessarily impart insight into the material,
+    merely its literal meaning.\\
+    The spell enables you to understand or read an unknown language,
+    not speak or write it.
+    \\
+    Written material can be read at the rate of one page (250 words) per minute.\\
+    Magical writing cannot be read, though the spell reveals that it is magical.
+    This spell can be foiled by certain warding magic (such as the \emph{secret page}
+    and \emph{illusory script} spells).\\
+    It does not decipher codes or reveal messages concealed in otherwise normal text.
 
-  \emph{Comprehend languages} can be made permanent with a \emph{permanency} spell.
-  % SPELL DESCRIPTION END
-  %
+    \emph{Comprehend languages} can be made permanent with a \emph{permanency} spell.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}

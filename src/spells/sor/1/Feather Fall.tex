@@ -71,31 +71,33 @@
   \newcommand{\meditative}{0}
   \newcommand{\urlenglish}{https://www.d20pfsrd.com/magic/all-spells/f/feather-fall} % chktex 8
   \newcommand{\urlsecondary}{http://prd.5footstep.de/Grundregelwerk/Zauber/Federfall} % chktex 8
-  % print the tabular information at the top of the card:
-  \spellcardinfo{}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  \spellcardqr{\urlenglish}
-  \spellcardqr{\urlsecondary}
-  %
-  % SPELL DESCRIPTION BEGIN
-  The affected creatures or objects fall slowly.\\
-  \emph{Feather fall} instantly changes the rate at which the targets fall to a mere 60 feet per round
-  (equivalent to the end of a fall from a few feet),
-  and the subjects take no damage upon landing while the spell is in effect.
-  When the spell duration expires, a normal rate of falling resumes.
+  \ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    \spellcardinfo{}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    \spellcardqr{\urlenglish}
+    \spellcardqr{\urlsecondary}
+    %
+    % SPELL DESCRIPTION BEGIN
+    The affected creatures or objects fall slowly.\\
+    \emph{Feather fall} instantly changes the rate at which the targets fall to a mere 60 feet per round
+    (equivalent to the end of a fall from a few feet),
+    and the subjects take no damage upon landing while the spell is in effect.
+    When the spell duration expires, a normal rate of falling resumes.
 
-  The spell affects one or more Medium or smaller creatures or objects
-  (including gear and carried objects up to each creature's maximum load),
-  or the equivalent in larger creatures:
-  a Large creature or object counts as two Medium creatures or objects,
-  a Huge creature or object counts as four Medium creatures or objects, and so forth.
+    The spell affects one or more Medium or smaller creatures or objects
+    (including gear and carried objects up to each creature's maximum load),
+    or the equivalent in larger creatures:
+    a Large creature or object counts as two Medium creatures or objects,
+    a Huge creature or object counts as four Medium creatures or objects, and so forth.
 
-  This spell has no special effect on ranged weapons unless they are falling quite a distance.
-  If the spell is cast on a falling item, the object does half normal damage based on its weight,
-  with no bonus for the height of the drop.
+    This spell has no special effect on ranged weapons unless they are falling quite a distance.
+    If the spell is cast on a falling item, the object does half normal damage based on its weight,
+    with no bonus for the height of the drop.
 
-  \emph{Feather fall} works only upon free-falling objects.
-  It does not affect a sword blow or a charging or flying creature.
-  % SPELL DESCRIPTION END
-  %
+    \emph{Feather fall} works only upon free-falling objects.
+    It does not affect a sword blow or a charging or flying creature.
+    % SPELL DESCRIPTION END
+    %
+  \fi%printcard
 \end{spellcard}
