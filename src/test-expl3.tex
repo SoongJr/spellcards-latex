@@ -347,4 +347,94 @@ All Phase 2 functions tested:
 If this document compiles without errors and produces expected output,
 Phase 2 of the expl3 modernization is complete.
 
+\newpage
+
+\subsection*{Phase 3.1: Deck Tracking and Spell Registration Tests}
+
+Testing the deck tracking system added in Phase 3.1 for future index card generation.
+
+\subsubsection*{Test: Basic Deck Tracking}
+
+Creating three NEW decks and manually registering spells (continuing from Phase 2 tests):
+
+\begin{spelldeck}{Test Deck A}
+  Test deck for Phase 3.1 (Deck 3) \\
+  \ExplSyntaxOn
+  \spellcard_register_spell:nnnn {spells/sor/0/AcidSplash.tex} {sor} {Acid~Splash} {0}
+  \spellcard_register_spell:nnnn {spells/sor/0/DancingLights.tex} {sor} {Dancing~Lights} {0}
+  \spellcard_register_spell:nnnn {spells/sor/1/MagicMissile.tex} {sor} {Magic~Missile} {1}
+  \ExplSyntaxOff
+\end{spelldeck}
+
+After deck 3: Total decks = \deckcount, Deck 3 spell count = \deckspellcount{3}
+
+\begin{spelldeck}{Test Deck B}
+  Test deck for Phase 3.1 (Deck 4) \\
+  \ExplSyntaxOn
+  \spellcard_register_spell:nnnn {spells/sor/1/MagicMissile.tex} {sor} {Magic~Missile} {1}
+  \spellcard_register_spell:nnnn {spells/sor/3/Fireball.tex} {sor} {Fireball} {3}
+  \spellcard_register_spell:nnnn {spells/sor/5/Teleport.tex} {sor} {Teleport} {5}
+  \ExplSyntaxOff
+\end{spelldeck}
+
+After deck 4: Total decks = \deckcount, Deck 4 spell count = \deckspellcount{4}
+
+\begin{spelldeck}{Test Deck C}
+  Test deck for Phase 3.1 (Deck 5) \\
+  \ExplSyntaxOn
+  \spellcard_register_spell:nnnn {spells/sor/0/DetectMagic.tex} {sor} {Detect~Magic} {0}
+  \spellcard_register_spell:nnnn {spells/sor/2/Invisibility.tex} {sor} {Invisibility} {2}
+  \ExplSyntaxOff
+\end{spelldeck}
+
+After deck 5: Total decks = \deckcount, Deck 5 spell count = \deckspellcount{5}
+
+\subsubsection*{Test: Deck Query Functions}
+
+\ExplSyntaxOn
+
+Testing~deck~existence~checks:
+\begin{itemize}
+  \item Deck~0~exists: \spellcard_if_deck_exists:nTF { 0 } { YES } { NO }
+  \item Deck~3~exists: \spellcard_if_deck_exists:nTF { 3 } { YES } { NO }
+  \item Deck~99~exists: \spellcard_if_deck_exists:nTF { 99 } { YES } { NO }~(should~be~NO)
+\end{itemize}
+
+Spell~counts~per~deck:
+\begin{itemize}
+  \item Deck~0:~\spellcard_get_deck_spell_count:n { 0 }~spells~(from~Phase~2~tests)
+  \item Deck~3:~\spellcard_get_deck_spell_count:n { 3 }~spells
+  \item Deck~4:~\spellcard_get_deck_spell_count:n { 4 }~spells
+  \item Deck~5:~\spellcard_get_deck_spell_count:n { 5 }~spells
+\end{itemize}
+
+\ExplSyntaxOff
+
+\subsubsection*{Summary: Phase 3.1 Deck Tracking}
+
+The deck tracking system enables:
+\begin{itemize}
+  \item Tracking which spells belong to each deck
+  \item Counting spells per deck
+  \item Querying deck existence
+  \item Foundation for future index card generation
+\end{itemize}
+
+Future features (not yet implemented):
+\begin{itemize}
+  \item Automatic spell metadata extraction from file paths
+  \item Filtering spells by level or school
+  \item Sorting spell lists
+  \item Exporting deck contents for index generation
+\end{itemize}
+
+\subsection*{Conclusion: Phases 1-3.1 Complete}
+
+If this document compiles successfully:
+\begin{itemize}
+  \item [OK] Phase 1: Foundation complete
+  \item [OK] Phase 2: Core logic migration complete
+  \item [OK] Phase 3.1: Deck tracking infrastructure complete
+\end{itemize}
+
 \end{document}

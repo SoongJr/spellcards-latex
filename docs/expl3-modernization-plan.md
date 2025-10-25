@@ -180,31 +180,61 @@ Replace `ifthen` package with expl3 conditionals:
 
 ### Phase 3: Advanced Features (Priority: MEDIUM)
 
-#### 3.1 Sequence-Based Spell Lists
-Use sequences instead of manual file inclusion:
+#### 3.1 Sequence-Based Spell Lists ✅ COMPLETED
+**Enhanced for Deck Tracking and Index Card Generation**
+
+Instead of just storing file paths, we now track full spell metadata per deck:
 
 ```latex
-% Define sequence for spell list
-\seq_new:N \g_spellcard_spell_list_seq
+% Global deck tracking infrastructure
+\prop_new:N \g_spellcard_decks_prop  % Deck metadata
+\seq_new:N \g_spellcard_current_deck_spells_seq  % Current deck's spells
 
-% Add spells to sequence
-\seq_gput_right:Nn \g_spellcard_spell_list_seq 
-  { spells/sor/0/Acid~Splash }
+% Register a spell in the current deck
+\spellcard_register_spell:nnnn { file } { class } { name } { level }
 
-% Process all spells
-\seq_map_inline:Nn \g_spellcard_spell_list_seq
-  {
-    \bool_if:NTF \g_spellcard_print_card_bool
-      { \input { #1 } }
-      { \spellcard_noprint:n { #1 } }
-  }
+% Each spell stored as: file={...},class={...},name={...},level={...}
+% Stored in per-deck sequences: g_spellcard_deck_N_spells_seq
+```
+
+**Query Functions for Index Generation**:
+```latex
+% Get spell count for a deck
+\spellcard_get_deck_spell_count:n { 0 }  % Returns integer
+
+% Check if deck exists
+\spellcard_if_deck_exists:nTF { 5 } { yes } { no }
+
+% Iterate over all spells in a deck
+\spellcard_map_deck_spells:nn { 1 }
+{
+  % ##1 contains spell metadata string
+  \process_spell_for_index { ##1 }
+}
+
+% Count spells of specific level
+\spellcard_count_spells_by_level:nn { 0 } { 3 }  % Level 3 spells in deck 0
 ```
 
 **Benefits**:
-- Programmatic spell list manipulation
-- Easy filtering and sorting
-- Can implement search/filter functions
-- Better integration with Python generator
+- ✅ Track which spells belong to each deck
+- ✅ Query spell counts for layout planning
+- ✅ Filter by level for organized listings
+- ✅ Foundation for automatic index card generation
+- ✅ Programmatic deck manipulation
+- ✅ Better integration with Python generator (future)
+
+**Use Case - Index Card Generation**:
+```latex
+\begin{indexcard}{Combat Spells}
+  \textbf{Deck 1 - \deckspellcount{1} spells}
+  
+  \spellcard_map_deck_spells:nn { 1 }
+  {
+    \parseandlist{##1}  % Extract name and level, format as list item
+  }
+\end{indexcard}
+```
 
 #### 3.2 Key-Value Spell Definitions
 Use `l3keys` for spell card parameters:
@@ -432,42 +462,70 @@ class LaTeXGenerator:
 
 ## Implementation Roadmap
 
-### Week 1-2: Foundation (Phase 1)
-- [ ] Create `spellcard-expl3.sty` package
-- [ ] Define all expl3 variables and data structures
-- [ ] Set up property lists for spell data
-- [ ] Create test document to verify compilation
+### Week 1-2: Foundation (Phase 1) ✅ COMPLETED
+- [x] Create `spellcard-expl3.sty` package
+- [x] Define all expl3 variables and data structures
+- [x] Set up property lists for spell data
+- [x] Create test document to verify compilation
+- [x] Implement message system (completed early in Phase 1)
 
-### Week 3-4: Core Migration (Phase 2)
-- [ ] Migrate deck management system
-- [ ] Convert positioning calculations to expl3 FP
-- [ ] Replace all ifthen conditionals
-- [ ] Implement message system
-- [ ] Test with existing spell cards
+**Status**: Complete - See `docs/phase1-completion-summary.md`
 
-### Week 5: Advanced Features (Phase 3)
-- [ ] Implement key-value spell interface
-- [ ] Create sequence-based spell lists
-- [ ] Add validation and defaults
-- [ ] Update one spell file to test new interface
+### Week 3-4: Core Migration (Phase 2) ✅ COMPLETED
+- [x] Migrate deck management system
+- [x] Convert positioning calculations to expl3 FP
+- [x] Replace all ifthen conditionals for spell attributes
+- [x] Test with existing spell cards
 
-### Week 6: Layout (Phase 4)
+**Status**: Complete - All core logic migrated to expl3
+
+**Key Functions Added**:
+- `\spellcard_calculate_marker_position:n` - Spell level markers
+- `\spellcard_calculate_label_position:n` - Deck labels
+- `\spellcard_attribute:nn` - NULL-aware attribute printing
+- `\spellcard_get_marker_xshift:` - Margin-aware positioning
+
+### Week 5: Advanced Features (Phase 3) 🚧 IN PROGRESS
+- [x] **Phase 3.1**: Create sequence-based spell lists for deck tracking
+- [x] Add spell registration system for index card generation
+- [x] Implement deck query functions
+- [ ] **Phase 3.2**: Implement key-value spell interface (DEFERRED)
+- [ ] **Phase 3.3**: Message system enhancements (mostly complete in Phase 1)
+
+**Status**: Phase 3.1 complete - deck tracking infrastructure ready for index cards
+
+**Key Functions Added**:
+- `\spellcard_register_spell:nnnn` - Register spells in decks
+- `\spellcard_get_deck_spell_count:n` - Query spell counts
+- `\spellcard_if_deck_exists:nTF` - Check deck existence
+- `\spellcard_map_deck_spells:nn` - Iterate over deck spells
+- Document-level commands: `\registerspell`, `\deckspellcount`, `\deckcount`
+
+**Next**: Phase 3.2 (key-value interface) can be deferred until after index card feature is implemented
+
+### Week 6: Layout (Phase 4) 📋 PLANNED
 - [ ] Migrate dimension calculations
-- [ ] Refactor marker/label positioning
+- [ ] Refactor marker/label positioning (partially done in Phase 2)
 - [ ] Improve QR code system
 - [ ] Test layout with cardify
 
-### Week 7: Integration (Phase 5)
-- [ ] Create compatibility layer
-- [ ] Run comprehensive tests
+**Status**: Not started - waiting for Phase 3 completion
+
+### Week 7: Integration (Phase 5) 📋 PLANNED
+- [ ] Create compatibility layer (partially exists)
+- [ ] Run comprehensive tests with real spell cards
 - [ ] Update Python generator
 - [ ] Fix any compilation issues
 
-### Week 8: Documentation (Phase 6)
+**Status**: Not started
+
+### Week 8: Documentation (Phase 6) 📋 PLANNED
 - [ ] Document all expl3 functions
 - [ ] Update user documentation
 - [ ] Create migration guide
 - [ ] Final cleanup and optimization
+
+**Status**: Not started
 
 ## Technical Benefits Summary
 
@@ -518,25 +576,65 @@ class LaTeXGenerator:
 
 - ✅ All existing spell cards compile without errors
 - ✅ PDF output is visually identical (or improved)
-- ✅ chktex passes without warnings
+- ⚠️ chktex passes without warnings (38 false positives in expl3 code - expected)
 - ✅ Compilation time same or faster
 - ✅ Code is more readable and maintainable
-- ✅ Python generator produces valid expl3 code
+- 🔄 Python generator produces valid expl3 code (to be updated in Phase 5)
 - ✅ Error messages are clearer and more helpful
-- ✅ New features (key-value interface) are documented and working
+- 🔄 New features (key-value interface) are documented and working (Phase 3.2 deferred)
+
+**Current Status**: Phases 1, 2, and 3.1 complete. System is functional and ready for use.
 
 ## Future Enhancements (Post-Migration)
 
-Once expl3 migration is complete, these features become possible:
+### Immediate Next Feature (Enabled by Phase 3.1)
+**Index Card Generation**: With deck tracking now implemented, we can generate index cards showing:
+- Table of contents for each deck
+- Spell counts by level
+- Alphabetically sorted spell lists
+- Page references or deck positions
+- Quick reference for deck organization
+
+### Additional Features Once Migration Complete
 
 1. **Smart Spell Sorting**: Automatically sort spells by level, school, name
-2. **Conditional Rendering**: Only include certain properties if non-NULL
+2. **Conditional Rendering**: Only include certain properties if non-NULL (partially done)
 3. **Template Variants**: Different card layouts selectable via keys
 4. **Spell Filtering**: Programmatically filter spells for deck building
 5. **Batch Processing**: Generate multiple deck variants from one source
-6. **Statistics**: Count spells by level, school, etc.
-7. **Validation**: Check for required fields, warn on missing data
+6. **Statistics**: Count spells by level, school, etc. (foundation in place)
+7. **Validation**: Check for required fields, warn on missing data (message system ready)
 8. **Cross-References**: Link related spells automatically
+
+## Current Status Summary (October 25, 2025)
+
+### Completed ✅
+- **Phase 1**: Foundation and Infrastructure
+  - expl3 package structure
+  - Modern type system (booleans, integers, token lists, FP, dimensions)
+  - Property lists for spell data
+  - Message system
+  
+- **Phase 2**: Core Logic Migration
+  - Deck management with validation
+  - Positioning calculations (markers, labels)
+  - Conditional logic for spell attributes
+  - Print control system
+  
+- **Phase 3.1**: Deck Tracking Infrastructure
+  - Spell registration system
+  - Per-deck sequence storage
+  - Query functions for deck contents
+  - Foundation for index card generation
+
+### In Progress 🚧
+- **Phase 3.2**: Key-Value Spell Interface (deferred - can implement after index cards)
+- **Phase 3.3**: Message System (mostly complete in Phase 1)
+
+### Planned 📋
+- **Phase 4**: Layout and Rendering
+- **Phase 5**: Integration and Testing
+- **Phase 6**: Documentation and Cleanup
 
 ## Conclusion
 

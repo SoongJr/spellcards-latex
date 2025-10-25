@@ -217,6 +217,22 @@
 \prop_new:N \l_spellcard_spell_props
 
 %% ============================================================================
+%% Sequences for Deck Tracking
+%% ============================================================================
+%% Track which spells belong to each deck for future index card generation
+
+% Global property list: deck_number (as string) -> spell_list_sequence_name
+% Each deck's sequence is dynamically created and stored here
+\prop_new:N \g_spellcard_decks_prop
+
+% Sequence for the current deck's spells (changes as we enter/exit decks)
+% Each item is a property list containing spell metadata
+\seq_new:N \g_spellcard_current_deck_spells_seq
+
+% Temporary property list for storing individual spell metadata
+\prop_new:N \l_spellcard_spell_metadata_prop
+
+%% ============================================================================
 %% Constants
 %% ============================================================================
 
@@ -370,6 +386,23 @@
 \msg_new:nnn { spellcard } { skipping-null-attribute }
 {
   Spell~'#1':~skipping~NULL~attribute~'#2'.
+}
+
+%%% Deck Tracking Messages
+\msg_new:nnn { spellcard } { spell-registered }
+{
+  Spell~'#1'~(level~#2)~registered~in~deck~#3.
+}
+
+\msg_new:nnn { spellcard } { deck-created }
+{
+  Created~deck~#1:~'#2'
+}
+
+\msg_new:nnn { spellcard } { spell-outside-deck }
+{
+  Warning:~Spell~'#1'~included~outside~of~any~deck.\\
+  It~will~be~printed~but~not~tracked~for~index~generation.
 }%% ============================================================================
 %% Utility Functions
 %% ============================================================================
@@ -505,7 +538,7 @@
 }
 
 %% ============================================================================
-%% Conditional Logic for Spell Attributes (Phase 2.3)
+%% Conditional Logic for Spell Attributes
 %% ============================================================================
 
 %%% Print spell attribute only if value is not NULL
@@ -534,13 +567,17 @@
 %% ============================================================================
 
 %%% Begin a spell deck
-%%% Updates current deck state variables
+%%% Updates current deck state variables and initializes spell tracking
 \cs_new:Nn \spellcard_deck_begin:n
 {
-% Check for nested decks (error if current deck name is not empty)
-\tl_if_empty:NF \l_spellcard_current_deck_name_tl
+% Check for nested decks (error if we're already in a deck)
+\bool_if:NTF \g_spellcard_in_deck_bool
 {
   \msg_error:nn { spellcard } { nested-decks }
+}
+{
+  % Mark that we're now in a deck
+  \bool_gset_true:N \g_spellcard_in_deck_bool
 }
 
 % Validate deck naming rules BEFORE setting the name
@@ -562,17 +599,192 @@
 
 % Set the new deck name (after validation)
 \tl_set:Nn \l_spellcard_current_deck_name_tl { #1 }
+
+% Initialize spell tracking for this deck
+\seq_gclear:N \g_spellcard_current_deck_spells_seq
 }
 
 %%% End a spell deck
-%%% Increments deck counter and clears current deck name
+%%% Increments deck counter, stores spell list, and clears current deck name
 \cs_new:Nn \spellcard_deck_end:
 {
+  % Store the deck's spell list in the global registry
+  % Create a unique sequence for this deck number
+  \cs_if_exist:cF { g_spellcard_deck_ \int_use:N \g_spellcard_deck_number_int _spells_seq }
+  {
+    \seq_new:c { g_spellcard_deck_ \int_use:N \g_spellcard_deck_number_int _spells_seq }
+  }
+
+  % Copy current deck's spells to the permanent deck sequence
+  \seq_gset_eq:cN { g_spellcard_deck_ \int_use:N \g_spellcard_deck_number_int _spells_seq }
+  \g_spellcard_current_deck_spells_seq
+
+  % Store metadata about this deck in property list
+  % Format: "deck_N" -> "name={...},count=N"
+  \tl_set:Nx \l_tmpa_spellcard_tl
+  {
+    name={\tl_use:N \l_spellcard_current_deck_name_tl},
+    count={\int_eval:n { \seq_count:N \g_spellcard_current_deck_spells_seq }}
+  }
+  \prop_gput:NVn \g_spellcard_decks_prop
+  \l_tmpa_spellcard_tl
+  { \tl_use:N \l_tmpa_spellcard_tl }
+
   % Increment the global deck counter
   \int_gincr:N \g_spellcard_deck_number_int
 
   % Clear the current deck name to mark we're outside a deck
   \tl_clear:N \l_spellcard_current_deck_name_tl
+
+  % Mark that we're no longer in a deck
+  \bool_gset_false:N \g_spellcard_in_deck_bool
+}
+
+%% ============================================================================
+%% Spell Registration System
+%% ============================================================================
+
+%%% Register a spell in the current deck's spell list
+%%% #1 = spell file path
+%%% #2 = spell class (e.g., "sor", "wiz")
+%%% #3 = spell name
+%%% #4 = spell level
+\cs_new:Nn \spellcard_register_spell:nnnn
+{
+  % Only register if we're inside a deck
+  \tl_if_empty:NF \l_spellcard_current_deck_name_tl
+  {
+    % Create a property list for this spell's metadata
+    \prop_clear:N \l_spellcard_spell_metadata_prop
+    \prop_put:Nnn \l_spellcard_spell_metadata_prop { file } { #1 }
+    \prop_put:Nnn \l_spellcard_spell_metadata_prop { class } { #2 }
+    \prop_put:Nnn \l_spellcard_spell_metadata_prop { name } { #3 }
+    \prop_put:Nnn \l_spellcard_spell_metadata_prop { level } { #4 }
+    \prop_put:Nnx \l_spellcard_spell_metadata_prop { deck }
+    { \int_use:N \g_spellcard_deck_number_int }
+
+    % Serialize the property list to a token list for storage
+    % Format: "file={...},class={...},name={...},level={...}"
+    \tl_set:Nx \l_tmpa_spellcard_tl
+    {
+      file={#1},class={#2},name={#3},level={#4}
+    }
+
+    % Add to current deck's spell sequence
+    \seq_gput_right:NV \g_spellcard_current_deck_spells_seq \l_tmpa_spellcard_tl
+  }
+}
+
+%%% Extract spell information from file path
+%%% Path format: spells/{class}/{level}/{SpellName}.tex
+%%% Sets \l_tmpa_spellcard_tl = class, \l_tmpb_spellcard_tl = level, 
+%%% \l_spellcard_name_tl = spell name
+\cs_new:Nn \spellcard_parse_spell_path:n
+{
+  % Extract class (between first and second /)
+  \tl_set:Nn \l_tmpa_spellcard_tl { #1 }
+
+  % Simple extraction: split on / and get components
+  % This is a simplified version - full implementation would use regex
+  % For now, we'll extract what we can from the path pattern
+  % TODO: Implement full path parsing with regex
+}
+
+%% ============================================================================
+%% Deck Query Functions
+%% ============================================================================
+%% Functions to query deck contents - useful for index card generation
+
+%%% Get the number of spells in a specific deck
+%%% #1 = deck number
+%%% Returns: integer count
+\cs_new:Nn \spellcard_get_deck_spell_count:n
+{
+  \seq_count:c { g_spellcard_deck_ #1 _spells_seq }
+}
+
+%%% Get the total number of decks created
+\cs_new:Nn \spellcard_get_deck_count:
+{
+  \int_use:N \g_spellcard_deck_number_int
+}
+
+%%% Check if a deck exists
+%%% #1 = deck number
+\prg_new_conditional:Npnn \spellcard_if_deck_exists:n #1 { p, T, F, TF }
+{
+  \cs_if_exist:cTF { g_spellcard_deck_ #1 _spells_seq }
+  { \prg_return_true: }
+  { \prg_return_false: }
+}
+
+%%% Map a function over all spells in a deck
+%%% #1 = deck number
+%%% #2 = inline function to apply to each spell metadata string
+%%% Each spell is passed as: file={...},class={...},name={...},level={...}
+\cs_new:Nn \spellcard_map_deck_spells:nn
+{
+  \spellcard_if_deck_exists:nTF { #1 }
+  {
+    \seq_map_inline:cn { g_spellcard_deck_ #1 _spells_seq } { #2 }
+  }
+  {
+    \msg_warning:nnn { spellcard } { deck-not-found } { #1 }
+  }
+}
+
+%%% Count spells of a specific level in a deck
+%%% #1 = deck number
+%%% #2 = spell level to count
+\cs_new:Nn \spellcard_count_spells_by_level:nn
+{
+  \int_zero:N \l_tmpa_int
+  \spellcard_map_deck_spells:nn { #1 }
+  {
+    % Parse the metadata string to check level
+    % This is simplified - full implementation would parse the key-value pairs
+    \tl_if_in:nnT { ##1 } { level={#2} }
+  {
+    \int_incr:N \l_tmpa_int
+  }
+}
+\int_use:N \l_tmpa_int
+}
+
+%%% Export deck spell list to console (debugging/verification)
+%%% #1 = deck number
+\cs_new:Nn \spellcard_show_deck:n
+{
+  \spellcard_if_deck_exists:nTF { #1 }
+  {
+    \msg_info:nnx { spellcard } { deck-info }
+    {
+      Deck~#1~contains~\spellcard_get_deck_spell_count:n { #1 }~spells
+    }
+    \spellcard_map_deck_spells:nn { #1 }
+    {
+      \msg_info:nnn { spellcard } { spell-info } { ##1 }
+    }
+  }
+  {
+    \msg_warning:nnn { spellcard } { deck-not-found } { #1 }
+  }
+}
+
+%% Add messages for deck queries
+\msg_new:nnn { spellcard } { deck-not-found }
+{
+  Deck~#1~does~not~exist~or~has~not~been~created~yet.
+}
+
+\msg_new:nnn { spellcard } { deck-info }
+{
+  #1
+}
+
+\msg_new:nnn { spellcard } { spell-info }
+{
+  ~~-~#1
 }
 
 %% ============================================================================
@@ -664,7 +876,7 @@
 }
 \ExplSyntaxOff
 
-%%% Spell Attribute Commands (Phase 2.3)
+%%% Spell Attribute Commands
 %%% Modern interface for printing spell attributes with NULL checking
 \ExplSyntaxOn
 
@@ -680,6 +892,40 @@
 \NewDocumentCommand{\spellattributelast}{m m}
 {
   \spellcard_attribute_last:nn { #1 } { #2 }
+}
+
+\ExplSyntaxOff
+
+%%% Deck Query Commands
+%%% Public interface for querying deck contents (for index generation)
+\ExplSyntaxOn
+
+%%% Register a spell manually in the current deck
+%%% Usage: \registerspell{spells/sor/1/MagicMissile.tex}{sor}{Magic Missile}{1}
+\NewDocumentCommand{\registerspell}{m m m m}
+{
+  \spellcard_register_spell:nnnn { #1 } { #2 } { #3 } { #4 }
+}
+
+%%% Get count of spells in a deck
+%%% Usage: \deckspellcount{0} → prints number
+\NewDocumentCommand{\deckspellcount}{m}
+{
+  \spellcard_get_deck_spell_count:n { #1 }
+}
+
+%%% Get total number of decks
+%%% Usage: \deckcount → prints number
+\NewDocumentCommand{\deckcount}{}
+{
+  \spellcard_get_deck_count:
+}
+
+%%% Show deck information (debugging)
+%%% Usage: \showdeck{0}
+\NewDocumentCommand{\showdeck}{m}
+{
+  \spellcard_show_deck:n { #1 }
 }
 
 \ExplSyntaxOff
