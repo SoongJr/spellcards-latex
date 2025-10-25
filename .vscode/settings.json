@@ -24,6 +24,8 @@
     "chat.tools.terminal.autoApprove": {
         "chktex": true,
         "latexmk": true,
+        "latexindent": true,
+        "pdftotext ": true,
         "cd": true,
         "source .venv/bin/activate": true,
         "black": true,

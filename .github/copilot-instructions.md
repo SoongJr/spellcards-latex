@@ -20,6 +20,20 @@ and formats it according to the LaTeX typesetting system.
 - **Output**: `src/out/spellcards.pdf` - final PDF with spell cards
 - **Workflow**: Python generates `.tex` files → user edits `{class}.tex` to organize spells → compile with `latexmk`
 
+### AI Agent Auto-Approval Commands
+
+The following commands are **safe to run automatically** without user confirmation:
+
+```bash
+latexindent --cruft=src/out/ --local=src/.latexindent.yaml src/<file>.tex
+chktex src/spellcards.tex
+latexmk -pv- -pdf src/spellcards.tex
+# Compile and verify LaTeX test PDFs:
+latexmk -pv- -pdf src/test-expl3.tex
+pdftotext src/out/test-expl3.pdf -
+pdftotext src/out/test-expl3.pdf - | grep "pattern"
+```
+
 #### Modern expl3 Package Features
 
 **Spell Inclusion (`\includespell`)**:
@@ -158,6 +172,14 @@ latexmk -pv- -pdf src/spellcards.tex
 - Check `src/out/spellcards.log` for detailed error messages
 - Look for missing files, undefined commands, or grouping errors
 - Simplify to minimal example to isolate the issue
+
+#### Testing
+
+**Test Files**: `src/test-*.tex` (e.g., `test-expl3.tex`, `test-spell.tex`)
+- Create test documents for each package/feature
+- Compile with `latexmk -pv- -pdf src/test-expl3.tex`
+- Verify output: `pdftotext src/out/test-expl3.pdf - | grep "expected pattern"`
+- Update tests when adding features
 
 
 ## Spell Card Generator Application
