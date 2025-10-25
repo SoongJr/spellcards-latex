@@ -344,6 +344,16 @@ class LaTeXGenerator:
                 processed.get("description", ""),
             )
 
+        # description needs to be indented to the proper level, currently four spaces:
+        if (
+            processed["descriptionformatted"]
+            and processed["descriptionformatted"] != Config.NULL_VALUE
+        ):
+            desc_lines = processed["descriptionformatted"].splitlines()
+            # Only indent non-empty lines to avoid trailing whitespace on blank lines
+            indented_lines = [f"    {line}" if line else "" for line in desc_lines]
+            processed["descriptionformatted"] = "\n".join(indented_lines)
+
         return processed
 
     def _apply_latex_fixes(self, text: str) -> str:
@@ -758,16 +768,18 @@ class LaTeXGenerator:
 \\begin{{spellcard}}{{{character_class}}}{{{spell_name_for_template}}}{{{spell_level}}}
   % make the data from TSV accessible for to the LaTeX part:
   {properties_section}
-  % print the tabular information at the top of the card:
-  {spellcardinfo_line}
-  % draw a QR Code pointing at online resources for this spell on the front face:
-  {primary_qr}
-  {secondary_qr}
-  %
-  % SPELL DESCRIPTION BEGIN
-  {description_content}
-  % SPELL DESCRIPTION END
-  %
+  \\ifprintcard% Only print the card if the printcard flag is true
+    % print the tabular information at the top of the card:
+    {spellcardinfo_line}
+    % draw a QR Code pointing at online resources for this spell on the front face:
+    {primary_qr}
+    {secondary_qr}
+    %
+    % SPELL DESCRIPTION BEGIN
+{description_content}
+    % SPELL DESCRIPTION END
+    %
+  \\fi%printcard
 \\end{{spellcard}}
 """
 

@@ -274,11 +274,14 @@ class FileScanner:
         """
         Extract the description section from an existing .tex file.
 
+        Strips the base indentation level (determined by the % SPELL DESCRIPTION BEGIN
+        marker) from all lines, while preserving any additional indentation.
+
         Args:
             file_path: Path to the .tex file
 
         Returns:
-            The description text, or empty string if not found
+            The description text with base indentation removed, or empty string if not found
         """
         if not file_path.exists():
             return ""
@@ -286,12 +289,41 @@ class FileScanner:
         try:
             content = file_path.read_text(encoding="utf-8")
 
-            # Pattern: % SPELL DESCRIPTION BEGIN ... % SPELL DESCRIPTION END
-            pattern = r"% SPELL DESCRIPTION BEGIN\s*\n(.*?)\n\s*% SPELL DESCRIPTION END"
-            match = re.search(pattern, content, re.DOTALL)
-            if match:
-                return match.group(1).strip()
-            return ""
+            # Pattern: capture indentation before marker, then description content
+            # Group 1: indentation before % SPELL DESCRIPTION BEGIN
+            # Group 2: description content
+            pattern = (
+                r"^(\s*)% SPELL DESCRIPTION BEGIN\s*\n(.*?)\n\s*% SPELL DESCRIPTION END"
+            )
+            match = re.search(pattern, content, re.MULTILINE | re.DOTALL)
+            if not match:
+                return ""
+
+            base_indent = match.group(1)
+            description_text = match.group(2)
+
+            if not description_text.strip():
+                return ""
+
+            # Strip base indentation from each line
+            lines = description_text.split("\n")
+            dedented_lines = []
+
+            for line in lines:
+                if not line.strip():
+                    # Empty or whitespace-only lines become truly empty
+                    dedented_lines.append("")
+                elif line.startswith(base_indent):
+                    # Remove base indentation, keep any extra
+                    dedented_lines.append(line[len(base_indent) :])
+                else:
+                    # Line has less indentation than base (shouldn't happen in well-formed files)
+                    # Keep it as-is to avoid data loss
+                    dedented_lines.append(line)
+
+            # Join lines and strip trailing whitespace from the entire result
+            result = "\n".join(dedented_lines).rstrip()
+            return result
 
         except (OSError, UnicodeDecodeError, PermissionError):
             return ""
