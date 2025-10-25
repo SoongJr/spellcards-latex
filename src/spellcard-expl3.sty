@@ -424,6 +424,112 @@
 }
 
 %% ============================================================================
+%% Positioning Calculations
+%% ============================================================================
+%%% Calculate marker position on right edge based on spell level
+%%% #1 = spell level (0-9 for core spells, can be higher)
+%%% Updates \l_spellcard_marker_position_dim
+%%% Formula: ((1/16 * mod(level, 10)) * paperheight) + 2.5cm
+\cs_new:Nn \spellcard_calculate_marker_position:n
+{
+  % Calculate modulo 10 to prevent overflow for levels > 9
+  % Note: expl3 FP uses "mod" as an infix operator (x mod y), not a function
+  \fp_set:Nn \l_tmpa_spellcard_fp { #1 - 10 * floor(#1 / 10) }
+
+  % Calculate position: (1/16 * level_mod) * paperheight + 2.5cm
+  \fp_set:Nn \l_spellcard_marker_position_fp
+  {
+    ( \c_spellcard_marker_spacing_fp * \l_tmpa_spellcard_fp )
+    * \dim_to_fp:n { \paperheight }
+    + \c_spellcard_marker_offset_fp cm
+  }
+
+  % Convert to dimension for TikZ usage
+  \dim_set:Nn \l_spellcard_marker_position_dim
+  { \fp_to_dim:N \l_spellcard_marker_position_fp }
+}%%% Calculate label position at top edge based on deck number
+%%% #1 = deck number (1-6, then wraps; 0 has no label)
+%%% Updates \l_spellcard_label_position_dim
+%%% Formula: ((1/8 * mod(deck-1, 6)) * paperwidth) + offset
+%%% Offset is 7mm with printer margins, 15mm without
+\cs_new:Nn \spellcard_calculate_label_position:n
+{
+  % Calculate modulo 6 for deck wrapping (deck-1 because deck 0 has no label)
+  % Note: expl3 FP uses "mod" as an infix operator (x mod y), not a function
+  \fp_set:Nn \l_tmpb_spellcard_fp { #1 - 1 }
+  \fp_set:Nn \l_tmpa_spellcard_fp { \l_tmpb_spellcard_fp - 6 * floor(\l_tmpb_spellcard_fp / 6) }
+
+  % Calculate base position: (1/8 * deck_mod) * paperwidth
+  \fp_set:Nn \l_spellcard_label_position_fp
+  {
+    ( \c_spellcard_label_spacing_fp * \l_tmpa_spellcard_fp )
+    * \dim_to_fp:n { \paperwidth }
+  }
+
+  % Add offset based on whether printer margins are defined
+  \bool_if:NTF \l_spellcard_has_printer_margin_bool
+  {
+    % With printer margins: add 7mm offset
+    \fp_add:Nn \l_spellcard_label_position_fp { 7mm }
+  }
+  {
+    % Without printer margins: add 15mm offset
+    \fp_add:Nn \l_spellcard_label_position_fp { 15mm }
+  }
+
+  % Convert to dimension for TikZ usage
+  \dim_set:Nn \l_spellcard_label_position_dim
+  { \fp_to_dim:N \l_spellcard_label_position_fp }
+}
+
+%%% Calculate marker x-shift based on printer margins
+%%% Returns dimension for TikZ xshift
+%%% With printer margins: -7mm
+%%% Without printer margins: -12mm (-7mm - 5mm)
+\cs_new:Nn \spellcard_get_marker_xshift:
+{
+  \bool_if:NTF \l_spellcard_has_printer_margin_bool
+  { -7mm }
+  { -12mm }
+}
+
+%%% Calculate marker guide width based on printer margins
+%%% Returns dimension for TikZ line drawing
+%%% With printer margins: 14mm
+%%% Without printer margins: 19mm (14mm + 5mm)
+\cs_new:Nn \spellcard_get_marker_guide_width:
+{
+  \bool_if:NTF \l_spellcard_has_printer_margin_bool
+  { 14mm }
+  { 19mm }
+}
+
+%% ============================================================================
+%% Conditional Logic for Spell Attributes (Phase 2.3)
+%% ============================================================================
+
+%%% Print spell attribute only if value is not NULL
+%%% #1 = attribute name (label)
+%%% #2 = attribute value (content)
+%%% Replaces: \ifthenelse{\equal{#2}{NULL}}{}{\textbf{#1:} & #2 \\ \midrule}
+\cs_new:Nn \spellcard_attribute:nn
+{
+  \spellcard_if_not_null:nT { #2 }
+  {
+    \textbf{#1:} & #2 \\ \midrule
+  }
+}
+
+%%% Print last spell attribute (always printed, no NULL check)
+%%% #1 = attribute name (label)
+%%% #2 = attribute value (content)
+%%% Replaces: \textbf{#1:} & #2 \\ \bottomrule
+\cs_new:Nn \spellcard_attribute_last:nn
+{
+  \textbf{#1:} & #2 \\ \bottomrule
+}
+
+%% ============================================================================
 %% Deck Management System
 %% ============================================================================
 
@@ -556,6 +662,26 @@
   % Include the spell file
   \spellcard_include_spell:n { #2 }
 }
+\ExplSyntaxOff
+
+%%% Spell Attribute Commands (Phase 2.3)
+%%% Modern interface for printing spell attributes with NULL checking
+\ExplSyntaxOn
+
+%%% Print a spell attribute (skips if NULL)
+%%% Usage: \spellattribute{Range}{25 ft + 5 ft/2 levels}
+\NewDocumentCommand{\spellattribute}{m m}
+{
+  \spellcard_attribute:nn { #1 } { #2 }
+}
+
+%%% Print the last attribute in a table (no NULL check, always prints)
+%%% Usage: \spellattributelast{Duration}{1 round/level}
+\NewDocumentCommand{\spellattributelast}{m m}
+{
+  \spellcard_attribute_last:nn { #1 } { #2 }
+}
+
 \ExplSyntaxOff
 
 %% ============================================================================
