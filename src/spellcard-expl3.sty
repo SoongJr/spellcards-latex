@@ -170,6 +170,40 @@
 \dim_new:N \l_spellcard_second_table_width_dim
 
 %% ============================================================================
+%% Package Options
+%% ============================================================================
+%% Process package options for printer margins
+
+%%% Define keys for package options
+\keys_define:nn { spellcard }
+{
+  % Printer margin in X direction (horizontal)
+  printer-margin-x .dim_set:N = \l_spellcard_printer_margin_x_dim,
+  printer-margin-x .initial:n = 0pt,
+
+  % Printer margin in Y direction (vertical)  
+  printer-margin-y .dim_set:N = \l_spellcard_printer_margin_y_dim,
+  printer-margin-y .initial:n = 0pt,
+
+  % Convenience option to set both margins at once
+  printer-margin .code:n =
+    {
+      \dim_set:Nn \l_spellcard_printer_margin_x_dim { #1 }
+      \dim_set:Nn \l_spellcard_printer_margin_y_dim { #1 }
+    },
+
+  % Unknown option handler
+  unknown .code:n =
+    {
+      \msg_error:nnxx { spellcard } { unknown-option }
+      { \l_keys_key_str } { #1 }
+    }
+}
+
+%%% Process package options
+\ProcessKeyOptions [ spellcard ]
+
+%% ============================================================================
 %% Property Lists
 %% ============================================================================
 %% Structured data storage for spell properties
@@ -202,6 +236,13 @@
 %% Message System
 %% ============================================================================
 %% Modern error, warning, and info messages
+
+%%% Package Configuration Errors
+\msg_new:nnn { spellcard } { unknown-option }
+{
+  Unknown~package~option:~'#1'~with~value~'#2'.\\
+  Valid~options~are:~printer-margin,~printer-margin-x,~printer-margin-y.
+}
 
 %%% Deck Management Errors
 \msg_new:nnn { spellcard } { nested-decks }
@@ -322,22 +363,45 @@
 %% Utility Functions
 %% ============================================================================
 
-%%% Check if printer margins are defined (set by cardify.tex)
-%%% Updates \l_spellcard_has_printer_margin_bool
+%%% Check if printer margins are defined
+%%% Priority order:
+%%%   1. Package options (printer-margin-x, printer-margin-y)
+%%%   2. External commands from cardify.tex (\printermarginx, \printermarginy)
+%%%   3. Default to zero (no margins)
+%%% Updates \l_spellcard_has_printer_margin_bool and FP variables
 \cs_new:Nn \spellcard_check_printer_margins:
 {
-  \cs_if_exist:NTF \printermarginx
+  % Check if margins were set via package options (non-zero dimensions)
+  \bool_lazy_or:nnTF
+  { \dim_compare_p:nNn { \l_spellcard_printer_margin_x_dim } > { 0pt } }
+  { \dim_compare_p:nNn { \l_spellcard_printer_margin_y_dim } > { 0pt } }
   {
+    % Package options were used - convert dimensions to FP
     \bool_set_true:N \l_spellcard_has_printer_margin_bool
     \fp_set:Nn \l_spellcard_printer_margin_x_fp
-    { \dim_to_fp:n { \printermarginx } }
+    { \dim_to_fp:n { \l_spellcard_printer_margin_x_dim } }
     \fp_set:Nn \l_spellcard_printer_margin_y_fp
-    { \dim_to_fp:n { \printermarginy } }
+    { \dim_to_fp:n { \l_spellcard_printer_margin_y_dim } }
   }
   {
-    \bool_set_false:N \l_spellcard_has_printer_margin_bool
-    \fp_zero:N \l_spellcard_printer_margin_x_fp
-    \fp_zero:N \l_spellcard_printer_margin_y_fp
+    % Package options not used - check for external commands (backwards compatibility)
+    \cs_if_exist:NTF \printermarginx
+    {
+      \bool_set_true:N \l_spellcard_has_printer_margin_bool
+      \fp_set:Nn \l_spellcard_printer_margin_x_fp
+      { \dim_to_fp:n { \printermarginx } }
+      \fp_set:Nn \l_spellcard_printer_margin_y_fp
+      { \dim_to_fp:n { \printermarginy } }
+      % Also update dimension variables for consistency
+      \dim_set:Nn \l_spellcard_printer_margin_x_dim { \printermarginx }
+      \dim_set:Nn \l_spellcard_printer_margin_y_dim { \printermarginy }
+    }
+    {
+      % No margins defined anywhere - use zero
+      \bool_set_false:N \l_spellcard_has_printer_margin_bool
+      \fp_zero:N \l_spellcard_printer_margin_x_fp
+      \fp_zero:N \l_spellcard_printer_margin_y_fp
+    }
   }
 }%%% Check if a value is NULL (used for optional spell properties)
 %%% \spellcard_if_not_null:nTF { value } { true-code } { false-code }
@@ -346,6 +410,52 @@
   \str_if_eq:nnTF { #1 } { NULL }
   { \prg_return_false: }
   { \prg_return_true: }
+}
+
+%% ============================================================================
+%% Deck Management System
+%% ============================================================================
+
+%%% Begin a spell deck
+%%% Updates current deck state variables
+\cs_new:Nn \spellcard_deck_begin:n
+{
+% Check for nested decks (error if current deck name is not empty)
+\tl_if_empty:NF \l_spellcard_current_deck_name_tl
+{
+  \msg_error:nn { spellcard } { nested-decks }
+}
+
+% Validate deck naming rules BEFORE setting the name
+\int_compare:nNnTF { \g_spellcard_deck_number_int } = { 0 }
+{
+% First deck must be unnamed
+\tl_if_empty:nF { #1 }
+{
+  \msg_error:nn { spellcard } { first-deck-must-be-unnamed }
+}
+}
+{
+% Subsequent decks must be named
+\tl_if_empty:nT { #1 }
+{
+  \msg_error:nn { spellcard } { only-first-deck-unnamed }
+}
+}
+
+% Set the new deck name (after validation)
+\tl_set:Nn \l_spellcard_current_deck_name_tl { #1 }
+}
+
+%%% End a spell deck
+%%% Increments deck counter and clears current deck name
+\cs_new:Nn \spellcard_deck_end:
+{
+  % Increment the global deck counter
+  \int_gincr:N \g_spellcard_deck_number_int
+
+  % Clear the current deck name to mark we're outside a deck
+  \tl_clear:N \l_spellcard_current_deck_name_tl
 }
 
 %% ============================================================================
@@ -367,8 +477,24 @@
 %% ============================================================================
 %% Document-Level Interface (LaTeX2e compatibility)
 %% ============================================================================
-%% These commands will be implemented in subsequent phases
-%% For now, we provide the foundation
+
+%%% Spell Deck Environment
+%%% Usage: \begin{spelldeck}{name} ... \end{spelldeck}
+%%% First deck must have empty name {}, subsequent decks must be named
+\ExplSyntaxOn
+\NewDocumentEnvironment{spelldeck}{m}
+{
+  \spellcard_deck_begin:n { #1 }
+}
+{
+  \spellcard_deck_end:
+}
+\ExplSyntaxOff
+
+%% ============================================================================
+%% Legacy Interface (will be removed in future phases)
+%% ============================================================================
+%% These commands provide compatibility with existing templates
 
 \endinput
 %%

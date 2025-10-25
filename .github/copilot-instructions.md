@@ -67,6 +67,8 @@ chktex src/spellcards.tex
 latexmk -pv- -pdf src/spellcards.tex
 ```
 
+**Critical**: Use `-pv- -pdf` flags (not `-view=none -pdf` which causes conflicts)
+
 **Critical Rules**:
 - ✅ while working on LaTeX files, auto-building MUST be disabled in VSCode settings:
   ```json

@@ -10,8 +10,8 @@
 
 \usepackage[utf8]{inputenc}
 
-% Load the new expl3 package
-\usepackage{spellcard-expl3}
+% Load the new expl3 package with printer margin options
+\usepackage[printer-margin-x=7mm, printer-margin-y=7mm]{spellcard-expl3}
 
 \begin{document}
 
@@ -73,11 +73,11 @@ Reading~from~property~list:
 \end{itemize}
 
 \subsection*{Test: Integer Operations}
-Initial~deck~number: \int_use:N \g_spellcard_deck_number_int \\
-\int_gincr:N \g_spellcard_deck_number_int
-After~increment: \int_use:N \g_spellcard_deck_number_int \\
-\int_gincr:N \g_spellcard_deck_number_int
-After~second~increment: \int_use:N \g_spellcard_deck_number_int
+Initial~spell~level: \int_use:N \l_spellcard_spell_level_int \\
+\int_set:Nn \l_spellcard_spell_level_int { 3 }
+After~setting~to~3: \int_use:N \l_spellcard_spell_level_int \\
+\int_incr:N \l_spellcard_spell_level_int
+After~increment: \int_use:N \l_spellcard_spell_level_int
 
 \subsection*{Test: Floating Point Calculations}
 \fp_set:Nn \l_tmpa_spellcard_fp { 1/8 }
@@ -96,6 +96,37 @@ ${1}/{8} + 2.5 = {}\fp_use:N \l_spellcard_marker_position_fp{}$
 { String~``test''~equals~``NULL'': FALSE }
 
 \ExplSyntaxOff{}
+
+\subsection*{Phase 2: Deck Management Tests}
+
+Testing the spell deck environment:
+
+\begin{spelldeck}{}
+  First deck (unnamed spellbook). \\
+  Current deck number: \ExplSyntaxOn \int_use:N \g_spellcard_deck_number_int \ExplSyntaxOff \\
+  Current deck name: ``\ExplSyntaxOn \tl_use:N \l_spellcard_current_deck_name_tl \ExplSyntaxOff''
+\end{spelldeck}
+
+After first deck: \\
+Current deck number: \ExplSyntaxOn \int_use:N \g_spellcard_deck_number_int \ExplSyntaxOff
+
+\begin{spelldeck}{Combat Spells}
+  Second deck (named). \\
+  Current deck number: \ExplSyntaxOn \int_use:N \g_spellcard_deck_number_int \ExplSyntaxOff \\
+  Current deck name: ``\ExplSyntaxOn \tl_use:N \l_spellcard_current_deck_name_tl \ExplSyntaxOff''
+\end{spelldeck}
+
+After second deck: \\
+Current deck number: \ExplSyntaxOn \int_use:N \g_spellcard_deck_number_int \ExplSyntaxOff
+
+\begin{spelldeck}{Utility Spells}
+  Third deck (also named). \\
+  Current deck number: \ExplSyntaxOn \int_use:N \g_spellcard_deck_number_int \ExplSyntaxOff \\
+  Current deck name: ``\ExplSyntaxOn \tl_use:N \l_spellcard_current_deck_name_tl \ExplSyntaxOff''
+\end{spelldeck}
+
+After third deck: \\
+Current deck number: \ExplSyntaxOn \int_use:N \g_spellcard_deck_number_int \ExplSyntaxOff
 
 \subsection*{Conclusion}
 
