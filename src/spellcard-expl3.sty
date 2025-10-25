@@ -948,12 +948,17 @@
 %% ============================================================================
 
 %%% Spell Deck Environment
-%%% Usage: \begin{spelldeck}{name} ... \end{spelldeck}
-%%% First deck must have empty name {}, subsequent decks must be named
+%%% Usage: 
+%%%   Without cardify: \begin{spelldeck} ... or \begin{spelldeck}[name]
+%%%   With cardify:    \begin{spelldeck}{} ... or \begin{spelldeck}{name}
+%%% First deck must have empty name, subsequent decks must be named
 \ExplSyntaxOn
-\NewDocumentEnvironment{spelldeck}{m}
+\NewDocumentEnvironment{spelldeck}{O{} G{}}
 {
-  \spellcard_deck_begin:n { #1 }
+  % If optional bracket arg provided, use it; otherwise use mandatory brace arg (or default empty)
+  \tl_if_empty:nTF {#1}
+  { \spellcard_deck_begin:n { #2 } }
+  { \spellcard_deck_begin:n { #1 } }
 }
 {
   \spellcard_deck_end:
@@ -1104,6 +1109,32 @@
   { \printcardtrue }
   { \printcardfalse }
 }
+\ExplSyntaxOff
+
+% Export QR code counter as a LaTeX counter
+% This allows legacy templates to use \setcounter{qrCode}{0} instead of expl3 functions
+\newcounter{qrCode}
+\ExplSyntaxOn
+% Keep the counter synchronized with the expl3 variable in both directions
+% Hook into the increment function to update LaTeX2e counter
+\cs_set_eq:NN \spellcard_original_increment_qr: \spellcard_increment_qr_code:
+\cs_set:Npn \spellcard_increment_qr_code:
+{
+  \spellcard_original_increment_qr:
+  \setcounter{qrCode}{\int_use:N \g_spellcard_qr_code_int}
+}
+
+% Create a user-facing command that resets both counters
+% This MUST be created with ExplSyntaxOn active, then exported
+\cs_new_protected:Npn \spellcard_user_reset_qr:
+{
+  \int_gzero:N \g_spellcard_qr_code_int
+  \setcounter{qrCode}{0}
+}
+
+% Export as LaTeX2e command (must be done OUTSIDE ExplSyntax mode)
+\cs_new_eq:NN \resetqrcounter \spellcard_user_reset_qr:
+
 \ExplSyntaxOff
 
 \endinput

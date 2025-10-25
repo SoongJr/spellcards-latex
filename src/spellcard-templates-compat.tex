@@ -13,6 +13,10 @@
 % Legacy noprint command (expl3 has \includespell[noprint])
 \providecommand{\noprint}[1]{\printcardfalse\input{#1}\printcardtrue}% chktex 27
 
+% Provide \clearcard command,
+\providecommand{\clearcard}{\clearpage}
+% cardify.tex overrides this to cleardoublepage so each card will have a backside.
+
 % Function for drawing the deck label at the top edge of the card
 % Horizontal positioning based on deck number
 \providecommand{\drawdecklabel}[2]{%
@@ -39,18 +43,21 @@
   }%
 }
 
-% Function for drawing the spell marker
+% Function for drawing the spell marker (copied from legacy spellcard-templates.tex)
 \providecommand{\drawspellmarker}[1]{%
   \begin{tikzpicture}[remember picture, overlay]%
-    \pgfmathparse{mod(#1,10)}%
+    % based on \spelllevel (argument 1), determine the height the marker should appear at.
+    \pgfmathparse{mod(#1,10)}% there are 9 levels in core books, but other books may have higher spells. Make sure they do not overshoot the page.
+    \pgfmathsetmacro{\markerposition}{\fpeval{((1/16 * \pgfmathresult)) * \paperheight} + 2.5cm}% defines where the first marker shows up (center-point), and the spacing between them
+    % print the spelllevel at the edge of the page, \markerposition from the top,
+    % and draw light-gray lines above and below it as guides for the user to apply highlighting (my highlighter's width is 4mm...)
     \ifdefined\printermarginx%
-      \pgfmathsetmacro{\markerposition}{\fpeval{((1/16 * \pgfmathresult)) * \paperheight} + 2.5cm}%
-      \pgfmathsetmacro{\markerxshift}{\fpeval{\paperwidth} - 7mm}%
+      \node [font=\Large, anchor=center, xshift=-7mm,yshift=-\markerposition] at (current page.north east){\textbf{#1}};%
+      \draw[lightgray, dotted, line width=1pt] (current page.north east) ++(0cm,-\markerposition+8mm) -- ++(-14mm,0) -- ++(0,-16mm) -- ++(14mm,0);%
     \else%
-      \pgfmathsetmacro{\markerposition}{\fpeval{((1/16 * \pgfmathresult)) * \paperheight} + 2.5cm}%
-      \pgfmathsetmacro{\markerxshift}{\fpeval{\paperwidth} - 5pt}%
+      \node [font=\Large, anchor=center, xshift=-7mm-5mm,yshift=-\markerposition] at (current page.north east){\textbf{#1}};%
+      \draw[lightgray, dotted, line width=1pt] (current page.north east) ++(0cm,-\markerposition+8mm) -- ++(-14mm-5mm,0) -- ++(0,-16mm) -- ++(14mm+5mm,0);%
     \fi%
-    \node [draw, rounded corners, minimum width=5pt, minimum height=1cm, fill=white, anchor=west, xshift=\markerxshift, yshift=\markerposition] at (current page.south west){};%
   \end{tikzpicture}%
 }
 
@@ -58,7 +65,7 @@
 % This is a minimal version that works with expl3's deck tracking
 \ifx\spellcard\undefined
   \newenvironment{spellcard}[3]{%
-    \begingroup%
+    \begingroup{}%
     \def\class{#1}%
     \def\name{#2}%
     \def\spelllevel{#3}%
@@ -67,7 +74,7 @@
       \drawdecklabel{\value{currentdecknumber}}{\currentdeckname}%
       \drawspellmarker{\spelllevel}%
     \fi%
-    \endgroup%
+    \endgroup{}%
   }{%
     \ifprintcard%
       \clearcard%
@@ -75,10 +82,8 @@
     \setcounter{page}{1}%
     \setcounter{table}{0}%
     \setcounter{figure}{0}%
-    % Reset QR code counter using expl3 function
-    \ExplSyntaxOn
-    \spellcard_reset_qr_counter:
-    \ExplSyntaxOff
+    % Reset QR code counter (must use wrapper to sync both LaTeX2e and expl3 counters)
+    \resetqrcounter%
   }%
 \fi
 

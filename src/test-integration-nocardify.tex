@@ -1,15 +1,9 @@
-\documentclass[%
-  a4paper,
-  twoside,
-  DIV=14,
-  fontsize=12pt,
-  BCOR=0mm,
-  draft=false,
-]{scrartcl}
-
+% Integration test: Real spell cards with expl3 backend and compatibility layer
+% This version does NOT use cardify for easier visual comparison
+\documentclass[12pt,a4paper]{scrartcl}
 \usepackage[utf8]{inputenc}
 \usepackage{calc}
-\usepackage{ifthen}  % Required by legacy templates
+\usepackage{ifthen}
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{amsmath}
@@ -22,13 +16,8 @@
 % Load expl3 package with printer margins
 \usepackage[printer-margin-x=7mm, printer-margin-y=7mm]{spellcard-expl3}
 
-
-% Load compatibility layer for legacy spell files
-% (provides \spellcardinfo, \drawdecklabel, etc.)
-\input{spellcard-templates-compat}
-
-% Cardify for layout (comment out for debugging)
-\input{cardify}
+% Load compatibility layer (provides spellcard environment, spellcardinfo, etc.)
+\input{spellcard-templates-compat.tex}
 
 \begin{document}
 

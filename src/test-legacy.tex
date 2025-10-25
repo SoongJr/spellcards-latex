@@ -9,7 +9,7 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage{calc}
-\usepackage{ifthen}  % Required by legacy templates
+\usepackage{ifthen}
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{amsmath}
@@ -19,19 +19,16 @@
 \usepackage{ifoddpage}
 \usepackage{longtable}
 
-% Load expl3 package with printer margins
-\usepackage[printer-margin-x=7mm, printer-margin-y=7mm]{spellcard-expl3}
-
-
-% Load compatibility layer for legacy spell files
-% (provides \spellcardinfo, \drawdecklabel, etc.)
-\input{spellcard-templates-compat}
-
 % Cardify for layout (comment out for debugging)
+\newcommand{\clearcard}{\clearpage}
 \input{cardify}
+
+% Legacy templates (LaTeX2e version)
+\input{spellcard-templates}
 
 \begin{document}
 
+% Test with the same subset of spell cards as expl3 test
 \begin{spelldeck}{}
   \input{spells/sor/0/Acid Splash}
   \input{spells/sor/1/Magic Missile}
