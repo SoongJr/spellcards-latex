@@ -1,9 +1,15 @@
-% Legacy test: Real spell cards with traditional LaTeX2e templates
-% This version does NOT use cardify for easier visual comparison
-\documentclass[12pt,a4paper]{scrartcl}
+\documentclass[%
+  a4paper,
+  twoside,
+  DIV=14,
+  fontsize=12pt,
+  BCOR=0mm,
+  draft=false,
+]{scrartcl}
+
 \usepackage[utf8]{inputenc}
 \usepackage{calc}
-\usepackage{ifthen}
+\usepackage{ifthen}  % Required by legacy templates
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{amsmath}
@@ -11,6 +17,7 @@
 \usepackage{qrcode}
 \usepackage{atbegshi}
 \usepackage{ifoddpage}
+% packages used indirectly by pandoc converting from HTML code:
 \usepackage{longtable}
 
 % Load legacy templates

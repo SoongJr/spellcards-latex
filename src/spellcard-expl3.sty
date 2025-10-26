@@ -678,17 +678,17 @@
 %%% Helper function to add a row to a token list if property is not NULL
 %%% #1 = property key
 %%% #2 = label text
-%%% #3 = row separator (\midrule or \bottomrule)
+%%% #3 = row separator (spacing after row)
 %%% #4 = target token list variable
 \cs_new_protected:Npn \spellcard_add_row_if_not_null:nnnN #1 #2 #3 #4
 {
-  \spellcard_is_null:nF { #1 }
-  {
-    \tl_set:Nx \l_tmpc_tl { \prop_item:Nn \l_spellcard_spell_props { #1 } }
-    \tl_put_right:Nn #4 { \textbf{#2} ~ & ~ }
-    \tl_put_right:No #4 { \l_tmpc_tl }
-    \tl_put_right:Nn #4 { ~ \\ #3 }
-  }
+\spellcard_is_null:nF { #1 }
+{
+\tl_set:Nx \l_tmpc_tl { \prop_item:Nn \l_spellcard_spell_props { #1 } }
+\tl_put_right:Nn #4 { \textbf{#2} ~ & ~ }
+\tl_put_right:No #4 { \l_tmpc_tl }
+\tl_put_right:Nn #4 { ~ \\ [1pt] }
+}
 }
 
 %%% Internal function to render spell card info
@@ -767,10 +767,11 @@
     \end{tabularx}
   }
 
-  \vspace{1ex} \\
-  \raggedright\Large
-
   \group_end:
+
+  \vspace{1ex}
+
+  \raggedright\Large
 }
 
 %% ============================================================================

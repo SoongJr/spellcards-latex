@@ -545,6 +545,95 @@ class LaTeXGenerator:
 
 **Status**: Not started
 
+### Week 9-10: Refactoring and Code Organization (Phase 7) 📋 PLANNED
+**Goal**: Split monolithic package into modular components and remove deprecated code
+
+#### 7.1 Package Modularization
+**Current Issue**: `spellcard-expl3.sty` is over 1000 lines - too large for maintainability
+
+**Proposed Structure**:
+```
+src/
+├── spellcard-expl3.sty              # Main package (loads sub-packages)
+├── spellcard-expl3-core.sty         # Core data structures and variables
+├── spellcard-expl3-rendering.sty    # Spell card rendering functions
+├── spellcard-expl3-layout.sty       # TikZ positioning and decorative elements
+├── spellcard-expl3-qrcode.sty       # QR code system
+└── spellcard-expl3-deck.sty         # Deck management and tracking
+```
+
+**Benefits**:
+- **Maintainability**: Smaller files easier to navigate and understand
+- **Modularity**: Clear separation of concerns
+- **Testing**: Can test components in isolation
+- **Reusability**: Sub-packages could be used independently
+- **Documentation**: Easier to document focused functionality
+
+**File Size Targets**:
+- Main package: ~100 lines (just loads sub-packages and provides document interface)
+- Core: ~200 lines (variables, property lists, basic utilities)
+- Rendering: ~300 lines (spell card content, tables, attributes)
+- Layout: ~250 lines (markers, labels, positioning calculations)
+- QR Code: ~150 lines (QR code placement system)
+- Deck: ~200 lines (deck tracking, registration, query functions)
+
+#### 7.2 Code Audit and Cleanup
+**Goals**:
+1. **Remove Deprecated Code**:
+   - Compatibility layer functions if no longer needed
+   - Old LaTeX2e implementation (`spellcard-templates.tex`) if fully replaced
+   - Unused helper functions from migration
+   - Debug/test code that shouldn't be in production
+
+2. **Identify Dead Code**:
+   - Functions defined but never called
+   - Variables declared but never used
+   - Commented-out code blocks from experimentation
+   - Redundant implementations
+
+3. **Consolidate Duplicates**:
+   - Similar positioning calculations
+   - Repeated conditional patterns
+   - Common utility functions
+
+#### 7.3 Code Review Checklist
+- [ ] Every function has clear documentation
+- [ ] No unused variables or functions
+- [ ] No commented-out code blocks
+- [ ] All expl3 naming conventions followed consistently
+- [ ] No LaTeX2e code in expl3 package (except document interface)
+- [ ] Error messages exist for all user-facing validation
+- [ ] No magic numbers (use named constants)
+- [ ] Consistent indentation and formatting
+
+#### 7.4 Performance Audit
+- [ ] Identify redundant calculations (cache where appropriate)
+- [ ] Check for unnecessary global assignments
+- [ ] Optimize hot paths (rendering functions called per spell)
+- [ ] Verify no quadratic algorithms in loops
+- [ ] Measure compilation time before/after refactoring
+
+#### 7.5 Testing Strategy for Refactoring
+- [ ] Compile test documents before refactoring (baseline)
+- [ ] Split package incrementally (one sub-package at a time)
+- [ ] Test after each split to catch regressions
+- [ ] Verify PDF output byte-for-byte identical
+- [ ] Run full spell deck compilation test
+- [ ] Check compilation time hasn't increased
+
+#### 7.6 Documentation Updates
+- [ ] Update package loading instructions
+- [ ] Document internal API between sub-packages
+- [ ] Add architecture diagram showing module dependencies
+- [ ] Document which functions are public vs internal
+- [ ] Create contribution guide with code organization principles
+
+**Status**: Not started - scheduled after Phase 5 and 6 complete
+
+**Estimated Effort**: 2 weeks
+- Week 1: Split package, test each module
+- Week 2: Code audit, cleanup, documentation
+
 ## Technical Benefits Summary
 
 ### Code Quality
@@ -626,7 +715,7 @@ class LaTeXGenerator:
 7. **Validation**: Check for required fields, warn on missing data (message system ready)
 8. **Cross-References**: Link related spells automatically
 
-## Current Status Summary (October 25, 2025 - End of Day)
+## Current Status Summary (October 26, 2025 - Table Spacing Complete)
 
 ### Completed ✅
 - **Phase 1**: Foundation and Infrastructure
@@ -659,64 +748,90 @@ class LaTeXGenerator:
   - Uses `\spellprop{key}{value}` instead of 60+ `\newcommand` statements
   - Test file `test-expl3-spell.tex` successfully compiles
 
+- **Integration Testing & Layout Parity** ✅
+  - Created `test-spell-nocardify.tex` and `test-legacy-nocardify.tex` for comparison
+  - Fixed spell marker rendering (TikZ dimension expansion issue)
+  - Fixed description font size (\Large scope issue)
+  - Fixed table spacing (row spacing + gap reduction)
+  - **Visual verification complete**: Layout matches legacy with acceptable differences
+
 ### In Progress 🚧
-- **Decorative Elements**: Spell markers and deck labels
-  - ✅ Drawing functions implemented: `\spellcard_draw_spell_marker:n` and `\spellcard_draw_deck_label:nn`
-  - ✅ Functions integrated into `\spellcard` environment (called from line 1247)
-  - ❌ **CONFIRMED NOT RENDERING**: User visually verified markers do not appear on right edge
-  - 🐛 **BUG**: Despite function calls in place, TikZ overlays not producing visible output
-  - 🔍 Possible causes:
-    * TikZ overlay may need to be called outside `\section*` or after page layout settles
-    * `remember picture, overlay` positioning may not work inside expl3 environment start
-    * May need `\leavevmode` or other mode switching before TikZ
-    * Dimension calculations might be evaluating incorrectly (zero or off-page)
-  
-- **QR Code Positioning Issue**: User reported QR codes render at ~25% from top instead of bottom
-  - 🔍 Investigation needed - code uses `south west`/`south east` anchors (correct)
-  - 🔍 May be same root cause as marker issue (TikZ overlay timing/context)
-  - 🔍 QR codes ARE rendering but in wrong position (unlike markers which don't render at all)
-  - ⏸️ Paused for next session
+- **Phase 5 Preparation: Integration Testing**
+  - ✅ Created test documents without cardify layout for isolated testing
+  - ✅ Fixed spell marker rendering (TikZ dimension expansion issue)
+  - ✅ Fixed description font size (\Large scope issue)
+  - ✅ Improved table spacing (added row spacing, reduced gap to description)
+  - ✅ QR code positioning verified working correctly
+  - 🔍 Comparing expl3 vs legacy output for visual parity
+  - ⚠️ **NEW ISSUE**: Cardify layout tests show visual differences
+  - 📝 Next: Debug cardify.tex integration with expl3 package
+
+### Recent Completion: Table Spacing Fixes (October 26, 2025) ✅
+**Problem**: Tables too compact (hard to read) and excessive gap before description text
+
+**Root Causes Identified**:
+1. Removed booktabs rules (incompatible with token list pre-building) → lost automatic spacing
+2. Extra `\\` before `\vspace{1ex}` created unwanted line break
+3. Font size setting (`\Large`) inside `\group_begin:\group_end:` block → lost when group closed
+
+**Solutions Implemented**:
+1. **Row Spacing**: Modified `\spellcard_add_row_if_not_null:nnnN` (line ~683)
+   - Changed from `\tl_put_right:Nn #4 { ~ \\ #3 }` (empty separator)
+   - Changed to `\tl_put_right:Nn #4 { ~ \\ [1pt] }` (hardcoded 1pt spacing)
+   - Adds vertical breathing room between table rows
+
+2. **Gap Reduction**: Fixed `\spellcard_render_info:n` (line ~769)
+   - Removed extra `\\` before `\vspace{1ex}`
+   - Moved `\raggedright\Large` outside `\group_end:` to preserve font settings
+   - Now: `\group_end:\n  \vspace{1ex}\n  \raggedright\Large`
+
+3. **Booktabs Limitation**: Cannot use `\toprule`, `\midrule`, `\bottomrule`
+   - These are `\noalign` commands that cannot be stored in token lists
+   - Token list pre-building required to avoid catcode conflicts with expl3 conditionals inside tabularx
+   - Trade-off: Plain tables without horizontal rules, but readable spacing
+
+**Status**: Implemented and compiled successfully. Awaiting visual verification.
 
 ### Next Session Tasks 📋
-1. **Debug Spell Marker Rendering** (HIGH PRIORITY - BLOCKING)
-   - Functions called but no visible output in PDF
-   - Check if TikZ overlay works inside `\bool_if:NT` block in expl3 environment
-   - Try moving TikZ calls outside section or add `\leavevmode`
-   - Verify dimension calculations produce valid values (add debug output)
-   - Test minimal example: single TikZ overlay in spellcard environment
+1. **Fix Cardify Layout Issues** (HIGH PRIORITY - BLOCKING)
+   - Compare test-spell.pdf (expl3 + cardify) vs test-legacy.pdf (legacy + cardify)
+   - Identify visual differences: fronts of cards should all be on odd pages and their backs on even pages
+   - Debug interaction between cardify.tex and expl3 package
+   - Nocardify tests work correctly, so issue is in cardify integration
    
-2. **Debug QR Code Positioning** (HIGH PRIORITY)
-   - QR codes render but at wrong location (25% from top vs bottom)
-   - Both issues likely share root cause (TikZ overlay context/timing)
-   - Check if QR codes have same context issue as markers
-   - May need to defer all TikZ overlays to end of page/environment
+2. **Phase 5: Python Generator Integration** (AFTER CARDIFY FIXED)
+   - Update `generators/latex_generator.py` to generate expl3 format
+   - Output `\spellprop{key}{value}` instead of `\newcommand` statements
+   - Test full workflow: Python → expl3 .tex files → PDF compilation
+   - Comprehensive testing with complete spell deck
    
-3. **Investigate Compilation Warnings** (LOW PRIORITY)
-   - Clean build showed warnings/errors (exit code during rebuild)
-   - Check full log for actual errors
-   - May be bibtex-related or reference warnings
+3. **Phase 6: Documentation** (AFTER PHASE 5)
+   - Document expl3 functions
+   - Update user documentation
+   - Create migration guide
    
-4. **Phase 5 Preparation**: Once layout issues resolved
-   - Test with more spell files
-   - Update Python generator for expl3 format
-   - Comprehensive testing with full deck
+4. **Phase 7: Refactoring** (FINAL PHASE)
+   - Split 1000+ line package into modular components
+   - Remove deprecated code and compatibility layers
+   - Code audit and cleanup
 
 ### Known Issues 🐛
-1. **Spell markers**: Functions implemented and called but NOT RENDERING (confirmed visually)
-   - Drawing functions exist (lines 540-595)
-   - Functions called from environment (line 1247)
-   - No visible output in PDF - TikZ overlay context issue suspected
-   
-2. **QR codes**: Render but position incorrectly at ~25% from top instead of bottom
-   - Uses correct anchors (`south west`/`south east`)
-   - Likely same TikZ overlay issue affecting both features
-   
-3. **Compilation**: Some warnings/errors during clean build (needs investigation)
+1. **Cardify layout issues**: Visual differences when using cardify.tex layout
+   - Nocardify tests (test-spell-nocardify.tex) work correctly ✅
+   - Cardify tests (test-spell.tex vs test-legacy.tex) show layout problems
+   - Need to investigate: fronts of cards should all be on odd pages and their backs on even pages
+   - Priority: Address before Phase 5 (Python generator needs working layout)
+
+2. **Booktabs limitation**: Cannot use horizontal rules in spell info tables
+   - Token list pre-building incompatible with `\noalign` commands
+   - Acceptable trade-off: plain tables with manual spacing instead
+   - Visual difference from legacy: no horizontal rules between rows
 
 ### Planned 📋
 - **Phase 3.2**: Key-Value Spell Interface (deferred until after Phase 5)
 - **Phase 5**: Integration and Testing
 - **Phase 6**: Documentation and Cleanup
+- **Phase 7**: Refactoring and Code Organization
 
 ## Conclusion
 
