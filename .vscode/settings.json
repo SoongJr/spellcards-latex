@@ -24,8 +24,10 @@
     "chat.tools.terminal.autoApprove": {
         "chktex": true,
         "latexmk": true,
+        "timeout 30s latexmk": true,
+        "timeout 60s latexmk": true,
         "latexindent": true,
-        "pdftotext ": true,
+        "pdftotext": true,
         "cd": true,
         "source .venv/bin/activate": true,
         "black": true,

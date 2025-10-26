@@ -27,12 +27,17 @@ The following commands are **safe to run automatically** without user confirmati
 ```bash
 latexindent --cruft=src/out/ --local=src/.latexindent.yaml src/<file>.tex
 chktex src/spellcards.tex
-latexmk -pv- -pdf src/spellcards.tex
+# CRITICAL: Always use </dev/null to prevent latexmk from hanging on errors
+latexmk -pv- -pdf src/spellcards.tex </dev/null
 # Compile and verify LaTeX test PDFs:
-latexmk -pv- -pdf src/test-expl3.tex
+latexmk -pv- -pdf src/test-expl3.tex </dev/null
 pdftotext src/out/test-expl3.pdf -
 pdftotext src/out/test-expl3.pdf - | grep "pattern"
 ```
+
+If  you wish to parse the output of latex compiler, using `latexmk ... | grep` often breaks the auto-approval detection.
+It is often better to discard latexmk's output, decide on the result according to its exit code,
+then look at the log file in src/out to see what went wrong.
 
 #### Modern expl3 Package Features
 
@@ -122,10 +127,12 @@ chktex src/spellcards.tex
 #### Compilation
 ```bash
 # Standard compilation (from repository root)
-latexmk -pv- -pdf src/spellcards.tex
+# CRITICAL: Always use </dev/null to prevent latexmk from hanging on errors
+latexmk -pv- -pdf src/spellcards.tex </dev/null
 ```
 
 **Critical**: Use `-pv- -pdf` flags (not `-view=none -pdf` which causes conflicts)
+**Critical**: Always redirect stdin with `</dev/null` to prevent hanging on compilation errors
 
 **Critical Rules**:
 - ✅ while working on LaTeX files, auto-building MUST be disabled in VSCode settings:
