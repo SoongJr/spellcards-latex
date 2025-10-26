@@ -544,10 +544,24 @@
   % Calculate marker position
   \spellcard_calculate_marker_position:n { #1 }
 
+  % Calculate marker positioning based on printer margins
+  \dim_set:Nn \l_tmpa_dim
+  {
+    \bool_if:NTF \l_spellcard_has_printer_margin_bool
+    { 7mm }
+    { 12mm }
+  }
+  \dim_set:Nn \l_tmpb_dim
+  {
+    \bool_if:NTF \l_spellcard_has_printer_margin_bool
+    { 14mm }
+    { 19mm }
+  }
+
   \begin{tikzpicture}[remember~ picture,~ overlay]
     % Draw the spell level number at the right edge
     \node [font=\Large, anchor=center,
-      xshift=-\spellcard_get_marker_xshift:,
+      xshift=-\dim_use:N \l_tmpa_dim,
       yshift=-\l_spellcard_marker_position_dim]
     at~ (current~ page.north~ east) {\textbf{#1}};
 
@@ -555,9 +569,9 @@
     \draw[lightgray, dotted, line~ width=1pt]
     (current~ page.north~ east)
     ++(0cm, -\l_spellcard_marker_position_dim + 8mm)
-    -- ++(-\spellcard_get_marker_guide_width:, 0)
+    -- ++(-\dim_use:N \l_tmpb_dim, 0)
     -- ++(0, -16mm)
-    -- ++(\spellcard_get_marker_guide_width:, 0);
+    -- ++(\dim_use:N \l_tmpb_dim, 0);
   \end{tikzpicture}
 }
 
