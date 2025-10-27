@@ -1,0 +1,84 @@
+%%%
+%%% Modernized expl3 format - uses property lists instead of \newcommand
+%%% Generated from original spell file
+%%%
+
+\begin{spellcard}{sor}{Teleport}{5}
+  % Set spell properties using modern expl3 interface
+  \spellprop{school}{conjuration}
+  \spellprop{subschool}{teleportation}
+  \spellprop{descriptor}{NULL}
+  \spellprop{castingtime}{1 standard action}
+  \spellprop{components}{V}
+  \spellprop{range}{personal and touch}
+  \spellprop{area}{NULL}
+  \spellprop{effect}{NULL}
+  \spellprop{targets}{you and touched objects or other touched willing creatures}
+  \spellprop{duration}{instantaneous}
+  \spellprop{savingthrow}{\textbf{none} and Will negates (object)}
+  \spellprop{spellresistance}{\textbf{no} and yes (object)}
+  \spellprop{attackroll}{\textbf{none}}
+
+  % Render card information
+  \spellcardinfo[0.575]{}
+  % QR codes for online resources
+  \spellcardqr{https://www.d20pfsrd.com/magic/all-spells/t/teleport}
+  \spellcardqr{http://prd.5footstep.de/Grundregelwerk/Zauber/Teleportieren}
+  %
+  % SPELL DESCRIPTION BEGIN
+  Instantly transports to a designated destination no more than 100 miles per caster level distant.
+  Interplanar travel is not possible.
+
+  Per three caster levels you can be joined by one willing creature (depending on size).
+  All creatures must touch each other and you must touch at least one of them.
+  Everyone may bring along as many objects as they can carry.
+  Objects held or in use (attended) by another person receive saving throws and spell resistance, creatures do not.
+
+  The accuracy of this spell relies on how well you know the location and layout of the destination.
+  Areas of strong physical or magical energy may make teleportation more hazardous or even impossible.
+
+  \begin{longtable}[]{@{}lllll@{}}
+    \caption{Roll d\% to determine the outcome}                                                   \\
+    \toprule
+    Familiarity       & On Target & Off Target & Similar Area & mishap \tabularnewline\midrule
+    \endhead{}
+    Very familiar     & 01--97    & 98--99     & 100          & --\tabularnewline{}
+    Studied carefully & 01--94    & 95--97     & 98--99       & 100\tabularnewline{}
+    Seen casually     & 01--88    & 89--94     & 95--98       & 99--100\tabularnewline{}
+    Viewed once       & 01--76    & 77--88     & 89--96       & 97--100\tabularnewline{}
+    False destination & --        & --         & 81--92       & 93--100\tabularnewline\bottomrule
+  \end{longtable}
+  \clearpage% explicitly clear page here to prevent underfull vbox warning
+
+  \subsection*{Familiarity}
+  \emph{Very familiar} is a place where you have been very often and where you feel at home.
+
+  \emph{Studied carefully} is a place you know well, either because you can currently physically see it or you've been there often.
+
+  \emph{Seen casually} is a place that you have seen more than once but with which you are not very familiar.
+
+  \emph{Viewed once} is a place that you have seen once, possibly using magic such as \emph{scrying.}
+
+  \emph{False destination} does not truly exist or has been so completely altered as to no longer be familiar to you.
+  Roll 1d20+80 to obtain results on the table rather than rolling d\%,
+  since there is no real destination for you to hope to arrive at or even be off target from.
+
+  \subsection*{Results}
+  \emph{On Target}: You appear where you want to be.
+
+  \emph{Off Target}: You appear safely a random distance away from the destination.
+  Distance off target is d\% of the distance that was to be traveled.
+  The direction off target is determined randomly.
+
+  \emph{Similar Area}: You wind up in an area that's visually or thematically similar to the target area.
+  Generally, you appear in the closest similar place within range.
+  If no such area exists within the spell's range, the spell simply fails instead.
+
+  \emph{Mishap}: You and anyone else teleporting with you have gotten ``scrambled''.
+  You each take 1d10 points of damage, and you reroll on the chart to see where you wind up.
+  For these rerolls, roll 1d20+80.
+
+  Each time ``Mishap'' comes up, the characters take more damage and must reroll.
+  % SPELL DESCRIPTION END
+  %
+\end{spellcard}

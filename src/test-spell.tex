@@ -24,17 +24,22 @@
 \usepackage[printer-margin-x=7mm, printer-margin-y=7mm]{spellcard-expl3}
 
 % Cardify for layout (comment out for debugging)
+\newcommand{\clearcard}{\clearpage}
 \input{cardify}
 
 \begin{document}
 
 \begin{spelldeck}{}
-  \input{spells-expl3/sor/0/Acid Splash}
-  \input{spells-expl3/sor/1/Magic Missile}
+  \includespell[print]{spells-expl3/sor/0/Acid Splash}
+  \includespell[print]{spells-expl3/sor/1/Magic Missile}
+  \includespell[noprint]{spells-expl3/sor/5/Teleport.tex}
+\end{spelldeck}
+\begin{spelldeck}{utility}
+  \includespell[print]{spells-expl3/sor/5/Teleport}
 \end{spelldeck}
 \begin{spelldeck}{combat}
-  \input{spells-expl3/sor/0/Acid Splash}
-  \input{spells-expl3/sor/1/Magic Missile}
+  \includespell[noprint]{spells-expl3/sor/0/Acid Splash.tex}
+  \includespell[print]{spells-expl3/sor/1/Magic Missile}
 \end{spelldeck}
 
 \end{document}

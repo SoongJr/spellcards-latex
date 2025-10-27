@@ -1148,7 +1148,7 @@
   % Save current print state
   \bool_set_eq:NN \l_tmpa_bool \g_spellcard_print_card_bool
 
-  % Set print state based on the 'print' option
+  % Apply the print option (already set by keys_set in the caller)
   \bool_gset_eq:NN \g_spellcard_print_card_bool \l_spellcard_include_print_bool
 
   % Check if file exists before including
@@ -1210,7 +1210,10 @@
 \ExplSyntaxOn
 \NewDocumentCommand{\includespell}{O{} m}
 {
-  % Process options
+  % Reset print option to default (true) before processing keys
+  \bool_set_true:N \l_spellcard_include_print_bool
+
+  % Process options (may override the default)
   \keys_set:nn { spellcard / includespell } { #1 }
 
   % Include the spell file
@@ -1311,7 +1314,7 @@
 %%% Usage: \begin{spellcard}{class}{name}{level} ... \end{spellcard}
 %%% This environment renders a complete spell card from property list data
 \ExplSyntaxOn
-\NewDocumentEnvironment{spellcard}{mmm}
+\NewDocumentEnvironment{spellcard}{mmm+b}
 {
   % Clear property list for this spell
   \prop_clear:N \l_spellcard_spell_props
@@ -1330,12 +1333,18 @@
     { \tl_use:N \l_spellcard_current_deck_name_tl }
     \spellcard_draw_spell_marker:n { #3 }
   }
+
+  % Only execute body if printing
+  \bool_if:NT \g_spellcard_print_card_bool
+  {
+    #4  % The body captured by +b
+  }
 }
 {
   % End of spell card
   \bool_if:NT \g_spellcard_print_card_bool
   {
-    \clearpage
+    \clearcard
   }
 
   % Reset counters
