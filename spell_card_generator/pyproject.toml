@@ -12,6 +12,7 @@ spell-card-generator = "spell_card_generator.main:main"
 [tool.poetry.dependencies]
 python = "^3.10"
 pandas = "^2.0.0"
+deep-translator = "^1.11.4"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^3.3.9"
