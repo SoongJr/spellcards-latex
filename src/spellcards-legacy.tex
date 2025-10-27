@@ -1,0 +1,42 @@
+
+\documentclass[%
+  a4paper,
+  twoside,      % one side is the front, the other the back of cards. With \cleardoublepage we can ensure a spell starts on the front of a new card.
+  DIV=14,       % reduce margins to account for the reduced space on the smaller cards
+  fontsize=12pt,% increase font size to make the text more readable when scaled down to four cards per A4 page
+  BCOR=0mm,     % no binding correction necessary
+  draft=true,   % helps to point out overfull boxes etc.
+]{scrartcl}
+
+\usepackage[utf8]{inputenc}
+\usepackage{calc}               % for floating point calculations
+\usepackage{ifthen}             % \ifthenelse command
+\usepackage{booktabs}           % nicer table formatting options
+\usepackage{tabularx}           % for tables that can span the whole page width
+\usepackage{amsmath}            % for mathematical symbols (\geq, \leq, ...)
+\usepackage{tikz}               % for drawing the spell-level markers
+\usepackage{qrcode}             % for generating QR codes
+\usepackage{atbegshi}           % for hooking into the shipout process (resetting counters on a new page...)
+\usepackage{ifoddpage}          % for checking if a page is odd or even (AKA face is front or back)
+% packages used indirectly by pandoc converting from HTML code:
+\usepackage{longtable}
+
+% include file to make the cards print four on a page, see README for instructions!
+\newcommand{\clearcard}{\clearpage}
+\input{cardify}% you might want to comment this line while formatting and re-writing spell descriptions so cards will print like normal text, one face per page
+
+% include templates for composing spell cards
+\input{spellcard-templates-legacy}
+
+\begin{document}
+
+% print a look-up card with all spell-level markers user can then apply their chosen color scheme to
+% (once you've printed this, you are expected to comment this line)
+\spellmarkerchart{}
+
+% include actual spell cards, these class-specific files contain the actual spells to include in the PDF, usually the ones for a character's current level-up.
+% It is rare that all spells are needed at once, but if you do wish to do that, here's the command to run:
+%   class=sor bash -c 'cd src && find "spells/${class}" -name "*.tex" | sed "s/\.tex$//" | xargs -I{} printf "\input{%s}\n" {} > "spells/${class}.tex"'
+\input{spells-legacy/sor}
+
+\end{document}
