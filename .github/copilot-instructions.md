@@ -134,6 +134,12 @@ latexmk -pv- -pdf src/spellcards.tex </dev/null
 **Critical**: Use `-pv- -pdf` flags (not `-view=none -pdf` which causes conflicts)
 **Critical**: Always redirect stdin with `</dev/null` to prevent hanging on compilation errors
 
+**Quality Gates**:
+- ✅ **latexmk MUST exit with code 0** (no errors, no warnings)
+- ✅ **No LaTeX errors** in log file (lines starting with `!`)
+- ✅ **No LaTeX warnings** in log file - we maintain zero warnings
+- ✅ **chktex MUST pass** for traditional LaTeX2e files (run before completing work)
+
 **Critical Rules**:
 - ✅ while working on LaTeX files, auto-building MUST be disabled in VSCode settings:
   ```json
@@ -141,12 +147,14 @@ latexmk -pv- -pdf src/spellcards.tex </dev/null
   ```
   Please make this change at the start of a session and double-check it
   if you encounter your changes to files not being applied.
+- ✅ latexmk exit code MUST be 0 (check with `echo $?` after compilation)
+- ✅ No warnings allowed - latexmk returns non-zero exit code if warnings exist
 - ✅ chktex MUST be run before considering work complete
 - ❌ NEVER disable warnings without explicit discussion with the developer
 - ❌ Do not use `% chktex-file` or inline `% chktex` comments without approval
 - ✅ Fix the underlying issue rather than suppressing warnings
-- ✅ Warnings that can be addressed without disabling them must be fixed.
-- ✅ Warnings that CANNOT be addressed must be documented and explained to the developer in change summary.
+- ✅ All warnings must be fixed before completing work
+- ⚠️ Exception: After thorough discussion, specific warnings may be allowed (document in planning docs)
 
 **Common chktex Issues**:
 - Unescaped underscores in text (use `\_` or wrap in `\texttt{}`)
@@ -156,28 +164,40 @@ latexmk -pv- -pdf src/spellcards.tex </dev/null
 
 #### Best Practices
 
-1. **Testing Changes**: Always run chktex and compile after making changes to templates
+1. **Testing Changes**: Always compile and verify exit code after making changes to templates
+   - Run: `latexmk -pv- -pdf src/test-spell.tex </dev/null; echo $?`
+   - Must return exit code 0
+   - Check log file for errors: `grep "^!" src/out/test-spell.log`
 2. **Verify Output**: Check the PDF to ensure layout is correct, especially:
    - Spell markers on right edge
    - Deck labels at top edge
    - Index card formatting
    - QR code at the bottom, left and right respectively
-3. **Incremental Development**: Test with small examples before full spell lists
-4. **Comments**: Document complex LaTeX macros with clear comments
-5. **Compatibility**: As this project is not a module consumed by others, breaking changes can be made freely and addressed in the rest of the document.
+3. **Run Quality Checks**:
+   - chktex for traditional LaTeX2e files
+   - latexmk exit code must be 0 (which ensures no errors AND no warnings)
+   - Verify no LaTeX errors: `grep "^!" src/out/test-spell.log`
+   - Verify no warnings: `grep "Warning" src/out/test-spell.log` (should return nothing)
+4. **Incremental Development**: Test with small examples before full spell lists
+5. **Comments**: Document complex LaTeX macros with clear comments
+6. **Compatibility**: As this project is not a module consumed by others, breaking changes can be made freely and addressed in the rest of the document.
 
 #### Common Tasks
 
 **Adding New Template Features**:
-1. Implement in `src/spellcard-templates.tex`
-2. Test with example in `src/spells/sor.tex`
-3. **Run chktex and fix all warnings**
-4. Compile and verify PDF output
-5. Document usage in comments
+1. Implement in `src/spellcard-expl3.sty` (or `src/spellcard-templates.tex` for legacy)
+2. Test with example in `src/test-spell.tex`
+3. **Compile and verify exit code 0**: `latexmk -pv- -pdf src/test-spell.tex </dev/null; echo $?`
+4. **Run chktex and fix all warnings** (for traditional LaTeX2e files only)
+5. **Verify no LaTeX errors**: `grep "^!" src/out/test-spell.log`
+6. Check PDF output for correct layout
+7. Document usage in comments
 
 **Debugging Compilation Issues**:
-- Check `src/out/spellcards.log` for detailed error messages
+- Check `src/out/*.log` for detailed error messages (use `grep "^!" src/out/file.log`)
 - Look for missing files, undefined commands, or grouping errors
+- Verify latexmk exit code: `echo $?` after compilation
+- For cardify layout issues, compare with legacy version using `pdftotext -layout`
 - Simplify to minimal example to isolate the issue
 
 #### Testing
