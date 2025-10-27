@@ -37,4 +37,4 @@ poetry -C "${scriptFolder}" install --without=dev
 # Launch the GUI application
 # printing the full command so the user can copy-and-paste it for consecutive calls
 echo "Starting Spell Card Generator..."
-bash -cx '$@' -- "$(command -v poetry)" -C "${scriptFolder}" run spell-card-generator
+bash -cx '$@' -- "$(command -v poetry)" -C "${scriptFolder}" run spell-card-generator "$@"
