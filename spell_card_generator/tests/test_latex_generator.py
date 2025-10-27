@@ -1,8 +1,8 @@
 """Tests for spell_card_generator.generators.latex_generator module."""
 
 # some complaints pylint may throw at us do not apply to test code:
-# pylint: disable=too-many-arguments
-# pylint: disable=too-many-positional-arguments,unused-argument,too-many-public-methods,duplicate-code
+# pylint: disable=too-many-arguments,too-many-positional-arguments,unused-argument
+# pylint: disable=too-many-public-methods,duplicate-code
 
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -252,10 +252,10 @@ class TestLaTeXGenerator:
         assert "\\spellcardinfo" in latex
         assert "\\spellcardqr" in latex
 
-    def test_generate_latex_template_inconclusive_attackroll_adds_fixme(
+    def test_generate_latex_template_inconclusive_attackroll_adds_warning(
         self, sample_spell_series
     ):
-        """Test that inconclusive attackroll adds FIXME marker."""
+        """Test that inconclusive attackroll adds expl3 warning message."""
         generator = LaTeXGenerator()
         latex, conflicts = generator._generate_latex_template(
             sample_spell_series,
@@ -270,13 +270,35 @@ class TestLaTeXGenerator:
 
         assert isinstance(conflicts, list)
         assert len(conflicts) == 0
-        assert r"\newcommand{\attackroll}{inconclusive}" in latex
-        assert r"\FIXME{Cannot detect, please choose" in latex
+        # Now using expl3 format
+        assert r"\spellprop{attackroll}{inconclusive}" in latex
+        # Should emit expl3 warning message
+        assert r"\msg_warning:nnn { spellcard } { inconclusive-attack-roll }" in latex
+        assert "{ Fireball }" in latex  # spell name in warning
 
-    def test_generate_latex_template_invalid_primary_url_adds_fixme(
+    def test_generate_latex_template_urls_in_qr_codes(self, sample_spell_series):
+        """Test that URLs are output as \\spellcardqr{url} commands (expl3 format)."""
+        generator = LaTeXGenerator()
+        latex, conflicts = generator._generate_latex_template(
+            sample_spell_series,
+            "wizard",
+            "3",
+            "https://english.com/spell",
+            "https://german.com/spell",
+            True,  # primary_url_valid
+            True,  # secondary_url_valid
+            r"\textbf{none}",  # attackroll
+        )
+
+        assert isinstance(conflicts, list)
+        # URLs should be in QR code commands, not properties
+        assert r"\spellcardqr{https://english.com/spell}" in latex
+        assert r"\spellcardqr{https://german.com/spell}" in latex
+
+    def test_generate_latex_template_invalid_primary_url_adds_warning(
         self, sample_spell_series
     ):
-        """Test that invalid primary URL adds FIXME marker on same line."""
+        """Test that invalid primary URL adds expl3 warning message."""
         generator = LaTeXGenerator()
         latex, conflicts = generator._generate_latex_template(
             sample_spell_series,
@@ -290,22 +312,21 @@ class TestLaTeXGenerator:
         )
 
         assert isinstance(conflicts, list)
-        # Check that FIXME is on the same line as the URL command
-        assert (
-            r"\newcommand{\urlenglish}{https://invalid-url.example.com/spell}"
-            r"\FIXME{URL verification failed - please check if this URL is correct}"
-            r" % chktex 8" in latex
+        # Primary QR should have warning
+        assert r"\spellcardqr{https://invalid-url.example.com/spell}" in latex
+        expected_warning = (
+            r"\msg_warning:nnn { spellcard } { invalid-url } "
+            r"{ https://invalid-url.example.com/spell }"
         )
-        # Secondary URL should NOT have FIXME
-        assert (
-            r"\newcommand{\urlsecondary}{https://german.com/spell} % chktex 8" in latex
-        )
-        assert latex.count(r"\FIXME{URL verification failed") == 1
+        assert expected_warning in latex
+        # Secondary QR should NOT have warning
+        assert r"\spellcardqr{https://german.com/spell}" in latex
+        assert latex.count(r"\msg_warning:nnn { spellcard } { invalid-url }") == 1
 
-    def test_generate_latex_template_invalid_secondary_url_adds_fixme(
+    def test_generate_latex_template_invalid_secondary_url_adds_warning(
         self, sample_spell_series
     ):
-        """Test that invalid secondary URL adds FIXME marker on same line."""
+        """Test that invalid secondary URL adds expl3 warning message."""
         generator = LaTeXGenerator()
         latex, conflicts = generator._generate_latex_template(
             sample_spell_series,
@@ -319,22 +340,21 @@ class TestLaTeXGenerator:
         )
 
         assert isinstance(conflicts, list)
-        # Primary URL should NOT have FIXME
-        assert (
-            r"\newcommand{\urlenglish}{https://english.com/spell} % chktex 8" in latex
+        # Primary QR should NOT have warning
+        assert r"\spellcardqr{https://english.com/spell}" in latex
+        # Secondary QR should have warning
+        assert r"\spellcardqr{https://invalid-secondary.example.com/spell}" in latex
+        expected_warning = (
+            r"\msg_warning:nnn { spellcard } { invalid-url } "
+            r"{ https://invalid-secondary.example.com/spell }"
         )
-        # Check that FIXME is on the same line as the secondary URL command
-        assert (
-            r"\newcommand{\urlsecondary}{https://invalid-secondary.example.com/spell}"
-            r"\FIXME{URL verification failed - please check if this URL is correct}"
-            r" % chktex 8" in latex
-        )
-        assert latex.count(r"\FIXME{URL verification failed") == 1
+        assert expected_warning in latex
+        assert latex.count(r"\msg_warning:nnn { spellcard } { invalid-url }") == 1
 
-    def test_generate_latex_template_both_invalid_urls_add_fixme(
+    def test_generate_latex_template_both_invalid_urls_add_warnings(
         self, sample_spell_series
     ):
-        """Test that both invalid URLs get FIXME markers."""
+        """Test that both invalid URLs get expl3 warning messages."""
         generator = LaTeXGenerator()
         latex, conflicts = generator._generate_latex_template(
             sample_spell_series,
@@ -348,21 +368,23 @@ class TestLaTeXGenerator:
         )
 
         assert isinstance(conflicts, list)
-        # Both URLs should have FIXME markers
-        assert (
-            r"\newcommand{\urlenglish}{https://invalid-primary.example.com/spell}"
-            r"\FIXME{URL verification failed - please check if this URL is correct}"
-            r" % chktex 8" in latex
+        # Both URLs should have warnings
+        assert r"\spellcardqr{https://invalid-primary.example.com/spell}" in latex
+        expected_primary = (
+            r"\msg_warning:nnn { spellcard } { invalid-url } "
+            r"{ https://invalid-primary.example.com/spell }"
         )
-        assert (
-            r"\newcommand{\urlsecondary}{https://invalid-secondary.example.com/spell}"
-            r"\FIXME{URL verification failed - please check if this URL is correct}"
-            r" % chktex 8" in latex
+        assert expected_primary in latex
+        assert r"\spellcardqr{https://invalid-secondary.example.com/spell}" in latex
+        expected_secondary = (
+            r"\msg_warning:nnn { spellcard } { invalid-url } "
+            r"{ https://invalid-secondary.example.com/spell }"
         )
-        assert latex.count(r"\FIXME{URL verification failed") == 2
+        assert expected_secondary in latex
+        assert latex.count(r"\msg_warning:nnn { spellcard } { invalid-url }") == 2
 
     def test_generate_latex_template_non_url_text_no_fixme(self, sample_spell_series):
-        """Test that non-URL text (arbitrary text) doesn't get FIXME even if invalid."""
+        """Test that non-URL text can be used in QR codes without warnings."""
         generator = LaTeXGenerator()
         latex, conflicts = generator._generate_latex_template(
             sample_spell_series,
@@ -376,13 +398,14 @@ class TestLaTeXGenerator:
         )
 
         assert isinstance(conflicts, list)
-        # Non-URL text should NOT have FIXME markers even though marked invalid
-        assert r"\FIXME{URL verification failed" not in latex
+        # Non-URL text should still have warnings since marked invalid
         assert "See Player's Handbook page 42" in latex
         assert "Refer to GM for details" in latex
+        # Should have warnings for invalid URLs
+        assert r"\msg_warning:nnn { spellcard } { invalid-url }" in latex
 
     def test_generate_latex_template_empty_secondary_url(self, sample_spell_series):
-        """Test that empty secondary URL produces empty command and commented QR."""
+        """Test that empty secondary URL produces commented QR code."""
         generator = LaTeXGenerator()
         latex, conflicts = generator._generate_latex_template(
             sample_spell_series,
@@ -396,16 +419,15 @@ class TestLaTeXGenerator:
         )
 
         assert isinstance(conflicts, list)
-        # Secondary URL should be empty, no FIXME
-        assert r"\newcommand{\urlsecondary}{} % chktex 8" in latex
-        assert r"\FIXME{URL verification failed" not in latex
         # Secondary QR should be commented
-        assert r"% \spellcardqr{\urlsecondary}" in latex
+        assert r"% \spellcardqr{<secondary-url>}" in latex
+        # Primary QR should be present
+        assert r"\spellcardqr{https://english.com/spell}" in latex
 
     def test_generate_latex_template_placeholder_secondary_url(
         self, sample_spell_series
     ):
-        """Test that placeholder secondary URL produces empty command and commented QR."""
+        """Test that placeholder secondary URL produces commented QR code."""
         generator = LaTeXGenerator()
         latex, conflicts = generator._generate_latex_template(
             sample_spell_series,
@@ -414,16 +436,17 @@ class TestLaTeXGenerator:
             "https://english.com/spell",
             "http://prd.5footstep.de/Grundregelwerk/Zauber/<german-spell-name>",  # Placeholder
             True,
-            False,  # Even marked invalid, should not add FIXME for placeholder
+            False,  # Even marked invalid, should not add warning for placeholder
             r"\textbf{none}",
         )
 
         assert isinstance(conflicts, list)
-        # Secondary URL should be empty, no FIXME
-        assert r"\newcommand{\urlsecondary}{} % chktex 8" in latex
-        assert r"\FIXME{URL verification failed" not in latex
-        # Secondary QR should be commented
-        assert r"% \spellcardqr{\urlsecondary}" in latex
+        # Secondary QR should be commented (placeholder detected)
+        assert r"% \spellcardqr{<secondary-url>}" in latex
+        # Primary QR should be present
+        assert r"\spellcardqr{https://english.com/spell}" in latex
+        # No warning for placeholder
+        assert r"\msg_warning:nnn { spellcard } { invalid-url }" not in latex
 
     def test_generate_cards_creates_files(self, tmp_path, sample_spell_data):
         """Test that generate_cards creates files."""

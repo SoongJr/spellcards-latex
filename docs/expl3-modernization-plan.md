@@ -529,13 +529,39 @@ class LaTeXGenerator:
 - Second QR code: 4cm offset, same side as page number (avoids overlap)
 - Clear error message when limit exceeded
 
-### Week 7: Integration (Phase 5) 📋 PLANNED
-- [ ] Create compatibility layer (partially exists)
-- [ ] Run comprehensive tests with real spell cards
-- [ ] Update Python generator
-- [ ] Fix any compilation issues
+### Week 7: Integration (Phase 5) � IN PROGRESS
+- [x] Create compatibility layer (exists - `\includespell`, `\spellprop`)
+- [x] Python generator updated to output expl3 format
+- [x] Generated 15 spells successfully via CLI (with 3 minor conflicts)
+- [x] Test compilation - compiles without errors (exit code 0)
+- [ ] **CRITICAL**: Fix table rendering bug (tables wrapping vertically instead of side-by-side)
+- [ ] PDF comparison (blocked until table fix)
+- [ ] Run Python test suite (350 tests, 10.00/10 pylint)
 
-**Status**: Not started
+**Status**: Python integration complete, critical rendering bug discovered
+
+**Progress (October 27, 2025)**:
+- Updated `generators/latex_generator.py` to output expl3 format
+- Changed from `\newcommand` to `\spellprop{key}{value}` format
+- Successfully generated 15 spells via CLI: `spell_card_generator/spell_card_generator.sh`
+- User approved generated files: "look absolutely great!"
+- Created test comparison files (test-comparison-expl3.tex, test-comparison-legacy.tex)
+- PDF compiles successfully (19 pages expl3 vs 18 pages legacy)
+
+**Critical Bug Found**:
+- **Symptom**: Two side-by-side spell info tables render vertically stacked instead of horizontally adjacent
+- **Affected**: Casting Time/Saving Throw/Spell Resist/Attack Roll (left table) appears right-aligned, Duration/Range/Comp./School (right table) appears left-aligned below it
+- **Not Affected**: Teleport and Invisibility Greater render correctly (unknown why)
+- **Root Cause**: Unknown - issue with how tabularx environments interact with ExplSyntax mode
+- **Location**: `spellcard-expl3.sty` lines 703-790 (`\spellcard_render_info:n`)
+- **Attempts**: 5+ different fixes tried, none successful yet:
+  1. Added `[b]` positioning argument → pages reduced 20→19, but tables still wrap
+  2. Added `%` comment markers → no change
+  3. Fixed dimension calculations with `\fp_to_dim:n` → no change
+  4. Single `\use:x` block with both tables → LaTeX errors
+  5. Separate `\use:x` blocks per table → **INTERRUPTED** (compilation cancelled by user)
+- **Next Steps**: Resume testing approach #5 or try alternative strategies (exit ExplSyntax, minipage wrappers, box registers, copy legacy approach exactly)
+- **Urgency**: **HIGH** - blocking all PDF comparison and Phase 5 completion
 
 ### Week 8: Documentation (Phase 6) 📋 PLANNED
 - [ ] Document all expl3 functions
@@ -701,6 +727,15 @@ src/
 
 **Immediate Priority**: Update Python Generator to Output expl3 Format
 
+**Legacy Preservation** (October 27, 2025):
+- Created `*-legacy` variants to preserve working legacy system:
+  - `src/spellcards-legacy.tex` - Legacy document (4 decks, 15 spells total)
+  - `src/spellcard-templates-legacy.tex` - Legacy templates
+  - `src/spells-legacy/` - Copy of all legacy spell files
+- This allows side-by-side comparison of legacy vs expl3 output
+- `src/spells/sor/` folder can now be freely converted to expl3 format
+- Legacy system remains compilable for reference and verification
+
 The LaTeX infrastructure is complete and tested. The next step is to update the Python spell card generator to produce expl3-compatible `.tex` files:
 
 1. **Modify `generators/latex_generator.py`**:
@@ -708,7 +743,12 @@ The LaTeX infrastructure is complete and tested. The next step is to update the 
    - Generate `\spellprop{key}{value}` statements instead
    - Maintain compatibility with existing spell data (TSV format)
    
-2. **Update Output Format**:
+2. **Convert Existing Spells**:
+   - Run updated generator on `spell_full.tsv`
+   - Convert all spells in `src/spells/sor/` to expl3 format
+   - Legacy spells preserved in `src/spells-legacy/` for comparison
+   
+3. **Update Output Format**:
    ```latex
    % Old format (60+ lines of \newcommand):
    \newcommand{\name}{Fireball}
@@ -721,17 +761,18 @@ The LaTeX infrastructure is complete and tested. The next step is to update the 
    ...
    ```
 
-3. **Testing Plan**:
+4. **Testing Plan**:
    - Generate spell files with updated Python code
-   - Compile with expl3 package
-   - Verify layout matches legacy output
-   - Test with full spell deck (all levels, multiple classes)
+   - Compile `src/spellcards.tex` with expl3 package
+   - Compile `src/spellcards-legacy.tex` for comparison
+   - Verify layout matches between old and new
+   - Test with full spell deck (all 15 spells across 4 decks)
 
-4. **Acceptance Criteria**:
+5. **Acceptance Criteria**:
    - Python generator produces valid expl3 spell files
    - Generated files compile without errors or warnings
    - Exit code 0 maintained
-   - Layout identical to legacy version
+   - Layout identical to legacy version (compare spellcards.pdf vs spellcards-legacy.pdf)
    - Full workflow functional: TSV → Python → expl3 .tex → PDF
 
 ## Future Enhancements (Post-Migration)
@@ -806,10 +847,14 @@ The LaTeX infrastructure is complete and tested. The next step is to update the 
   - Zero compilation errors, zero warnings, exit code 0
 
 ### In Progress 🚧
-- **Phase 5: Python Generator Integration** (READY TO START)
-  - Phases 1-4 complete and tested
-  - Cardify integration working perfectly
-  - Ready to update Python generator to output expl3 format
+- **Phase 5: Python Generator Integration** (CRITICAL BUG BLOCKING)
+  - ✅ Python generator updated to output expl3 format
+  - ✅ Successfully generated 15 spells via CLI
+  - ✅ Files compile without LaTeX errors (exit code 0)
+  - ❌ **CRITICAL**: Table rendering bug - tables wrap vertically
+  - ⛔ **BLOCKED**: PDF comparison until tables render correctly
+  - ⛔ **BLOCKED**: Python test suite verification
+  - **Next**: Fix table rendering in `\spellcard_render_info:n` function
 
 ### Recent Completion: Cardify Integration (October 27, 2025) ✅
 **Problems Identified**:
@@ -855,22 +900,37 @@ The LaTeX infrastructure is complete and tested. The next step is to update the 
 **Status**: Cardify integration complete and tested!
 
 ### Next Session Tasks 📋
-1. **Phase 5: Python Generator Integration** (HIGH PRIORITY - READY TO START)
-   - Update `generators/latex_generator.py` to generate expl3 format
-   - Output `\spellprop{key}{value}` instead of `\newcommand` statements
-   - Test full workflow: Python → expl3 .tex files → PDF compilation
-   - Comprehensive testing with complete spell deck
-   - **Prerequisites complete**: Cardify integration working, layout verified
+1. **FIX CRITICAL TABLE BUG** (HIGHEST PRIORITY)
+   - Resume testing approach #5 (separate `\use:x` blocks) - was interrupted
+   - If still fails, try alternative approaches:
+     * Exit ExplSyntax entirely before rendering tables
+     * Use minipage instead of side-by-side tables
+     * Use box registers to store and position tables
+     * Copy legacy approach exactly (without expl3 wrappers)
+   - Location: `spellcard-expl3.sty` lines 750-762
+   - Target: Tables must render side-by-side, not vertically stacked
+   - Success metric: pdftotext output matches legacy (tables on same line)
+
+2. **Investigate URL preservation bug** (MEDIUM PRIORITY)
+   - User reported: "re-generating spells that are already in the new format fails to read (possibly only secondary?) URLs"
+   - Check `utils/file_scanner.py` URL extraction logic
+   - Test: Generate spell, verify URLs, re-generate same spell, check if URLs preserved
+   - Document findings and create fix if needed
    
-2. **Phase 6: Documentation** (AFTER PHASE 5)
-   - Document expl3 functions
+3. **Complete Phase 5** (AFTER TABLE FIX)
+   - Run full PDF comparison (expl3 vs legacy)
+   - Verify identical layout (target: 18 pages both)
+   - Run Python test suite (350 tests, 10.00/10 pylint, 59% coverage)
+   - Update Phase 5 status to complete
+   
+4. **Phase 6: Documentation** (AFTER PHASE 5)
+   - Document table rendering fix and challenges
+   - Document URL preservation fix
    - Update user documentation
-   - Create migration guide
    
-3. **Phase 7: Refactoring** (FINAL PHASE)
+5. **Phase 7: Refactoring** (FINAL PHASE)
    - Split 1000+ line package into modular components
    - Remove deprecated code and compatibility layers
-   - Code audit and cleanup
 
 ### Known Issues 🐛
 1. **Booktabs limitation**: Cannot use horizontal rules in spell info tables
@@ -878,6 +938,24 @@ The LaTeX infrastructure is complete and tested. The next step is to update the 
    - Acceptable trade-off: plain tables with manual spacing instead
    - Visual difference from legacy: no horizontal rules between rows
    - Not a blocking issue - documented as expected difference
+
+2. **CRITICAL: Table rendering bug** (October 27, 2025)
+   - **Symptom**: Two side-by-side spell info tables wrap vertically instead of appearing horizontally
+   - **Pattern**: Left table (Casting Time, Saving Throw, Spell Resist, Attack Roll) renders right-aligned at top, right table (Duration, Range, Comp., School) renders left-aligned below it
+   - **Expected**: Both tables side-by-side on same line with `\hfill` spacing
+   - **Status**: 5+ fixes attempted, none successful
+   - **Blocking**: PDF comparison, Phase 5 completion
+   - **Location**: `spellcard-expl3.sty` lines 750-762
+   - **Working reference**: Third table (Target/Effect) renders correctly with similar `\use:x` pattern
+   - **Next action**: Test separate `\use:x` blocks approach (interrupted) or try alternative strategies
+
+3. **Python generator URL preservation** (October 27, 2025)
+   - **Symptom**: Re-generating spells already in expl3 format fails to read URLs (possibly only secondary URLs)
+   - **Impact**: URLs lost when updating existing spell cards
+   - **Workaround**: Unknown - needs investigation
+   - **Priority**: Medium - affects workflow but not initial generation
+   - **Location**: Likely in `utils/file_scanner.py` URL extraction logic
+   - **Note**: User reported this issue at end of session, needs further investigation to confirm scope
 
 ### Planned 📋
 - **Phase 3.2**: Key-Value Spell Interface (deferred until after Phase 5)

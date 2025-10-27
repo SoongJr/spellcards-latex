@@ -329,84 +329,192 @@ class FileScanner:
             return ""
 
     @staticmethod
+    def _detect_spell_file_version(content: str) -> str:
+        """
+        Detect the version of a spell card file from its header comment.
+
+        Args:
+            content: Full file content as string
+
+        Returns:
+            Version string (e.g., "2.0-expl3", "1.0-legacy", "legacy" for no version)
+        """
+        # Look for SPELL-CARD-VERSION comment in first 20 lines
+        lines = content.split("\n", 20)
+        for line in lines[:20]:
+            match = re.search(r"SPELL-CARD-VERSION:\s*(\S+)", line)
+            if match:
+                return match.group(1)
+        return "legacy"  # No version marker = legacy format
+
+    @staticmethod
     def extract_properties(file_path: Path) -> Dict[str, Tuple[str, Optional[str]]]:
         """
-        Extract all \\newcommand property definitions from a .tex file.
+        Extract all property definitions from a .tex file.
 
-        Parses properties in the format:
-        - \\newcommand{\\property}{value}  → (value, None)
-        - \\newcommand{\\property}{value}% original: {original_value}  → (value, original_value)
+        Detects file version and uses appropriate parser:
+        - Version 2.0-expl3: Uses \\spellprop{property}{value} format
+        - Legacy (no version): Uses \\newcommand{\\property}{value} format
 
         Args:
             file_path: Path to the .tex file
 
         Returns:
-            Dictionary mapping property names to (current_value, original_comment) tuples.
-            Example: {"range": ("100 ft.", None), "targets": ("NULL", "you or creature")}
+            Dictionary mapping property names to (current_value, original_comment).
+            Example: {"range": ("100 ft.", None)}
         """
         if not file_path.exists():
             return {}
 
         try:
             content = file_path.read_text(encoding="utf-8")
-            properties: Dict[str, Tuple[str, Optional[str]]] = {}
+            version = FileScanner._detect_spell_file_version(content)
 
-            # Pattern to match \newcommand{\property}{value}
-            # with optional % original: {value} comment
-            # We need to handle nested braces in values, so process line by line
-            lines = content.split("\n")
-
-            for line in lines:
-                # Skip lines that don't start with \newcommand
-                stripped = line.strip()
-                if not stripped.startswith(r"\newcommand"):
-                    continue
-
-                # Extract property name first
-                name_match = re.match(r"\\newcommand\{\\(\w+)\}", stripped)
-                if not name_match:
-                    continue
-
-                property_name = name_match.group(1)
-
-                # Find the value by counting braces after the property name
-                # Format: \newcommand{\property}{VALUE}% optional: {ORIGINAL}
-                after_name = stripped[name_match.end() :]
-                if not after_name.startswith("{"):
-                    continue
-
-                # Count braces to find matching close brace for value
-                brace_count = 0
-                value_start = 1  # Skip opening brace
-                value_end = -1
-
-                for i, char in enumerate(after_name):
-                    if char == "{":
-                        brace_count += 1
-                    elif char == "}":
-                        brace_count -= 1
-                        if brace_count == 0:
-                            value_end = i
-                            break
-
-                if value_end == -1:
-                    continue  # Malformed line
-
-                current_value = after_name[value_start:value_end]
-
-                # Check for % original: {VALUE} comment
-                original_value = None
-                remainder = after_name[value_end + 1 :]
-                original_match = re.search(r"%\s*original:\s*\{([^}]*)\}", remainder)
-                if original_match:
-                    original_value = original_match.group(1)
-
-                properties[property_name] = (current_value, original_value)
-
-            return properties
+            # Use appropriate parser based on version
+            if version.startswith("2.") or "expl3" in version:
+                return FileScanner._extract_properties_expl3(content)
+            return FileScanner._extract_properties_legacy(content)
 
         except (OSError, UnicodeDecodeError, PermissionError):
             return {}
+
+    @staticmethod
+    def _extract_properties_expl3(content: str) -> Dict[str, Tuple[str, Optional[str]]]:
+        """
+        Extract properties from expl3 format: \\spellprop{property}{value}.
+
+        Also extracts URLs from \\spellcardqr{url} commands.
+
+        Args:
+            content: File content as string
+
+        Returns:
+            Dictionary mapping property names to (value, original_comment) tuples
+        """
+        properties: Dict[str, Tuple[str, Optional[str]]] = {}
+        lines = content.split("\n")
+
+        for line in lines:
+            stripped = line.strip()
+            if not stripped.startswith(r"\spellprop"):
+                continue
+
+            # Extract property name
+            name_match = re.match(r"\\spellprop\{(\w+)\}", stripped)
+            if not name_match:
+                continue
+
+            property_name = name_match.group(1)
+            after_name = stripped[name_match.end() :]
+            if not after_name.startswith("{"):
+                continue
+
+            # Extract value by counting braces
+            value, value_end = FileScanner._extract_braced_value(after_name)
+            if value is None:
+                continue
+
+            # Check for % original: {VALUE} comment
+            original_value = None
+            remainder = after_name[value_end + 1 :]
+            original_match = re.search(r"%\s*original:\s*\{([^}]*)\}", remainder)
+            if original_match:
+                original_value = original_match.group(1)
+
+            properties[property_name] = (value, original_value)
+
+        # Extract URLs from \spellcardqr{url} commands
+        qr_urls = re.findall(r"\\spellcardqr\{([^}]+)\}", content)
+        if qr_urls:
+            # Store primary URL (first QR code)
+            properties["urlenglish"] = (qr_urls[0], None)
+            # Store secondary URL (second QR code) if present
+            if len(qr_urls) > 1:
+                properties["urlsecondary"] = (qr_urls[1], None)
+
+        return properties
+
+    @staticmethod
+    def _extract_properties_legacy(
+        content: str,
+    ) -> Dict[str, Tuple[str, Optional[str]]]:
+        """
+        Extract properties from legacy format: \\newcommand{\\property}{value}.
+
+        Legacy files store URLs in \\newcommand{\\urlenglish} and \\newcommand{\\urlsecondary}.
+
+        Args:
+            content: File content as string
+
+        Returns:
+            Dictionary mapping property names to (value, original_comment) tuples
+        """
+        properties: Dict[str, Tuple[str, Optional[str]]] = {}
+        lines = content.split("\n")
+
+        for line in lines:
+            stripped = line.strip()
+            if not stripped.startswith(r"\newcommand"):
+                continue
+
+            # Extract property name
+            name_match = re.match(r"\\newcommand\{\\(\w+)\}", stripped)
+            if not name_match:
+                continue
+
+            property_name = name_match.group(1)
+            after_name = stripped[name_match.end() :]
+            if not after_name.startswith("{"):
+                continue
+
+            # Extract value by counting braces
+            value, value_end = FileScanner._extract_braced_value(after_name)
+            if value is None:
+                continue
+
+            # Check for % original: {VALUE} comment
+            original_value = None
+            remainder = after_name[value_end + 1 :]
+            original_match = re.search(r"%\s*original:\s*\{([^}]*)\}", remainder)
+            if original_match:
+                original_value = original_match.group(1)
+
+            properties[property_name] = (value, original_value)
+
+        # Legacy files have URLs in \newcommand format, already extracted above
+        return properties
+
+    @staticmethod
+    def _extract_braced_value(text: str) -> Tuple[Optional[str], int]:
+        """
+        Extract a brace-delimited value, handling nested braces.
+
+        Args:
+            text: String starting with opening brace
+
+        Returns:
+            Tuple of (extracted_value, end_position) or (None, -1) if malformed
+        """
+        if not text.startswith("{"):
+            return None, -1
+
+        brace_count = 0
+        value_start = 1  # Skip opening brace
+        value_end = -1
+
+        for i, char in enumerate(text):
+            if char == "{":
+                brace_count += 1
+            elif char == "}":
+                brace_count -= 1
+                if brace_count == 0:
+                    value_end = i
+                    break
+
+        if value_end == -1:
+            return None, -1
+
+        return text[value_start:value_end], value_end
 
     @staticmethod
     def get_conflicts_summary(existing_cards: Dict[str, Path]) -> Dict[str, Any]:

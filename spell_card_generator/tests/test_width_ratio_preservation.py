@@ -2,6 +2,8 @@
 
 # pylint: disable=duplicate-code
 
+import re
+
 import pytest
 import pandas as pd
 
@@ -130,8 +132,10 @@ class TestWidthRatioGeneration:
         result, conflicts = generator.generate_spell_latex(spell_data, "sor")
 
         assert len(conflicts) == 0
-        assert "\\spellcardinfo{}" in result
-        assert "\\spellcardinfo[" not in result
+        # Check that spellcardinfo appears without brackets (not in comments)
+        assert re.search(r"^\s*\\spellcardinfo\{\}$", result, re.MULTILINE)
+        # Ensure no spellcardinfo with brackets in the actual code (not comments)
+        assert not re.search(r"^\s*\\spellcardinfo\[", result, re.MULTILINE)
 
     def test_generate_with_none_width_ratio(self, spell_data):
         """Test generation with explicit None width ratio."""
@@ -141,8 +145,10 @@ class TestWidthRatioGeneration:
         )
 
         assert len(conflicts) == 0
-        assert "\\spellcardinfo{}" in result
-        assert "\\spellcardinfo[" not in result
+        # Check that spellcardinfo appears without brackets (not in comments)
+        assert re.search(r"^\s*\\spellcardinfo\{\}$", result, re.MULTILINE)
+        # Ensure no spellcardinfo with brackets in the actual code (not comments)
+        assert not re.search(r"^\s*\\spellcardinfo\[", result, re.MULTILINE)
 
 
 class TestWidthRatioPreservationIntegration:

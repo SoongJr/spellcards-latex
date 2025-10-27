@@ -140,17 +140,19 @@ class LaTeXGenerator:
                     # where [0] is primary, [1] is secondary, etc.
                     url_list = url_configuration.get(spell_name, [])
 
-                    # Extract primary URL (index 0)
+                    # Extract primary URL and validation status (index 0)
                     primary_url = None
                     primary_url_valid = True
                     if len(url_list) > 0 and url_list[0][0] is not None:
-                        primary_url, primary_url_valid = url_list[0]
+                        primary_url = url_list[0][0]
+                        primary_url_valid = url_list[0][1]
 
-                    # Extract secondary URL (index 1)
+                    # Extract secondary URL and validation status (index 1)
                     secondary_url = None
                     secondary_url_valid = True
                     if len(url_list) > 1 and url_list[1][0] is not None:
-                        secondary_url, secondary_url_valid = url_list[1]
+                        secondary_url = url_list[1][0]
+                        secondary_url_valid = url_list[1][1]
 
                     # Use preserved URLs if requested
                     if should_preserve_urls and preserved_primary_url:
@@ -258,8 +260,8 @@ class LaTeXGenerator:
             preserved_description: Optional preserved description text
             custom_primary_url: Optional custom primary URL
             custom_secondary_url: Optional custom secondary URL
-            primary_url_valid: Whether primary URL passed validation
-            secondary_url_valid: Whether secondary URL passed validation
+            primary_url_valid: Whether primary URL is valid
+            secondary_url_valid: Whether secondary URL is valid
             preserved_width_ratio: Optional preserved width ratio
             preserved_properties: Optional dict of preserved properties
             spell_name: Optional spell name (defaults to spell_data['name'])
@@ -344,14 +346,14 @@ class LaTeXGenerator:
                 processed.get("description", ""),
             )
 
-        # description needs to be indented to the proper level, currently four spaces:
+        # description needs to be indented to the proper level, currently two spaces:
         if (
             processed["descriptionformatted"]
             and processed["descriptionformatted"] != Config.NULL_VALUE
         ):
             desc_lines = processed["descriptionformatted"].splitlines()
             # Only indent non-empty lines to avoid trailing whitespace on blank lines
-            indented_lines = [f"    {line}" if line else "" for line in desc_lines]
+            indented_lines = [f"  {line}" if line else "" for line in desc_lines]
             processed["descriptionformatted"] = "\n".join(indented_lines)
 
         return processed
@@ -521,28 +523,28 @@ class LaTeXGenerator:
         Returns:
             Tuple of (latex_command_line, optional_conflict)
         """
-        # Case: No preserved properties (new card) - use DB value
+        # Case: No preserved properties (new card) - use DB value (expl3 format)
         if not preserved_properties or property_name not in preserved_properties:
-            return f"\\newcommand{{\\{property_name}}}{{{db_value}}}", None
+            return f"\\spellprop{{{property_name}}}{{{db_value}}}", None
 
         user_value, original_comment = preserved_properties[property_name]
 
-        # Case 1: Unmodified - user value matches DB
+        # Case 1: Unmodified - user value matches DB (expl3 format)
         if user_value == db_value:
-            return f"\\newcommand{{\\{property_name}}}{{{db_value}}}", None
+            return f"\\spellprop{{{property_name}}}{{{db_value}}}", None
 
-        # Case 2: No modification marker - DB was updated, use new DB value
+        # Case 2: No modification marker - DB was updated, use new DB value (expl3 format)
         if original_comment is None:
-            return f"\\newcommand{{\\{property_name}}}{{{db_value}}}", None
+            return f"\\spellprop{{{property_name}}}{{{db_value}}}", None
 
-        # Case 3: User modified, DB unchanged - preserve user modification
+        # Case 3: User modified, DB unchanged - preserve user modification (expl3 format)
         if original_comment == db_value:
             return (
-                f"\\newcommand{{\\{property_name}}}{{{user_value}}}% original: {{{db_value}}}",
+                f"\\spellprop{{{property_name}}}{{{user_value}}}% original: {{{db_value}}}",
                 None,
             )
 
-        # Case 4: CONFLICT - user modified AND DB updated
+        # Case 4: CONFLICT - user modified AND DB updated (expl3 format)
         # Preserve user value, update comment, track conflict
         conflict = PropertyConflict(
             spell_name=spell_name,
@@ -551,7 +553,7 @@ class LaTeXGenerator:
             new_db_value=db_value,
         )
         return (
-            f"\\newcommand{{\\{property_name}}}{{{user_value}}}% original: {{{db_value}}}",
+            f"\\spellprop{{{property_name}}}{{{user_value}}}% original: {{{db_value}}}",
             conflict,
         )
 
@@ -680,72 +682,56 @@ class LaTeXGenerator:
                 if conflict:
                     conflicts.append(conflict)
             else:
-                # Skip preservation - always use DB value
-                cmd_line = f"\\newcommand{{\\{prop_name}}}{{{db_value}}}"
+                # Skip preservation - always use DB value (expl3 format)
+                cmd_line = f"\\spellprop{{{prop_name}}}{{{db_value}}}"
 
-            # Add FIXME marker for properties requiring manual attention
+            # Add warning for properties requiring manual attention
             if prop_name == "attackroll" and db_value == "inconclusive":
-                fixme_text = (
-                    r"\FIXME{Cannot detect, please choose appropiate value: "
-                    r"ranged touch, melee touch, ranged, melee or \textbf{none}}"
+                # Emit expl3 warning message during LaTeX compilation
+                warning = (
+                    r"\msg_warning:nnn { spellcard } { inconclusive-attack-roll } "
+                    rf"{{ {spell_name} }}"
                 )
-                cmd_line += fixme_text
+                cmd_line += warning
 
             property_commands.append(cmd_line)
-
-        # Handle URL properties separately - URLs are either preserved or generated
-        # Apply FIXME markers for URLs that look like URLs but failed validation
-
-        # Primary URL
-        url_cmd1 = f"\\newcommand{{\\urlenglish}}{{{english_url}}}"
-        if english_url and self._looks_like_url(english_url) and not primary_url_valid:
-            url_cmd1 += (
-                r"\FIXME{URL verification failed - please check if this URL is correct}"
-            )
-        url_cmd1 += " % chktex 8"
-        property_commands.append(url_cmd1)
-
-        # Secondary URL - treat placeholder/empty URLs as no URL
-        # Check if secondary URL is empty, None, or the default placeholder
-        is_placeholder = (
-            not secondary_url
-            or secondary_url == Config.DEFAULT_GERMAN_URL
-            or "<german-spell-name>" in secondary_url
-        )
-
-        if is_placeholder:
-            # Empty secondary URL - no FIXME needed
-            url_cmd2 = "\\newcommand{\\urlsecondary}{} % chktex 8"
-        else:
-            # Has a secondary URL value
-            url_cmd2 = f"\\newcommand{{\\urlsecondary}}{{{secondary_url}}}"
-            if self._looks_like_url(secondary_url) and not secondary_url_valid:
-                url_cmd2 += r"\FIXME{URL verification failed - please check if this URL is correct}"
-            url_cmd2 += " % chktex 8"
-
-        property_commands.append(url_cmd2)
 
         # Join all property commands
         properties_section = "\n  ".join(property_commands)
 
-        # Prepare QR code lines (can't use backslashes in f-string expressions)
-        # Check again for placeholder (recompute since it's used here)
+        # Prepare QR code lines with direct URLs (not properties)
+        # Check for placeholder (recompute since it's used here)
         is_secondary_placeholder = (
             not secondary_url
             or secondary_url == Config.DEFAULT_GERMAN_URL
             or "<german-spell-name>" in secondary_url
         )
 
-        primary_qr = (
-            "\\spellcardqr{\\urlenglish}"
-            if english_url
-            else "% \\spellcardqr{\\urlenglish}"
-        )
-        secondary_qr = (
-            "\\spellcardqr{\\urlsecondary}"
-            if not is_secondary_placeholder
-            else "% \\spellcardqr{\\urlsecondary}"
-        )
+        # Primary QR code with optional warning
+        if english_url:
+            primary_qr = f"\\spellcardqr{{{english_url}}}"
+            # Add warning if URL is invalid
+            if not primary_url_valid:
+                warning_msg = (
+                    f"\\msg_warning:nnn {{ spellcard }} {{ invalid-url }} "
+                    f"{{ {english_url} }}"
+                )
+                primary_qr += f"\n  {warning_msg}"
+        else:
+            primary_qr = "% \\spellcardqr{<primary-url>}"
+
+        # Secondary QR code with optional warning
+        if not is_secondary_placeholder:
+            secondary_qr = f"\\spellcardqr{{{secondary_url}}}"
+            # Add warning if URL is invalid
+            if not secondary_url_valid:
+                warning_msg = (
+                    f"\\msg_warning:nnn {{ spellcard }} {{ invalid-url }} "
+                    f"{{ {secondary_url} }}"
+                )
+                secondary_qr += f"\n  {warning_msg}"
+        else:
+            secondary_qr = "% \\spellcardqr{<secondary-url>}"
 
         # Prepare \spellcardinfo with optional width ratio
         spellcardinfo_line = (
@@ -760,26 +746,40 @@ class LaTeXGenerator:
         spell_name_for_template = spell_data.get("name", "")
 
         latex_content = f"""%%%
-%%% file content generated by spell_card_generator.py,
-%%% meant to be fine-tuned manually (especially the description).
+%%% SPELL-CARD-VERSION: 2.0-expl3
+%%%
+%%% This file was generated by spell_card_generator.py and is designed
+%%% to be fine-tuned manually (especially the description section).
+%%%
+%%% USER MODIFICATION GUIDELINES:
+%%% - Description text: Edit freely between SPELL DESCRIPTION markers
+%%% - Property values: You may edit \\spellprop{{property}}{{value}} statements
+%%%   * To preserve your changes on regeneration, add a comment after the value:
+%%%     \\spellprop{{targets}}{{modified value}}% original: {{database value}}
+%%%   * The generator will preserve your modified value and update the comment
+%%%     if the database changes, allowing you to review conflicts
+%%% - URLs: Edit \\spellprop{{urlenglish}}{{...}} and \\spellprop{{urlsecondary}}{{...}}
+%%% - Width ratio: Optional [ratio] parameter in \\spellcardinfo[ratio]{{}}
+%%%   preserves column width proportions if you've manually adjusted the table
+%%%
+%%% NOTE: Files without SPELL-CARD-VERSION are assumed to be legacy format
+%%% (using \\newcommand instead of \\spellprop).
 %%%
 %
-% open a new spellcards environment
+% open a new spellcard environment
 \\begin{{spellcard}}{{{character_class}}}{{{spell_name_for_template}}}{{{spell_level}}}
-  % make the data from TSV accessible for to the LaTeX part:
+  % make the data from TSV accessible to the LaTeX part:
   {properties_section}
-  \\ifprintcard% Only print the card if the printcard flag is true
-    % print the tabular information at the top of the card:
-    {spellcardinfo_line}
-    % draw a QR Code pointing at online resources for this spell on the front face:
-    {primary_qr}
-    {secondary_qr}
-    %
-    % SPELL DESCRIPTION BEGIN
+  % print the tabular information at the top of the card:
+  {spellcardinfo_line}
+  % draw QR Codes pointing at online resources for this spell:
+  {primary_qr}
+  {secondary_qr}
+  %
+  % SPELL DESCRIPTION BEGIN
 {description_content}
-    % SPELL DESCRIPTION END
-    %
-  \\fi%printcard
+  % SPELL DESCRIPTION END
+  %
 \\end{{spellcard}}
 """
 

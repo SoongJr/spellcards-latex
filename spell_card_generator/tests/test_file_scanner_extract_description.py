@@ -162,9 +162,9 @@ This concludes the spell description."""
     %
     % SPELL DESCRIPTION BEGIN
     First paragraph.
-    
+
     Second paragraph after blank line.
-    
+
     Third paragraph.
     % SPELL DESCRIPTION END
     %
@@ -289,7 +289,7 @@ Second line also no indentation.
     object except what you can discern by looking at it. An object that
     makes its save cannot be affected by any other \emph{analyze dweomer}
     spells for 24 hours.
-    
+
     \emph{Analyze dweomer} does not function when used on an artifact.
     % SPELL DESCRIPTION END
     %

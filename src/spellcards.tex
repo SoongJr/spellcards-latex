@@ -25,8 +25,8 @@
 \newcommand{\clearcard}{\clearpage}
 \input{cardify}% you might want to comment this line while formatting and re-writing spell descriptions so cards will print like normal text, one face per page
 
-% include templates for composing spell cards
-\input{spellcard-templates}
+% include modern expl3 spell card package
+\usepackage{spellcard-expl3}
 
 \begin{document}
 
@@ -36,7 +36,7 @@
 
 % include actual spell cards, these class-specific files contain the actual spells to include in the PDF, usually the ones for a character's current level-up.
 % It is rare that all spells are needed at once, but if you do wish to do that, here's the command to run:
-%   class=sor bash -c 'cd src && find "spells/${class}" -name "*.tex" | sed "s/\.tex$//" | xargs -I{} printf "\input{%s}\n" {} > "spells/${class}.tex"'
+%   class=sor bash -c 'cd src && find "spells/${class}" -name "*.tex" | sed "s/\.tex$//" | xargs -I{} printf "\\includespell{%s.tex}\n" {} > "spells/${class}.tex"'
 \input{spells/sor}
 
 \end{document}
