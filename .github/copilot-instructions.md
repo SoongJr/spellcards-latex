@@ -188,6 +188,56 @@ latexmk -pv- -pdf src/spellcards.tex </dev/null
 - Verify output: `pdftotext src/out/test-expl3.pdf - | grep "expected pattern"`
 - Update tests when adding features
 
+#### Comparing PDF Output
+
+When making considerable changes, create test files to test the old and new behavior
+and compare their output with `pdftotext -layout`:
+
+```bash
+# Generate old PDFs to compare
+latexmk -pv- -pdf src/test-old.tex </dev/null
+latexmk -pv- -pdf src/test-new.tex </dev/null
+
+# Extract text with preserved layout
+pdftotext -layout src/out/test-old.pdf src/out/test-old.txt
+pdftotext -layout src/out/test-new.pdf src/out/test-new.txt
+
+# Compare outputs
+diff -u src/out/test-old.txt src/out/test-new.txt
+```
+
+When needed you may dig deeper with more verbose tools:
+
+1. **`pdftotext -bbox`** - When you need exact coordinates:
+   ```bash
+   pdftotext -bbox src/out/test-new.pdf - | head -200
+   ```
+   - Outputs HTML/XML with word-level bounding boxes
+   - Very verbose (~5000+ lines per page)
+   - Use for debugging precise positioning issues
+
+2. **`pdf2svg`** - For visual structure analysis:
+   ```bash
+   pdf2svg src/out/test-new.pdf src/out/test-page1.svg 1
+   ```
+   - Converts to SVG (XML format, parseable)
+   - Extremely verbose (~4600 lines per page)
+   - Use only for TikZ/graphics positioning debugging
+   - Can grep for specific elements in XML
+
+**When to Use Each Method**:
+- **Regular testing**: `pdftotext -layout` + `diff`
+- **Debugging TikZ overlays**: `pdf2svg` for pixel-perfect coordinates
+- **Marker/label positioning**: `pdftotext -bbox` for element bounds
+- **General layout issues**: `pdftotext -layout` is sufficient
+
+**Output Size Comparison**:
+| Method | Lines per Page | Diff Size | Use Case |
+|--------|----------------|-----------|----------|
+| `pdftotext -layout` | ~90 | ~120 | ✅ Default choice |
+| `pdftotext -bbox` | ~5000+ | Massive | Coordinate debugging |
+| `pdf2svg` | ~4600 | ~1000+ | Graphics debugging |
+
 
 ## Spell Card Generator Application
 

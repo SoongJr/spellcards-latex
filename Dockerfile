@@ -21,9 +21,8 @@ RUN initexmf --admin --set-config-value [MPM]AutoInstall=t
 FROM base AS devcontainer
 
 # Install some extra packages for development
-# fonts-noto-color-emoji provides emoji support for GUI applications
 RUN apt-get update -y; apt-get install -y git pandoc python3 python3-pip python3-venv python3-tk python-is-python3 \
-    fonts-noto-color-emoji fonts-noto fonts-dejavu && \
+    fonts-noto-color-emoji fonts-noto fonts-dejavu pdf2svg && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Rebuild font cache to recognize newly installed fonts
