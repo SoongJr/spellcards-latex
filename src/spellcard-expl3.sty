@@ -609,6 +609,28 @@
   { 15mm }
 }
 
+%%% Draw spell marker chart (reference card for all spell levels 0-9)
+%%% Creates a lookup card showing all spell level markers that users can color
+\cs_new_protected:Nn \spellcard_draw_marker_chart:
+{
+  \section*{\Huge look-up~ card~ for~ spell-level~ marker~ colors}
+  \vspace{1ex}
+  \raggedright\Large
+  To~ the~ right~ you~ see~ the~ markers~ for~ all~ possible~ spell~ levels.\\
+  These~ are~ intended~ to~ be~ colored~ with~ a~ highlighter~ and~ serve~ as~ a~ reference~
+  for~ which~ colors~ you~ decided~ to~ use~ when~ printing~ new~ cards.
+
+  % Draw markers for all spell levels (0-9)
+  \int_step_inline:nn { 10 }
+  {
+    \spellcard_draw_spell_marker:n { \int_eval:n { ##1 - 1 } }
+  }
+  \clearcard
+
+  % Reset page counter (same as spellcard environment)
+  \setcounter{page}{1}
+}
+
 %% ============================================================================
 %% Spell Card Rendering Functions
 %% ============================================================================
@@ -1296,6 +1318,14 @@
   % during definition (while ExplSyntax was ON), so all the expl3 commands
   % here have the correct catcodes.
   \spellcard_render_info:n { #1 }
+}
+
+%%% Spell marker chart command
+%%% Usage: \SpellMarkerChart
+%%% Creates a reference card showing all spell level markers (0-9) for coloring
+\NewDocumentCommand{\SpellMarkerChart}{}
+{
+  \spellcard_draw_marker_chart:
 }
 
 \ExplSyntaxOff
