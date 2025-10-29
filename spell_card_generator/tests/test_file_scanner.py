@@ -177,24 +177,6 @@ class TestFileScannerAnalyze:
         assert analysis["has_secondary_language"] is False
         assert analysis["secondary_url"] == ""
 
-    def test_analyze_existing_card_extracts_qr_codes(self, tmp_path):
-        """Test analyze_existing_card extracts QR codes."""
-        content = r"""
-\begin{spellcard}
-\newcommand{\urlenglish}{https://example.com/spell}
-\qrcode{https://example.com/spell}
-\qrcode{https://example.de/spell}
-\end{spellcard}
-"""
-        file_path = tmp_path / "test.tex"
-        file_path.write_text(content)
-
-        analysis = FileScanner.analyze_existing_card(file_path)
-
-        assert len(analysis["qr_codes"]) == 2
-        assert "https://example.com/spell" in analysis["qr_codes"]
-        assert "https://example.de/spell" in analysis["qr_codes"]
-
     def test_analyze_existing_card_fallback_to_href(self, tmp_path):
         """Test analyze_existing_card falls back to href for URLs."""
         content = r"""
@@ -211,6 +193,54 @@ class TestFileScannerAnalyze:
         # Should fall back to href URLs
         assert "primary.com" in analysis["primary_url"]
         assert "secondary.de" in analysis["secondary_url"]
+
+    def test_analyze_existing_card_extracts_expl3_qr_codes(self, tmp_path):
+        """Test analyze_existing_card extracts URLs from expl3 \\spellcardqr commands."""
+        content = r"""%%%
+%%% SPELL-CARD-VERSION: 2.0-expl3
+%%%
+\begin{spellcard}{sor}{Acid Splash}{0}
+  \spellprop{name}{Acid Splash}
+  \spellcardinfo{}
+  \spellcardqr{https://www.d20pfsrd.com/magic/all-spells/a/acid-splash}
+  \spellcardqr{http://prd.5footstep.de/Grundregelwerk/Zauber/Säurespritzer}
+\end{spellcard}
+"""
+        file_path = tmp_path / "test.tex"
+        file_path.write_text(content, encoding="utf-8")
+
+        analysis = FileScanner.analyze_existing_card(file_path)
+
+        # Should extract URLs from \spellcardqr commands
+        assert (
+            analysis["primary_url"]
+            == "https://www.d20pfsrd.com/magic/all-spells/a/acid-splash"
+        )
+        assert (
+            analysis["secondary_url"]
+            == "http://prd.5footstep.de/Grundregelwerk/Zauber/Säurespritzer"
+        )
+        assert analysis["has_secondary_language"] is True  # .de domain detected
+
+    def test_analyze_existing_card_extracts_single_expl3_qr_code(self, tmp_path):
+        """Test analyze_existing_card extracts single URL from expl3 format."""
+        content = r"""%%%
+%%% SPELL-CARD-VERSION: 2.0-expl3
+%%%
+\begin{spellcard}{sor}{Test}{1}
+  \spellprop{name}{Test Spell}
+  \spellcardinfo{}
+  \spellcardqr{https://www.google.com/acid-splash}
+\end{spellcard}
+"""
+        file_path = tmp_path / "test.tex"
+        file_path.write_text(content, encoding="utf-8")
+
+        analysis = FileScanner.analyze_existing_card(file_path)
+
+        # Should extract only primary URL
+        assert analysis["primary_url"] == "https://www.google.com/acid-splash"
+        assert analysis["secondary_url"] == ""
 
     def test_analyze_existing_card_content_preview(self, tmp_path):
         """Test analyze_existing_card includes content preview."""
@@ -252,7 +282,7 @@ class TestFileScannerAnalyze:
         """Test analyze_existing_card detects various German patterns."""
         patterns_to_test = [
             (r"\href{https://example.de/spell}{Link}", True),
-            (r"\qrcode{https://example.de/spell}", True),
+            (r"\spellcardqr{https://example.de/spell}", True),
             (r"% German spell description", True),
             (r"% Deutsch spell description", True),
             (r"% English only content", False),

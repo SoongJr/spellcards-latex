@@ -155,7 +155,9 @@ class FileScanner:
         return file_path
 
     @staticmethod
-    def analyze_existing_card(file_path: Path) -> Dict[str, Any]:
+    def analyze_existing_card(  # pylint: disable=too-many-locals,too-many-branches
+        file_path: Path,
+    ) -> Dict[str, Any]:
         """
         Analyze an existing spell card file for metadata.
 
@@ -196,8 +198,8 @@ class FileScanner:
 
             # Look for German/secondary language indicators
             german_patterns = [
-                r"\\href\{[^}]*\.de[^}]*\}",  # German URLs
-                r"\\qrcode\{[^}]*\.de[^}]*\}",  # German QR codes
+                r"\\href\{[^}]*\.de[^}]*\}",  # German URLs in href
+                r"\\spellcardqr\{[^}]*\.de[^}]*\}",  # German QR codes (expl3)
                 r"german",  # German language references
                 r"deutsch",  # German language references
             ]
@@ -219,11 +221,30 @@ class FileScanner:
                 secondary_match.group(1) if secondary_match else ""
             )
 
+            # Also check for expl3 format: \spellcardqr{url}
+            # Skip commented lines by processing line-by-line
+            if not analysis["primary_url"] or not analysis["secondary_url"]:
+                spellcardqr_urls = []
+                for line in content.split("\n"):
+                    stripped = line.strip()
+                    # Skip commented lines
+                    if stripped.startswith("%"):
+                        continue
+                    # Extract \spellcardqr{url}
+                    qr_match = re.search(r"\\spellcardqr\{([^}]+)\}", stripped)
+                    if qr_match:
+                        spellcardqr_urls.append(qr_match.group(1))
+                # Use expl3 URLs if legacy format didn't find them
+                if not analysis["primary_url"] and spellcardqr_urls:
+                    analysis["primary_url"] = spellcardqr_urls[0]
+                if not analysis["secondary_url"] and len(spellcardqr_urls) > 1:
+                    analysis["secondary_url"] = spellcardqr_urls[1]
+
             # Also extract all \href URLs for backward compatibility
             url_pattern = r"\\href\{([^}]+)\}"
             urls = re.findall(url_pattern, content)
 
-            # If we didn't find URLs in newcommand format, fall back to href
+            # If we didn't find URLs in newcommand or spellcardqr format, fall back to href
             if not analysis["primary_url"] and urls:
                 analysis["primary_url"] = urls[0] if len(urls) > 0 else ""
             if not analysis["secondary_url"] and urls:
@@ -232,11 +253,6 @@ class FileScanner:
             analysis["secondary_language_urls"] = [
                 url for url in urls if ".de" in url or "german" in url.lower()
             ]
-
-            # Extract QR codes
-            qr_pattern = r"\\qrcode\{([^}]+)\}"
-            qr_codes = re.findall(qr_pattern, content)
-            analysis["qr_codes"] = qr_codes
 
             # Extract width ratio from \spellcardinfo[RATIO]{}
             # Pattern: \spellcardinfo[0.55]{} or \spellcardinfo{}
@@ -423,8 +439,18 @@ class FileScanner:
 
             properties[property_name] = (value, original_value)
 
-        # Extract URLs from \spellcardqr{url} commands
-        qr_urls = re.findall(r"\\spellcardqr\{([^}]+)\}", content)
+        # Extract URLs from \spellcardqr{url} commands (skip commented lines)
+        qr_urls = []
+        for line in lines:
+            stripped = line.strip()
+            # Skip commented lines (lines starting with % after whitespace)
+            if stripped.startswith("%"):
+                continue
+            # Extract \spellcardqr{url} from non-commented lines
+            qr_match = re.search(r"\\spellcardqr\{([^}]+)\}", stripped)
+            if qr_match:
+                qr_urls.append(qr_match.group(1))
+
         if qr_urls:
             # Store primary URL (first QR code)
             properties["urlenglish"] = (qr_urls[0], None)
