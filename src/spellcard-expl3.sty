@@ -681,95 +681,92 @@
   }
 }
 
-%%% Helper function to add a row to a token list if property is not NULL
-%%% #1 = property key
-%%% #2 = label text
-%%% #3 = row separator (spacing after row)
-%%% #4 = target token list variable
-\cs_new_protected:Npn \spellcard_add_row_if_not_null:nnnN #1 #2 #3 #4
+%%% Helper function to render a spell attribute row if property is not NULL
+%%% #1 = label text
+%%% #2 = property key
+%%% Directly outputs the row without token list building
+\cs_new_protected:Npn \spellcard_render_attribute:nn #1 #2
 {
-\spellcard_is_null:nF { #1 }
-{
-\tl_set:Nx \l_tmpc_tl { \prop_item:Nn \l_spellcard_spell_props { #1 } }
-\tl_put_right:Nn #4 { \textbf{#2} ~ & ~ }
-\tl_put_right:No #4 { \l_tmpc_tl }
-\tl_put_right:Nn #4 { ~ \\ [1pt] }
-}
-}
-
-%%% Internal function to render spell card info
-%%% Uses the pattern from expl3-code-with-tabularx.tex to build table content
-%%% before passing it to tabularx
-\cs_new_protected:Npn \spellcard_render_info:n #1
-{
-\group_begin:
-
-\normalsize
-\noindent
-
-% Build LEFT table content (no rules, just rows)
-\tl_clear:N \l_tmpa_tl
-\spellcard_add_row_if_not_null:nnnN { castingtime } { Casting~Time: } {} \l_tmpa_tl
-\spellcard_add_row_if_not_null:nnnN { savingthrow } { Saving~Throw: } {} \l_tmpa_tl
-\spellcard_add_row_if_not_null:nnnN { spellresistance } { Spell~Resist: } {} \l_tmpa_tl
-\spellcard_add_row_if_not_null:nnnN { attackroll } { Attack~Roll: } {} \l_tmpa_tl
-
-% Build RIGHT table content (no rules, just rows)
-\tl_clear:N \l_tmpb_tl
-\spellcard_add_row_if_not_null:nnnN { duration } { Duration: } {} \l_tmpb_tl
-\spellcard_add_row_if_not_null:nnnN { area } { Area: } {} \l_tmpb_tl
-\spellcard_add_row_if_not_null:nnnN { range } { Range: } {} \l_tmpb_tl
-\spellcard_add_row_if_not_null:nnnN { components } { Comp.: } {} \l_tmpb_tl
-
-% School row (always present) with optional descriptor
-% Special handling: only show descriptor for evocation school (matches legacy)
-\tl_put_right:Nn \l_tmpb_tl { \textbf{School:} ~ & ~ }
-\tl_set:Nx \l_tmpc_tl { \prop_item:Nn \l_spellcard_spell_props { school } }
-\tl_put_right:No \l_tmpb_tl { \l_tmpc_tl }
-% Check if school is "evocation" AND descriptor is not NULL
-\tl_set:Nx \l_tmpd_tl { \prop_item:Nn \l_spellcard_spell_props { school } }
-\tl_if_eq:NnT \l_tmpd_tl { evocation }
-{
-  \spellcard_is_null:nF { descriptor }
+  \spellcard_is_null:nF { #2 }
   {
-    \tl_put_right:Nn \l_tmpb_tl { ~ ( }
-    \tl_set:Nx \l_tmpc_tl { \prop_item:Nn \l_spellcard_spell_props { descriptor } }
-    \tl_put_right:No \l_tmpb_tl { \l_tmpc_tl }
-    \tl_put_right:Nn \l_tmpb_tl { ) }
+    \textbf{#1} & \prop_item:Nn \l_spellcard_spell_props { #2 } \\ \midrule
   }
 }
-\tl_put_right:Nn \l_tmpb_tl { ~ \\ }% Calculate widths outside of \use:x
-\dim_set:Nn \l_tmpa_dim { #1 \textwidth }
-\fp_set:Nn \l_tmpa_fp { 1 - #1 }
-\dim_set:Nn \l_tmpb_dim { \fp_use:N \l_tmpa_fp \textwidth - \tabcolsep }
 
-% Render left and right tables with pre-built content
-\begin{tabularx}{\dim_use:N \l_tmpa_dim}{r>{\raggedright\arraybackslash}X}
-  \tl_use:N \l_tmpa_tl
-\end{tabularx}
-\hfill
-\begin{tabularx}{\dim_use:N \l_tmpb_dim}{r>{\raggedright\arraybackslash}X}
-  \tl_use:N \l_tmpb_tl
-\end{tabularx}
+%%% Document-level command for use in tables (LaTeX2e mode)
+%%% Must be defined outside ExplSyntax to work inside tabular environments
+\ExplSyntaxOff
+\newcommand{\renderattribute}[2]{%
+  \ifthenelse{\equal{#2}{NULL}}{}{%
+    \textbf{#1:} & #2 \\ \midrule%
+  }%
+}%
+\ExplSyntaxOn
 
-% Third table for Target/Effect (if either exists)
-\bool_set_false:N \l_tmpa_bool
-\spellcard_is_null:nF { targets } { \bool_set_true:N \l_tmpa_bool }
-\spellcard_is_null:nF { effect } { \bool_set_true:N \l_tmpa_bool }
-\bool_if:NT \l_tmpa_bool
+%%% Internal function to render spell card info
+%%% Follows the legacy implementation pattern more closely
+%%% Renders tables directly without pre-building token lists
+\cs_new_protected:Npn \spellcard_render_info:n #1
 {
-\tl_clear:N \l_tmpa_tl
-\spellcard_add_row_if_not_null:nnnN { targets } { Target: } {} \l_tmpa_tl
-\spellcard_add_row_if_not_null:nnnN { effect } { Effect: } {} \l_tmpa_tl
+  \group_begin:
 
-\\
-\use:x
-{
-  \exp_not:n { \begin{tabularx} }
-      { \textwidth }
-      { r>{\raggedright\arraybackslash}X }
-      }
-      \tl_use:N \l_tmpa_tl
+  \normalsize
+  \noindent
+
+  % Export property values to LaTeX2e macros for use in tables
+  \cs_set:Npx \castingtime { \prop_item:Nn \l_spellcard_spell_props { castingtime } }
+  \cs_set:Npx \savingthrow { \prop_item:Nn \l_spellcard_spell_props { savingthrow } }
+  \cs_set:Npx \spellresistance { \prop_item:Nn \l_spellcard_spell_props { spellresistance } }
+  \cs_set:Npx \attackroll { \prop_item:Nn \l_spellcard_spell_props { attackroll } }
+  \cs_set:Npx \duration { \prop_item:Nn \l_spellcard_spell_props { duration } }
+  \cs_set:Npx \area { \prop_item:Nn \l_spellcard_spell_props { area } }
+  \cs_set:Npx \range { \prop_item:Nn \l_spellcard_spell_props { range } }
+  \cs_set:Npx \components { \prop_item:Nn \l_spellcard_spell_props { components } }
+  \cs_set:Npx \school { \prop_item:Nn \l_spellcard_spell_props { school } }
+  \cs_set:Npx \descriptor { \prop_item:Nn \l_spellcard_spell_props { descriptor } }
+
+  % Must use LaTeX2e syntax for tabularx (ExplSyntax breaks calc package)
+  \ExplSyntaxOff
+  \def\firsttablewidth{#1}%
+  \def\secondtablewidth{\fpeval{1-#1}}%
+
+  % Left table - longer attribute names
+  \begin{tabularx}{\firsttablewidth\textwidth}[b]{r>{\raggedright\arraybackslash}X}%
+    \toprule
+    \renderattribute{Casting~Time}{\castingtime}
+    \renderattribute{Saving~Throw}{\savingthrow}
+    \renderattribute{Spell~Resist}{\spellresistance}
+    % Last row - Attack Roll (use \bottomrule instead of \midrule)
+    \ifthenelse{\equal{\attackroll}{NULL}}{}{%
+    \textbf{Attack~Roll:} & \attackroll \\ \bottomrule%
+    }%
+  \end{tabularx}%
+  \hfill%
+  % Right table - shorter attribute names (matches legacy: subtract \tabcolsep)
+  \begin{tabularx}{\secondtablewidth\textwidth-\tabcolsep}[b]{r>{\raggedright\arraybackslash}X}%
+    \toprule
+    \renderattribute{Duration}{\duration}
+    \renderattribute{Area}{\area}
+    \renderattribute{Range}{\range}
+    \renderattribute{Comp.}{\components}
+    % School row - always present, with optional descriptor for evocation
+    \ifthenelse{\equal{\school}{evocation} \AND\NOT\equal{\descriptor}{NULL}}%
+    {\textbf{School:} & \school{} (\descriptor{})} %
+    {\textbf{School:} & \school{}}                 %
+    \\ \bottomrule
+  \end{tabularx}%
+  \ExplSyntaxOn
+
+  % Third table for Target/Effect (if either exists)
+  \bool_set_false:N \l_tmpa_bool
+  \spellcard_is_null:nF { targets } { \bool_set_true:N \l_tmpa_bool }
+  \spellcard_is_null:nF { effect } { \bool_set_true:N \l_tmpa_bool }
+  \bool_if:NT \l_tmpa_bool
+  {
+    \\
+    \begin{tabularx}{\textwidth}{r>{\raggedright\arraybackslash}X}
+      \spellcard_render_attribute:nn { Target: } { targets }
+      \spellcard_render_attribute:nn { Effect: } { effect }
     \end{tabularx}
   }
 
@@ -1306,7 +1303,8 @@
 %%% We define it while ExplSyntax is ON, which means when it's *called* from
 %%% normal mode, LaTeX will look up the already-defined command (which contains
 %%% expl3 tokens with the correct catcodes baked in at definition time).
-\NewDocumentCommand{\spellcardinfo}{O{0.5}}
+%%% Default changed from 0.5 to 0.51 (works for Teleport, not Mage's Mansion - still investigating)
+\NewDocumentCommand{\spellcardinfo}{O{0.51}}
 {
   % At this point we're executing the command body, which was tokenized
   % during definition (while ExplSyntax was ON), so all the expl3 commands
