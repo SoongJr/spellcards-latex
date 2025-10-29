@@ -147,5 +147,7 @@
         "eval": false,
         "Invoke-Expression": false,
         "iex": false
-    }
+    },
+    "remote.autoForwardPorts": false,
+    "remote.autoForwardPortsSource": "hybrid"
 }
