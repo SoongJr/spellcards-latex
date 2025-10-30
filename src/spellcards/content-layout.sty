@@ -63,7 +63,7 @@
   % End of spell card
   \bool_if:NT \g_spellcard_print_card_bool
   {
-    \clearcard
+    \cleardoublepage  % Document class controls what this means (draft vs final)
   }
 
   % Reset counters
@@ -152,12 +152,13 @@
 %% Initialization
 %% ============================================================================
 
-% Define default \clearcard command (cardify.tex will redefine to \cleardoublepage)
-% This ensures spells work without cardify for testing/drafting
-\providecommand{\clearcard}{\clearpage}
-
 % Check for printer margins at package load
 \AtBeginDocument
 {
   \spellcard_check_printer_margins:
 }
+
+\endinput
+%%
+%% End of file `spellcards/content-layout.sty'.
+%%

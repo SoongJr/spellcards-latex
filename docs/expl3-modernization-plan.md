@@ -66,7 +66,7 @@ Migration of spell card LaTeX project to expl3 (LaTeX3) programming layer is COM
 ### Current Priority: Refactoring 🔄
 
 **Phase 9: Package Refactoring** - Split monolithic package into 7 feature-based modules  
-**Phase 10: Command Naming Modernization** - PascalCase public API + bulk sed rename of existing cards  
+**Phase 10: Command Naming Modernization** - PascalCase public API  
 **Phase 11: Remove ALL Compatibility** - Delete legacy templates, legacy Python code, legacy tests  
 **Phase 12: Documentation** - Comprehensive user guide for modernized package
 
@@ -314,7 +314,104 @@ spellcards.sty (main loader)
 
 ---
 
-### 🎯 Phase 10: Command Naming Modernization (AFTER Phase 9)
+### 🎯 Phase 9.1: Document Class Creation & `\clearcard` → `\cleardoublepage` (AFTER Phase 9)
+
+**Goal**: Create custom document class with draft/final modes and eliminate `\clearcard` abstraction in favor of standard LaTeX `\cleardoublepage`
+
+**Motivation**: 
+- The `\clearcard` command created an artificial interdependency between spellcards package and cardify.tex
+- Using `\cleardoublepage` is the LaTeX-idiomatic way (mirrors how `book` vs `article` classes handle page clearing)
+- Document class can control whether `\cleardoublepage` means "clear to next page" (draft/oneside) or "clear to odd page" (final/twoside)
+- This eliminates the need for cardify to redefine any commands - it just provides page layout
+
+**Architecture**:
+```
+src/
+├── spellcard.cls              # Custom document class
+│   ├── [draft] (default)     # Single-sided, \cleardoublepage = \clearpage
+│   └── [final]               # Double-sided, loads cardify, \cleardoublepage works naturally
+├── spellcards.sty             # Content package (uses \cleardoublepage directly)
+└── cardify.tex                # Page layout ONLY (no command redefinitions)
+```
+
+**Implementation Steps**:
+
+1. **Create `spellcard.cls`** (~30 min)
+   - Draft mode (default): `\LoadClass[oneside]{scrartcl}`, `\let\cleardoublepage\clearpage`
+   - Final mode: `\LoadClass[twoside]{scrartcl}`, `\input{cardify}`, use native `\cleardoublepage`
+   - Load all required packages (calc, amsmath, etc.)
+   - Load `\RequirePackage{spellcards}`
+   - Conditional cardify loading only in final mode
+
+2. **Update `content-layout.sty`** (~10 min)
+   - Replace `\clearcard` with `\cleardoublepage` in `\spellcard_end_card:`
+   - Remove `\providecommand{\clearcard}{\clearpage}`
+   - Document class now controls `\cleardoublepage` semantics
+
+3. **Update `cardify.tex`** (~5 min)
+   - Remove `\renewcommand{\clearcard}{\cleardoublepage}` at end of file
+   - cardify now ONLY provides page layout, no command redefinitions
+
+4. **Update `spellcards.tex`** (~5 min)
+   - Replace `\documentclass{scrartcl}` with `\documentclass[final]{spellcard}`
+   - Remove all `\usepackage` statements (now in class)
+   - Remove `\usepackage{spellcards}` (now in class)
+   - Remove `\input{cardify}` (now conditional in class)
+   - Document becomes minimal: just `\documentclass`, `\begin{document}`, content
+
+5. **Testing** (~20 min)
+   - Compile with `\documentclass{spellcard}` (draft mode, no cardify) - should be ~21 pages, single-sided
+   - Compile with `\documentclass[final]{spellcard}` (cardified) - should be 42 pages, double-sided
+   - Verify page counts match expected output
+   - Verify zero warnings/errors
+   - Compare PDF output with previous version
+
+**Benefits**:
+- ✅ **Zero interdependency**: spellcards package never mentions cardify
+- ✅ **LaTeX-idiomatic**: Mirrors book/article class pattern with `\cleardoublepage`
+- ✅ **Clear user intent**: `\documentclass[draft]{spellcard}` vs `[final]` is self-documenting
+- ✅ **Simpler architecture**: One command (`\cleardoublepage`) instead of custom abstraction
+- ✅ **Future extensibility**: Could add other modes/layouts without touching spellcards package
+
+**Timeline**: ~1 hour 10 minutes
+
+**Status**: ✅ **COMPLETE** (October 30, 2025)
+
+**Implementation Summary**:
+
+1. ✅ **Created `spellcard.cls`**:
+   - Default: final mode (production-ready, cardified, `\cleardoublepage` works naturally)
+   - `[draft]` option: single-sided, no cardify, `\cleardoublepage = \clearpage`
+   - Minimal dependencies: only `inputenc` (UTF-8) and `amsmath` (spell descriptions)
+   - Loads `spellcards` package automatically
+   - Conditional `\PassOptionsToClass` for clean option handling
+
+2. ✅ **Replaced `\clearcard` with `\cleardoublepage`**:
+   - Updated `content-layout.sty`: removed `\providecommand{\clearcard}`
+   - Updated `level-markers.sty`: `\SpellMarkerChart` uses `\cleardoublepage`
+   - Updated `cardify.tex`: removed `\renewcommand{\clearcard}{\cleardoublepage}`
+   - Document class now controls semantics via oneside/twoside mode
+
+3. ✅ **Simplified `spellcards.tex`**:
+   - From ~30 lines to 3 lines: `\documentclass{spellcard}`, `\begin{document}`, content
+   - All package loading now in document class
+
+4. ✅ **Moved dependencies to appropriate locations**:
+   - `spellcard.cls`: only `inputenc`, `amsmath` (document-level needs)
+   - `spellcards.sty`: added `calc` (for info-table dimension arithmetic)
+   - All feature dependencies in `spellcards.sty`: `tikz`, `qrcode`, `booktabs`, `tabularx`, `ifthen`, `longtable`
+
+**Testing Results**:
+- ✅ Draft mode: single-sided, A4, no cardify - exit code 0
+- ✅ Final mode: double-sided, A4, cardified - exit code 0
+- ✅ Table layout correct in both modes (side-by-side rendering)
+- ✅ Zero interdependency between spellcards package and cardify
+
+**Key Achievement**: Eliminated architectural coupling while following LaTeX conventions! 🎉
+
+---
+
+### 🎯 Phase 10: Command Naming Modernization (AFTER Phase 9.1)
 
 **Goal**: Modernize public API with PascalCase naming convention
 
@@ -329,14 +426,15 @@ spellcards.sty (main loader)
 **Implementation Strategy** (No Backwards Compatibility):
 
 1. **Manual Prototype** (~1 hour)
-   - Manually modify 2-3 spell card files to use new PascalCase commands
    - Update `spellcards.sty` to provide new command names
-   - Compile and verify PDFs render correctly
+   - Update 2-3 spell card files to use new PascalCase commands
+   - Compile a test with those spells and verify PDFs render correctly
 
 2. **Bulk Rename Existing Files** (~30 min)
    - Use `sed` to rename commands in all existing spell card files:
      ```bash
-     find src/spells -name "*.tex" -exec sed -i \
+     find src/spells/sor -name "*.tex" -exec sed -i \
+       -e 's/SPELL-CARD-VERSION: 2.0-expl3/SPELL-CARD-VERSION: 2.1/g' \
        -e 's/\\begin{spellcard}/\\begin{SpellCard}/g' \
        -e 's/\\end{spellcard}/\\end{SpellCard}/g' \
        -e 's/\\spellprop{/\\SpellProp{/g' \
@@ -348,22 +446,21 @@ spellcards.sty (main loader)
    - Compile spellcards.tex to ensure all cards still work
 
 3. **Update Python Generator** (~2 hours)
+   - Modify `generators/file_scanner.py` to read Version "2.1" of the template  
+     Simply replace 2.0 parsing and fail if input version is 2.0, no compatibility needed!
    - Modify `generators/latex_generator.py` to output new PascalCase commands
    - Update all template strings
    - Update test fixtures to expect new format
    - Run all 359 tests - must pass
+   - Verify by running the generator on the spells we've already modified with sed via CLI.  
+     Files should not change.
 
-4. **Regeneration Test** (~30 min)
-   - Select a few spells and regenerate via GUI
+4. **Regeneration Test** (~90 min)
+   - Regenerate spells via GUI
    - Verify generated files use PascalCase
    - Verify preservation features still work
-   - Compile and verify PDFs
-
-5. **Full Verification** (~1 hour)
-   - Regenerate ALL 25 spells
-   - Compile spellcards.tex
+   - Compile and verify spellcards.tex
    - Compare PDF with baseline (should be identical except for any DB updates)
-   - All 359 Python tests passing
 
 **Timeline**: ~5 hours total
 
@@ -451,6 +548,51 @@ spellcards.sty (main loader)
    - Cache calculations if beneficial
 
 ## Recent Work Sessions
+
+### October 30, 2025 - Phase 9.1 Complete: Document Class & Architecture Cleanup ✅
+
+**Phase 9.1: Document Class Creation & Dependency Decoupling**
+
+**Problem**: The `\clearcard` command created an interdependency between spellcards package and cardify.tex, requiring careful load order management.
+
+**Solution**: Created custom document class following LaTeX conventions:
+- **`spellcard.cls`**: Controls draft/final modes, loads dependencies, conditionally includes cardify
+- **Default mode**: Final (production-ready, cardified, double-sided)
+- **Draft mode**: `\documentclass[draft]{spellcard}` for fast iteration (single-sided, no cardify)
+
+**Key Changes**:
+1. ✅ **Eliminated `\clearcard` abstraction**: 
+   - Replaced with standard LaTeX `\cleardoublepage` throughout codebase
+   - Document class controls semantics (draft: `\cleardoublepage = \clearpage`, final: native twoside behavior)
+   - Zero coupling between spellcards package and cardify
+
+2. ✅ **Created `spellcard.cls`**:
+   - Minimal dependencies: only `inputenc` (UTF-8) and `amsmath` (user content)
+   - Conditional option passing: `\PassOptionsToClass{oneside,draft}{scrartcl}` or `{twoside}`
+   - Single `\LoadClass` statement (no duplication)
+   - Loads `spellcards` package automatically
+
+3. ✅ **Moved dependencies to correct locations**:
+   - **Document class**: only document-level needs (`inputenc`, `amsmath`)
+   - **spellcards.sty**: all feature dependencies (`calc`, `tikz`, `qrcode`, `booktabs`, `tabularx`, `ifthen`, `longtable`)
+   - Fixed: `calc` package needed by `info-table.sty` for dimension arithmetic (`\firsttablewidth\textwidth`)
+
+4. ✅ **Simplified `spellcards.tex`**:
+   - From ~30 lines (with package loading) to 3 lines
+   - Just: `\documentclass{spellcard}`, `\begin{document}`, content
+
+5. ✅ **Updated cardify.tex**:
+   - Removed `\renewcommand{\clearcard}{\cleardoublepage}`
+   - Now ONLY provides page layout (pgfmorepages configuration)
+
+**Testing**:
+- ✅ Draft mode: Single-sided, no cardify, table layout correct - exit code 0
+- ✅ Final mode: Double-sided, cardified, table layout correct - exit code 0
+- ✅ Zero warnings, zero errors in both modes
+
+**Architecture Achievement**: Clean separation of concerns following LaTeX best practices! 🎉
+
+---
 
 ### October 29, 2025 - MIGRATION COMPLETE! 🎉 ✅
 

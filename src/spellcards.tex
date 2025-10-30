@@ -1,31 +1,6 @@
 
-\documentclass[%
-  a4paper,
-  twoside,      % one side is the front, the other the back of cards. With \cleardoublepage we can ensure a spell starts on the front of a new card.
-  DIV=14,       % reduce margins to account for the reduced space on the smaller cards
-  fontsize=12pt,% increase font size to make the text more readable when scaled down to four cards per A4 page
-  BCOR=0mm,     % no binding correction necessary
-  draft=true,   % helps to point out overfull boxes etc.
-]{scrartcl}
-
-\usepackage[utf8]{inputenc}
-\usepackage{calc}               % for floating point calculations
-\usepackage{ifthen}             % \ifthenelse command
-\usepackage{booktabs}           % nicer table formatting options
-\usepackage{tabularx}           % for tables that can span the whole page width
-\usepackage{amsmath}            % for mathematical symbols (\geq, \leq, ...)
-\usepackage{tikz}               % for drawing the spell-level markers
-\usepackage{qrcode}             % for generating QR codes
-\usepackage{atbegshi}           % for hooking into the shipout process (resetting counters on a new page...)
-\usepackage{ifoddpage}          % for checking if a page is odd or even (AKA face is front or back)
-% packages used indirectly by pandoc converting from HTML code:
-\usepackage{longtable}
-
-% include modern expl3 spell card package (modular structure)
-\usepackage{spellcards}
-
-% include file to make the cards print four on a page, see README for instructions!
-\input{cardify}% you might want to comment this line while formatting and re-writing spell descriptions so cards will print like normal text, one face per page
+\documentclass{spellcard}  % default: final mode (double-sided, cardified)
+% \documentclass[draft]{spellcard}  % for fast iteration
 
 \begin{document}
 
