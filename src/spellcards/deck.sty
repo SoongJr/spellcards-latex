@@ -1,0 +1,328 @@
+%%
+%% This is file `spellcards/deck.sty'
+%%
+%% Deck management for spellcards package
+%% Provides deck state tracking, spell registration, and deck label rendering
+%%
+%% Part of the spellcards package
+%% Copyright (C) 2025 SoongJr
+%% License: Open Source (see LICENSE file)
+%%
+
+\ProvidesExplFile{spellcards/deck.sty}{2025/10/30}{1.0.0}
+{Deck management module for spellcards package}
+
+%% ============================================================================
+%% Deck State Management
+%% ============================================================================
+
+%%% Begin a spell deck
+%%% #1 = deck name (empty for first deck, required for subsequent decks)
+%%% Updates current deck state variables and initializes spell tracking
+\cs_new:Nn \spellcard_deck_begin:n
+{
+% Check for nested decks (error if we're already in a deck)
+\bool_if:NTF \g_spellcard_in_deck_bool
+{
+  \msg_error:nn { spellcard } { nested-decks }
+}
+{
+  % Mark that we're now in a deck
+  \bool_gset_true:N \g_spellcard_in_deck_bool
+}
+
+% Validate deck naming rules BEFORE setting the name
+\int_compare:nNnTF { \g_spellcard_deck_number_int } = { 0 }
+{
+% First deck must be unnamed
+\tl_if_empty:nF { #1 }
+{
+  \msg_error:nn { spellcard } { first-deck-must-be-unnamed }
+}
+}
+{
+% Subsequent decks must be named
+\tl_if_empty:nT { #1 }
+{
+  \msg_error:nn { spellcard } { only-first-deck-unnamed }
+}
+}
+
+% Set the new deck name (after validation)
+\tl_set:Nn \l_spellcard_current_deck_name_tl { #1 }
+
+% Initialize spell tracking for this deck
+\seq_gclear:N \g_spellcard_current_deck_spells_seq
+}
+
+%%% End a spell deck
+%%% Increments deck counter, stores spell list, and clears current deck name
+\cs_new:Nn \spellcard_deck_end:
+{
+  % Store the deck's spell list in the global registry
+  % Create a unique sequence for this deck number
+  \cs_if_exist:cF { g_spellcard_deck_ \int_use:N \g_spellcard_deck_number_int _spells_seq }
+  {
+    \seq_new:c { g_spellcard_deck_ \int_use:N \g_spellcard_deck_number_int _spells_seq }
+  }
+
+  % Copy current deck's spells to the permanent deck sequence
+  \seq_gset_eq:cN { g_spellcard_deck_ \int_use:N \g_spellcard_deck_number_int _spells_seq }
+  \g_spellcard_current_deck_spells_seq
+
+  % Store metadata about this deck in property list
+  % Format: "deck_N" -> "name={...},count=N"
+  \tl_set:Nx \l_tmpa_spellcard_tl
+  {
+    name={\tl_use:N \l_spellcard_current_deck_name_tl},
+    count={\int_eval:n { \seq_count:N \g_spellcard_current_deck_spells_seq }}
+  }
+  \prop_gput:NVn \g_spellcard_decks_prop
+  \l_tmpa_spellcard_tl
+  { \tl_use:N \l_tmpa_spellcard_tl }
+
+  % Increment the global deck counter
+  \int_gincr:N \g_spellcard_deck_number_int
+
+  % Clear the current deck name to mark we're outside a deck
+  \tl_clear:N \l_spellcard_current_deck_name_tl
+
+  % Mark that we're no longer in a deck
+  \bool_gset_false:N \g_spellcard_in_deck_bool
+}
+
+%% ============================================================================
+%% Spell Registration System
+%% ============================================================================
+
+%%% Register a spell in the current deck's spell list
+%%% #1 = spell file path
+%%% #2 = spell class (e.g., "sor", "wiz")
+%%% #3 = spell name
+%%% #4 = spell level
+\cs_new:Nn \spellcard_register_spell:nnnn
+{
+  % Only register if we're inside a deck
+  \tl_if_empty:NF \l_spellcard_current_deck_name_tl
+  {
+    % Create a property list for this spell's metadata
+    \prop_clear:N \l_spellcard_spell_metadata_prop
+    \prop_put:Nnn \l_spellcard_spell_metadata_prop { file } { #1 }
+    \prop_put:Nnn \l_spellcard_spell_metadata_prop { class } { #2 }
+    \prop_put:Nnn \l_spellcard_spell_metadata_prop { name } { #3 }
+    \prop_put:Nnn \l_spellcard_spell_metadata_prop { level } { #4 }
+    \prop_put:Nnx \l_spellcard_spell_metadata_prop { deck }
+    { \int_use:N \g_spellcard_deck_number_int }
+
+    % Serialize the property list to a token list for storage
+    % Format: "file={...},class={...},name={...},level={...}"
+    \tl_set:Nx \l_tmpa_spellcard_tl
+    {
+      file={#1},class={#2},name={#3},level={#4}
+    }
+
+    % Add to current deck's spell sequence
+    \seq_gput_right:NV \g_spellcard_current_deck_spells_seq \l_tmpa_spellcard_tl
+  }
+}
+
+%% ============================================================================
+%% Deck Label Position Calculations
+%% ============================================================================
+
+%%% Calculate label position at top edge based on deck number
+%%% #1 = deck number (1-6, then wraps; 0 has no label)
+%%% Updates \l_spellcard_label_position_dim
+%%% Formula: ((1/8 * mod(deck-1, 6)) * paperwidth) + offset
+%%% Offset is 7mm with printer margins, 15mm without
+\cs_new:Nn \spellcard_calculate_label_position:n
+{
+  % Calculate modulo 6 for deck wrapping (deck-1 because deck 0 has no label)
+  \fp_set:Nn \l_tmpb_spellcard_fp { #1 - 1 }
+  \fp_set:Nn \l_tmpa_spellcard_fp { \l_tmpb_spellcard_fp - 6 * floor(\l_tmpb_spellcard_fp / 6) }
+
+  % Calculate base position: (1/8 * deck_mod) * paperwidth
+  \fp_set:Nn \l_spellcard_label_position_fp
+  {
+    ( \c_spellcard_label_spacing_fp * \l_tmpa_spellcard_fp )
+    * \dim_to_fp:n { \paperwidth }
+  }
+
+  % Add offset based on whether printer margins are defined
+  \bool_if:NTF \l_spellcard_has_printer_margin_bool
+  {
+    % With printer margins: add 7mm offset
+    \fp_add:Nn \l_spellcard_label_position_fp { 7mm }
+  }
+  {
+    % Without printer margins: add 15mm offset
+    \fp_add:Nn \l_spellcard_label_position_fp { 15mm }
+  }
+
+  % Convert to dimension for TikZ usage
+  \dim_set:Nn \l_spellcard_label_position_dim
+  { \fp_to_dim:N \l_spellcard_label_position_fp }
+}
+
+%%% Helper to get y-shift for deck label based on printer margins
+\cs_new:Nn \spellcard_get_label_yshift:
+{
+  \bool_if:NTF \l_spellcard_has_printer_margin_bool
+  { 7mm }
+  { 15mm }
+}
+
+%% ============================================================================
+%% Deck Label Rendering
+%% ============================================================================
+
+%%% Draw deck label at top edge of page
+%%% #1 = deck number, #2 = deck name
+%%% Deck 0 (unnamed deck) has no label
+\cs_new_protected:Npn \spellcard_draw_deck_label:nn #1 #2
+{
+  % Deck 0 (unnamed deck) has no label
+  \int_compare:nNnF { #1 } = { 0 }
+    {
+      % Calculate label position
+      \spellcard_calculate_label_position:n { #1 }
+
+      \begin{tikzpicture}[remember~ picture,~ overlay]
+        % Draw deck name at top edge
+        \node [font=\normalsize\itshape, anchor=west,
+          xshift=\fp_to_dim:N \l_spellcard_label_position_fp,
+          yshift=-\spellcard_get_label_yshift:]
+        at~ (current~ page.north~ west) {#2};
+      \end{tikzpicture}
+    }
+}
+
+%% ============================================================================
+%% Deck Query Functions
+%% ============================================================================
+
+%%% Get the number of spells in a specific deck
+%%% #1 = deck number
+%%% Returns: integer count
+\cs_new:Nn \spellcard_get_deck_spell_count:n
+{
+  \seq_count:c { g_spellcard_deck_ #1 _spells_seq }
+}
+
+%%% Get the total number of decks created
+\cs_new:Nn \spellcard_get_deck_count:
+{
+  \int_use:N \g_spellcard_deck_number_int
+}
+
+%%% Check if a deck exists
+%%% #1 = deck number
+\prg_new_conditional:Npnn \spellcard_if_deck_exists:n #1 { p, T, F, TF }
+{
+  \cs_if_exist:cTF { g_spellcard_deck_ #1 _spells_seq }
+  { \prg_return_true: }
+  { \prg_return_false: }
+}
+
+%%% Map a function over all spells in a deck
+%%% #1 = deck number
+%%% #2 = inline function to apply to each spell metadata string
+%%% Each spell is passed as: file={...},class={...},name={...},level={...}
+\cs_new:Nn \spellcard_map_deck_spells:nn
+{
+  \spellcard_if_deck_exists:nTF { #1 }
+  {
+    \seq_map_inline:cn { g_spellcard_deck_ #1 _spells_seq } { #2 }
+  }
+  {
+    \msg_warning:nnn { spellcard } { deck-not-found } { #1 }
+  }
+}
+
+%%% Count spells of a specific level in a deck
+%%% #1 = deck number
+%%% #2 = spell level to count
+\cs_new:Nn \spellcard_count_spells_by_level:nn
+{
+  \int_zero:N \l_tmpa_int
+  \spellcard_map_deck_spells:nn { #1 }
+  {
+    % Parse the metadata string to check level
+    \tl_if_in:nnT { ##1 } { level={#2} }
+  {
+    \int_incr:N \l_tmpa_int
+  }
+}
+\int_use:N \l_tmpa_int
+}
+
+%%% Export deck spell list to console (debugging/verification)
+%%% #1 = deck number
+\cs_new:Nn \spellcard_show_deck:n
+{
+  \spellcard_if_deck_exists:nTF { #1 }
+  {
+    \msg_info:nnx { spellcard } { deck-info }
+    {
+      Deck~#1~contains~\spellcard_get_deck_spell_count:n { #1 }~spells
+    }
+    \spellcard_map_deck_spells:nn { #1 }
+    {
+      \msg_info:nnn { spellcard } { spell-info } { ##1 }
+    }
+  }
+  {
+    \msg_warning:nnn { spellcard } { deck-not-found } { #1 }
+  }
+}
+
+%% ============================================================================
+%% Deck Environment
+%% ============================================================================
+
+%%% Spell deck environment
+%%% Usage: \begin{spelldeck}[name] ... \end{spelldeck}
+%%%   or:  \begin{spelldeck}{name} ... \end{spelldeck}  (for cardify compatibility)
+%%% First deck must have empty name, subsequent decks must be named
+\NewDocumentEnvironment{spelldeck}{O{} G{}}
+{
+  % If optional bracket arg provided, use it; otherwise use mandatory brace arg (or default empty)
+  \tl_if_empty:nTF {#1}
+  { \spellcard_deck_begin:n { #2 } }
+  { \spellcard_deck_begin:n { #1 } }
+}
+{
+  \spellcard_deck_end:
+}
+
+%% ============================================================================
+%% User Commands for Deck Management
+%% ============================================================================
+
+%%% Register a spell manually in the current deck
+%%% Usage: \registerspell{spells/sor/1/MagicMissile.tex}{sor}{Magic Missile}{1}
+\NewDocumentCommand{\registerspell}{m m m m}
+{
+  \spellcard_register_spell:nnnn { #1 } { #2 } { #3 } { #4 }
+}
+
+%%% Get count of spells in a deck
+%%% Usage: \deckspellcount{0} → prints number
+\NewDocumentCommand{\deckspellcount}{m}
+{
+  \spellcard_get_deck_spell_count:n { #1 }
+}
+
+%%% Get total number of decks
+%%% Usage: \deckcount → prints number
+\NewDocumentCommand{\deckcount}{}
+{
+  \spellcard_get_deck_count:
+}
+
+%%% Show deck information (debugging)
+%%% Usage: \showdeck{0}
+\NewDocumentCommand{\showdeck}{m}
+{
+  \spellcard_show_deck:n { #1 }
+}

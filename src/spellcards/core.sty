@@ -1,0 +1,353 @@
+%%
+%% This is file `spellcards/core.sty'
+%%
+%% Core module for spellcards package
+%% Provides foundation: variables, constants, messages, utility functions
+%%
+%% Part of the spellcards package
+%% Copyright (C) 2025 SoongJr
+%% License: Open Source (see LICENSE file)
+%%
+
+\ProvidesExplFile{spellcards/core.sty}{2025/10/30}{1.0.0}
+{Core module for spellcards package}
+
+%% ============================================================================
+%% Boolean Variables
+%% ============================================================================
+
+\bool_new:N \g_spellcard_print_card_bool
+\bool_gset_true:N \g_spellcard_print_card_bool
+
+\bool_new:N \g_spellcard_in_deck_bool
+\bool_gset_false:N \g_spellcard_in_deck_bool
+
+\bool_new:N \l_spellcard_has_printer_margin_bool
+\bool_set_false:N \l_spellcard_has_printer_margin_bool
+
+\bool_new:N \l_spellcard_include_print_bool
+\bool_set_true:N \l_spellcard_include_print_bool
+
+%% ============================================================================
+%% Integer Variables
+%% ============================================================================
+
+\int_new:N \g_spellcard_deck_number_int
+\int_gzero:N \g_spellcard_deck_number_int
+
+\int_new:N \g_spellcard_qr_code_int
+\int_gzero:N \g_spellcard_qr_code_int
+
+\int_new:N \l_spellcard_spell_level_int
+\int_zero:N \l_spellcard_spell_level_int
+
+%% ============================================================================
+%% Token List Variables
+%% ============================================================================
+
+\tl_new:N \l_spellcard_current_deck_name_tl
+\tl_clear:N \l_spellcard_current_deck_name_tl
+
+\tl_new:N \l_spellcard_class_tl
+\tl_new:N \l_spellcard_name_tl
+\tl_new:N \l_spellcard_school_tl
+\tl_new:N \l_spellcard_subschool_tl
+\tl_new:N \l_spellcard_descriptor_tl
+
+\tl_new:N \l_spellcard_casting_time_tl
+\tl_new:N \l_spellcard_components_tl
+\tl_new:N \l_spellcard_range_tl
+\tl_new:N \l_spellcard_duration_tl
+\tl_new:N \l_spellcard_area_tl
+\tl_new:N \l_spellcard_effect_tl
+\tl_new:N \l_spellcard_targets_tl
+
+\tl_new:N \l_spellcard_saving_throw_tl
+\tl_new:N \l_spellcard_spell_resistance_tl
+\tl_new:N \l_spellcard_attack_roll_tl
+
+\tl_new:N \l_spellcard_url_english_tl
+\tl_new:N \l_spellcard_url_secondary_tl
+
+\tl_new:N \l_spellcard_qr_code_content_tl
+\tl_new:N \l_tmpa_spellcard_tl
+\tl_new:N \l_tmpb_spellcard_tl
+
+%% ============================================================================
+%% Floating Point Variables
+%% ============================================================================
+
+\fp_new:N \l_spellcard_marker_position_fp
+\fp_zero:N \l_spellcard_marker_position_fp
+
+\fp_new:N \l_spellcard_label_position_fp
+\fp_zero:N \l_spellcard_label_position_fp
+
+\fp_new:N \l_spellcard_printer_margin_x_fp
+\fp_new:N \l_spellcard_printer_margin_y_fp
+
+\fp_new:N \l_spellcard_qr_shift_fp
+\fp_zero:N \l_spellcard_qr_shift_fp
+
+\fp_new:N \l_tmpa_spellcard_fp
+\fp_new:N \l_tmpb_spellcard_fp
+
+%% ============================================================================
+%% Dimension Variables
+%% ============================================================================
+
+\dim_new:N \l_spellcard_card_width_dim
+\dim_new:N \l_spellcard_card_height_dim
+
+\dim_new:N \l_spellcard_printer_margin_x_dim
+\dim_new:N \l_spellcard_printer_margin_y_dim
+
+\dim_new:N \l_spellcard_marker_position_dim
+\dim_new:N \l_spellcard_label_position_dim
+\dim_new:N \l_spellcard_qr_shift_dim
+
+\dim_new:N \l_spellcard_first_table_width_dim
+\dim_new:N \l_spellcard_second_table_width_dim
+
+%% ============================================================================
+%% Package Options
+%% ============================================================================
+
+\keys_define:nn { spellcard }
+{
+  printer-margin-x .dim_set:N = \l_spellcard_printer_margin_x_dim,
+  printer-margin-x .initial:n = 0pt,
+
+  printer-margin-y .dim_set:N = \l_spellcard_printer_margin_y_dim,
+  printer-margin-y .initial:n = 0pt,
+
+  printer-margin .code:n =
+    {
+      \dim_set:Nn \l_spellcard_printer_margin_x_dim { #1 }
+      \dim_set:Nn \l_spellcard_printer_margin_y_dim { #1 }
+    },
+
+  unknown .code:n =
+    {
+      \msg_error:nnxx { spellcard } { unknown-option }
+      { \l_keys_key_str } { #1 }
+    }
+}
+
+\ProcessKeyOptions [ spellcard ]
+
+%% ============================================================================
+%% Property Lists
+%% ============================================================================
+
+\prop_new:N \l_spellcard_spell_props
+
+%% ============================================================================
+%% Sequences for Deck Tracking
+%% ============================================================================
+
+\prop_new:N \g_spellcard_decks_prop
+\seq_new:N \g_spellcard_current_deck_spells_seq
+\prop_new:N \l_spellcard_spell_metadata_prop
+
+%% ============================================================================
+%% Constants
+%% ============================================================================
+
+\int_const:Nn \c_spellcard_max_qr_codes_int { 2 }
+\int_const:Nn \c_spellcard_max_deck_columns_int { 6 }
+\tl_const:Nn \c_spellcard_null_value_tl { NULL }
+\fp_const:Nn \c_spellcard_marker_spacing_fp { 1/16 }
+\fp_const:Nn \c_spellcard_marker_offset_fp { 2.5 }
+\fp_const:Nn \c_spellcard_label_spacing_fp { 1/8 }
+
+%% ============================================================================
+%% Message System
+%% ============================================================================
+
+\msg_new:nnn { spellcard } { unknown-option }
+{
+  Unknown~package~option:~'#1'~with~value~'#2'.\\
+  Valid~options~are:~printer-margin,~printer-margin-x,~printer-margin-y.
+}
+
+\msg_new:nnn { spellcard } { nested-decks }
+{
+  Nested~spell~decks~are~not~supported.\\
+  You~may~have~forgotten~to~close~a~spelldeck~environment.
+}
+
+\msg_new:nnn { spellcard } { first-deck-must-be-unnamed }
+{
+  The~first~spell~deck~must~have~an~empty~name.\\
+  Found~deck~name:~'\l_spellcard_current_deck_name_tl'
+}
+
+\msg_new:nnn { spellcard } { only-first-deck-unnamed }
+{
+  Only~the~first~spell~deck~may~have~an~empty~name.\\
+  All~subsequent~decks~must~be~named.
+}
+
+\msg_new:nnn { spellcard } { spell-file-not-found }
+{
+  Spell~file~not~found:~'#1'\\
+  Check~that~the~file~path~is~correct~and~the~file~exists.
+}
+
+\msg_new:nnn { spellcard } { too-many-qr-codes }
+{
+  Too~many~QR~codes~on~page~\int_use:N \c@page.\\
+  Maximum~\int_use:N \c_spellcard_max_qr_codes_int~per~page.\\
+  Consider~using~\token_to_str:N\clearpage~to~move~code~to~back~face.
+}
+
+\msg_new:nnn { spellcard } { missing-school }
+{
+  Spell~'#1':~school~information~is~missing~or~NULL.\\
+  This~property~is~required~for~proper~card~formatting.
+}
+
+\msg_new:nnn { spellcard } { missing-level }
+{
+  Spell~'#1':~level~information~is~missing.\\
+  Spell~level~markers~cannot~be~drawn~without~this~property.
+}
+
+\msg_new:nnn { spellcard } { missing-components }
+{
+  Spell~'#1':~components~information~is~missing~or~NULL.\\
+  Consider~specifying~at~least~'V',~'S',~or~'M'.
+}
+
+\msg_new:nnn { spellcard } { missing-casting-time }
+{
+  Spell~'#1':~casting~time~is~missing~or~NULL.\\
+  Standard~action~is~a~common~default.
+}
+
+\msg_new:nnn { spellcard } { missing-duration }
+{
+  Spell~'#1':~duration~is~missing~or~NULL.\\
+  This~is~important~tactical~information.
+}
+
+\msg_new:nnn { spellcard } { missing-range }
+{
+  Spell~'#1':~range~is~missing~or~NULL.\\
+  Specify~'personal',~'touch',~or~a~distance.
+}
+
+\msg_new:nnn { spellcard } { empty-description }
+{
+  Spell~'#1':~description~appears~to~be~empty.\\
+  This~will~result~in~a~nearly~blank~card.
+}
+
+\msg_new:nnn { spellcard } { all-targets-null }
+{
+  Spell~'#1':~area,~effect,~and~targets~are~all~NULL.\\
+  At~least~one~of~these~should~be~specified.
+}
+
+\msg_new:nnn { spellcard } { suspicious-saving-throw }
+{
+  Spell~'#1':~saving~throw~is~'NULL'.\\
+  Consider~using~'none'~if~no~save~is~allowed.
+}
+
+\msg_new:nnn { spellcard } { suspicious-spell-resistance }
+{
+  Spell~'#1':~spell~resistance~is~'NULL'.\\
+  Consider~using~'no'~or~'yes'~explicitly.
+}
+
+\msg_new:nnn { spellcard } { inconclusive-attack-roll }
+{
+  Spell~'#1':~attack~roll~detection~inconclusive.\\
+  Please~manually~set~to:~'ranged~touch',~'melee~touch',~'ranged',~'melee',~or~'\textbf{none}'.
+}
+
+\msg_new:nnn { spellcard } { invalid-url }
+{
+  QR~code~URL~appears~malformed:~'#1'\\
+  QR~codes~work~best~with~valid~http/https~URLs.
+}
+
+\msg_new:nnn { spellcard } { empty-qr-url }
+{
+  Spell~'#1':~QR~code~URL~is~empty~or~NULL.\\
+  No~QR~code~will~be~generated~for~this~spell.
+}
+
+\msg_new:nnn { spellcard } { using-default-school }
+{
+  Spell~'#1':~using~default~school~'Universal'.
+}
+
+\msg_new:nnn { spellcard } { skipping-null-attribute }
+{
+  Spell~'#1':~skipping~NULL~attribute~'#2'.
+}
+
+\msg_new:nnn { spellcard } { spell-registered }
+{
+  Spell~'#1'~(level~#2)~registered~in~deck~#3.
+}
+
+\msg_new:nnn { spellcard } { deck-created }
+{
+  Created~deck~#1:~'#2'
+}
+
+\msg_new:nnn { spellcard } { spell-outside-deck }
+{
+  Warning:~Spell~'#1'~included~outside~of~any~deck.\\
+  It~will~be~printed~but~not~tracked~for~index~generation.
+}
+
+%% ============================================================================
+%% Utility Functions
+%% ============================================================================
+
+\cs_new:Nn \spellcard_check_printer_margins:
+{
+  \bool_lazy_or:nnTF
+  { \dim_compare_p:nNn { \l_spellcard_printer_margin_x_dim } > { 0pt } }
+  { \dim_compare_p:nNn { \l_spellcard_printer_margin_y_dim } > { 0pt } }
+  {
+    \bool_set_true:N \l_spellcard_has_printer_margin_bool
+    \fp_set:Nn \l_spellcard_printer_margin_x_fp
+    { \dim_to_fp:n { \l_spellcard_printer_margin_x_dim } }
+    \fp_set:Nn \l_spellcard_printer_margin_y_fp
+    { \dim_to_fp:n { \l_spellcard_printer_margin_y_dim } }
+  }
+  {
+    \cs_if_exist:NTF \printermarginx
+    {
+      \bool_set_true:N \l_spellcard_has_printer_margin_bool
+      \fp_set:Nn \l_spellcard_printer_margin_x_fp
+      { \dim_to_fp:n { \printermarginx } }
+      \fp_set:Nn \l_spellcard_printer_margin_y_fp
+      { \dim_to_fp:n { \printermarginy } }
+      \dim_set:Nn \l_spellcard_printer_margin_x_dim { \printermarginx }
+      \dim_set:Nn \l_spellcard_printer_margin_y_dim { \printermarginy }
+    }
+    {
+      \bool_set_false:N \l_spellcard_has_printer_margin_bool
+      \fp_zero:N \l_spellcard_printer_margin_x_fp
+      \fp_zero:N \l_spellcard_printer_margin_y_fp
+    }
+  }
+}
+
+\prg_new_conditional:Npnn \spellcard_if_not_null:n #1 { p, T, F, TF }
+{
+  \tl_if_empty:nTF {#1}
+  { \prg_return_false: }
+  {
+    \str_if_eq:nnTF {#1} { NULL }
+    { \prg_return_false: }
+    { \prg_return_true: }
+  }
+}

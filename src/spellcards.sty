@@ -1,0 +1,68 @@
+%%
+%% This is file `spellcards.sty'
+%%
+%% Main package loader for the spellcards package
+%% Loads all module files in correct dependency order
+%%
+%% Copyright (C) 2025 SoongJr
+%% License: Open Source (see LICENSE file)
+%%
+%% This package provides a modern expl3-based system for creating
+%% spell cards for tabletop RPGs. It replaces the legacy spellcard-expl3.sty
+%% with a modular architecture for better maintainability.
+%%
+
+\NeedsTeXFormat{LaTeX2e}[2020/10/01]
+\ProvidesPackage{spellcards}[2025/10/30 v1.0.0 Spell Card Generation Package]
+
+%% ============================================================================
+%% Package Dependencies
+%% ============================================================================
+%% Load required LaTeX packages before loading our modules
+
+\RequirePackage{xparse}      % Modern command definition interface
+\RequirePackage{tikz}         % Graphics and positioning
+\RequirePackage{qrcode}       % QR code generation
+\RequirePackage{booktabs}     % Professional table rules
+\RequirePackage{tabularx}     % Variable-width tables
+\RequirePackage{longtable}    % Multi-page tables
+\RequirePackage{ifthen}       % Conditional logic (for LaTeX2e compatibility)
+
+%% ============================================================================
+%% Module Loading (Dependency Order)
+%% ============================================================================
+%% CRITICAL: Modules must be loaded in dependency order
+%% - Core provides foundation (variables, constants, messages, utilities)
+%% - Independent feature modules depend only on core
+%% - Info-table depends on core (for property access)
+%% - Content-layout is the orchestrator (depends on ALL modules)
+
+% Foundation: Variables, constants, messages, utilities, package options
+\RequirePackage{spellcards/core}
+
+% Feature modules (independent, depend only on core)
+\RequirePackage{spellcards/properties}
+\RequirePackage{spellcards/deck}
+\RequirePackage{spellcards/level-markers}
+\RequirePackage{spellcards/qr-code}
+
+% Rendering module (depends on core + properties)
+\RequirePackage{spellcards/info-table}
+
+% Orchestrator (depends on ALL above modules)
+\RequirePackage{spellcards/content-layout}
+
+%% ============================================================================
+%% Package Information
+%% ============================================================================
+
+\PackageInfo{spellcards}{%
+  Spell Card Generation Package v1.0.0\MessageBreak
+  Modular expl3-based implementation\MessageBreak
+  Loaded 7 feature modules successfully%
+}
+
+\endinput
+%%
+%% End of file `spellcards.sty'.
+%%

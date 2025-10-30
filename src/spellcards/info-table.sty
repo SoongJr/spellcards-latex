@@ -1,0 +1,227 @@
+%%
+%% This is file `spellcards/info-table.sty'
+%%
+%% Information table rendering for spellcards package
+%% Provides spell statistics table rendering with LaTeX2e compatibility
+%%
+%% Part of the spellcards package
+%% Copyright (C) 2025 SoongJr
+%% License: Open Source (see LICENSE file)
+%%
+
+\ProvidesExplFile{spellcards/info-table.sty}{2025/10/30}{1.0.0}
+{Information table module for spellcards package}
+
+%% ============================================================================
+%% Rendering Helper Functions
+%% ============================================================================
+
+%%% Render a spell property row if not NULL (with midrule)
+%%% #1 = label text, #2 = property key
+\cs_new:Npn \spellcard_render_if_not_null:nn #1 #2
+{
+  \spellcard_is_null:nF { #2 }
+  {
+    \textbf{#1:} & \prop_item:Nn \l_spellcard_spell_props { #2 } \\ \midrule
+  }
+}
+
+%%% Render a spell property row if not NULL (with bottomrule, for last row)
+%%% #1 = label text, #2 = property key
+\cs_new:Npn \spellcard_render_last_if_not_null:nn #1 #2
+{
+  \spellcard_is_null:nF { #2 }
+  {
+    \textbf{#1:} & \prop_item:Nn \l_spellcard_spell_props { #2 } \\ \bottomrule
+  }
+}
+
+%%% Render the school row with optional descriptor
+\cs_new:Npn \spellcard_render_school_row:
+{
+  \textbf{School:} &
+  \prop_item:Nn \l_spellcard_spell_props { school }
+  \spellcard_is_null:nF { descriptor }
+  {
+    ~ ( \prop_item:Nn \l_spellcard_spell_props { descriptor } )
+  }
+  \\ \bottomrule
+}
+
+%%% Render target/effect table if either is non-NULL
+\cs_new:Npn \spellcard_render_target_effect_table:
+{
+  % Check if both are NULL - if so, skip table entirely
+  \bool_lazy_and:nnF
+  { \spellcard_is_null:nT { targets } { \c_true_bool } }
+  { \spellcard_is_null:nT { effect } { \c_true_bool } }
+  {
+    \\
+    \begin{tabularx}{\textwidth}{r>{\raggedright\arraybackslash}X}
+      \toprule
+      \spellcard_is_null:nF { targets }
+      {
+      \textbf{Target:} & \prop_item:Nn \l_spellcard_spell_props { targets }
+        \spellcard_is_null:nTF { effect }
+      {                                                                     \\ \bottomrule }
+      {                                                                     \\ \midrule }
+      }
+      \spellcard_is_null:nF { effect }
+      {
+      \textbf{Effect:} & \prop_item:Nn \l_spellcard_spell_props { effect }  \\ \bottomrule
+      }
+    \end{tabularx}
+  }
+}
+
+%%% Helper function to render a spell attribute row if property is not NULL
+%%% #1 = label text
+%%% #2 = property key
+%%% Directly outputs the row without token list building
+\cs_new_protected:Npn \spellcard_render_attribute:nn #1 #2
+{
+  \spellcard_is_null:nF { #2 }
+  {
+    \textbf{#1} & \prop_item:Nn \l_spellcard_spell_props { #2 } \\ \midrule
+  }
+}
+
+%% ============================================================================
+%% LaTeX2e Compatibility Layer
+%% ============================================================================
+%% CRITICAL: Mode switching for tabularx compatibility
+%% The tabularx package requires LaTeX2e syntax mode
+%% This helper command is defined in LaTeX2e mode to work within tables
+
+%%% Document-level command for use in tables (LaTeX2e mode)
+%%% Must be defined outside ExplSyntax to work inside tabular environments
+\ExplSyntaxOff
+\newcommand{\renderattribute}[2]{%
+  \ifthenelse{\equal{#2}{NULL}}{}{\textbf{#1:} & #2 \\ \midrule}%
+}%
+\ExplSyntaxOn
+
+%% ============================================================================
+%% Main Rendering Function
+%% ============================================================================
+%% CRITICAL: This function switches between ExplSyntax and LaTeX2e modes
+%% to maintain compatibility with tabularx and calc packages
+
+%%% Internal function to render spell card info
+%%% #1 = first table width ratio (default 0.5)
+%%% Follows the legacy implementation pattern more closely
+%%% Renders tables directly without pre-building token lists
+\cs_new_protected:Npn \spellcard_render_info:n #1
+{
+  \group_begin:
+
+  % Export property values to LaTeX2e macros for use in tables
+  \cs_set:Npx \castingtime { \prop_item:Nn \l_spellcard_spell_props { castingtime } }
+  \cs_set:Npx \savingthrow { \prop_item:Nn \l_spellcard_spell_props { savingthrow } }
+  \cs_set:Npx \spellresistance { \prop_item:Nn \l_spellcard_spell_props { spellresistance } }
+  \cs_set:Npx \attackroll { \prop_item:Nn \l_spellcard_spell_props { attackroll } }
+  \cs_set:Npx \duration { \prop_item:Nn \l_spellcard_spell_props { duration } }
+  \cs_set:Npx \area { \prop_item:Nn \l_spellcard_spell_props { area } }
+  \cs_set:Npx \range { \prop_item:Nn \l_spellcard_spell_props { range } }
+  \cs_set:Npx \components { \prop_item:Nn \l_spellcard_spell_props { components } }
+  \cs_set:Npx \school { \prop_item:Nn \l_spellcard_spell_props { school } }
+  \cs_set:Npx \descriptor { \prop_item:Nn \l_spellcard_spell_props { descriptor } }
+
+  % CRITICAL: Switch to LaTeX2e mode for tabularx
+  % The tabularx and calc packages require standard LaTeX2e syntax
+  \ExplSyntaxOff%
+  \normalsize\par\noindent%
+  \def\firsttablewidth{#1}%
+  \def\secondtablewidth{\fpeval{1-#1}}%
+
+  % First table: Casting Time, Saving Throw, Spell Resistance, Attack Roll
+  \begin{tabularx}{\firsttablewidth\textwidth}[b]{r>{\raggedright\arraybackslash}X}%
+    \toprule%
+    \renderattribute{Casting\ Time}{\castingtime}%
+    \renderattribute{Saving\ Throw}{\savingthrow}%
+    \renderattribute{Spell\ Resist}{\spellresistance}%
+    \ifthenelse{\equal{\attackroll}{NULL}}{}{%
+    \textbf{Attack\ Roll:} & \attackroll \\ \bottomrule%
+    }%
+  \end{tabularx}%
+  \hfill%
+
+  % Second table: Duration, Area, Range, Components, School
+  \begin{tabularx}{\secondtablewidth\textwidth-\tabcolsep}[b]{r>{\raggedright\arraybackslash}X}%
+    \toprule%
+    \renderattribute{Duration}{\duration}%
+    \renderattribute{Area}{\area}%
+    \renderattribute{Range}{\range}%
+    \renderattribute{Comp.}{\components}%
+    % School row - always present, with optional descriptor for evocation
+    \ifthenelse{\equal{\school}{evocation} \AND\NOT\equal{\descriptor}{NULL}}%
+    {\textbf{School:} & \school{}\ (\descriptor{})} %
+    {\textbf{School:} & \school{}                }  \\ \bottomrule%
+  \end{tabularx}%
+
+  % CRITICAL: Return to ExplSyntax mode
+  \ExplSyntaxOn
+
+  % Third table for Target/Effect (if either exists)
+  \bool_set_false:N \l_tmpa_bool
+  \spellcard_is_null:nF { targets } { \bool_set_true:N \l_tmpa_bool }
+  \spellcard_is_null:nF { effect } { \bool_set_true:N \l_tmpa_bool }
+  \bool_if:NT \l_tmpa_bool
+  {
+    \\
+    \begin{tabularx}{\textwidth}{r>{\raggedright\arraybackslash}X}
+      \spellcard_render_attribute:nn { Target: } { targets }
+      \spellcard_render_attribute:nn { Effect: } { effect }
+    \end{tabularx}
+  }
+
+  \group_end:
+}
+
+%% ============================================================================
+%% User Commands
+%% ============================================================================
+
+%%% Print spell attribute only if value is not NULL
+%%% #1 = attribute name (label)
+%%% #2 = attribute value (content)
+%%% Usage: \spellattribute{Range}{25 ft + 5 ft/2 levels}
+\cs_new:Nn \spellcard_attribute:nn
+{
+  \spellcard_if_not_null:nT { #2 }
+  {
+    \textbf{#1:} & #2 \\ \midrule
+  }
+}
+
+%%% Print the last attribute in a table (no NULL check, always prints)
+%%% #1 = attribute name (label)
+%%% #2 = attribute value (content)
+%%% Usage: \spellattributelast{Duration}{1 round/level}
+\cs_new:Nn \spellcard_attribute_last:nn
+{
+  \textbf{#1:} & #2 \\ \bottomrule
+}
+
+%%% Document-level command wrapper for rendering spell info tables
+%%% #1 = optional first table width ratio (default: 0.5)
+%%% Usage: \spellcardinfo         % 50/50 split
+%%%        \spellcardinfo[0.6]    % 60/40 split
+\NewDocumentCommand{\spellcardinfo}{O{0.5}}
+{
+  \spellcard_render_info:n { #1 }
+}
+
+%%% Document-level command for printing spell attributes
+%%% Usage: \spellattribute{Range}{25 ft + 5 ft/2 levels}
+\NewDocumentCommand{\spellattribute}{m m}
+{
+  \spellcard_attribute:nn { #1 } { #2 }
+}
+
+%%% Document-level command for printing last attribute
+%%% Usage: \spellattributelast{Duration}{1 round/level}
+\NewDocumentCommand{\spellattributelast}{m m}
+{
+  \spellcard_attribute_last:nn { #1 } { #2 }
+}

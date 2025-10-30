@@ -21,12 +21,11 @@
 % packages used indirectly by pandoc converting from HTML code:
 \usepackage{longtable}
 
-% include file to make the cards print four on a page, see README for instructions!
-\newcommand{\clearcard}{\clearpage}
-\input{cardify}% you might want to comment this line while formatting and re-writing spell descriptions so cards will print like normal text, one face per page
+% include modern expl3 spell card package (modular structure)
+\usepackage{spellcards}
 
-% include modern expl3 spell card package
-\usepackage{spellcard-expl3}
+% include file to make the cards print four on a page, see README for instructions!
+\input{cardify}% you might want to comment this line while formatting and re-writing spell descriptions so cards will print like normal text, one face per page
 
 \begin{document}
 

@@ -1,0 +1,30 @@
+\documentclass[a4paper]{article}
+\usepackage{spellcards}
+
+% Define clearcard (required by spellcard environment)
+\newcommand{\clearcard}{\clearpage}
+
+\begin{document}
+
+\begin{spelldeck}
+
+  \begin{spellcard}{sor}{Test Spell}{0}
+    \spellprop{school}{evocation}
+    \spellprop{components}{V, S}
+    \spellprop{castingtime}{1 standard action}
+    \spellprop{range}{close}
+    \spellprop{duration}{1 round}
+    \spellprop{savingthrow}{none}
+    \spellprop{spellresistance}{no}
+    \spellprop{attackroll}{NULL}
+
+    \spellcardinfo{}
+
+    Test spell description.
+
+    \spellcardqr{https://example.com}
+  \end{spellcard}
+
+\end{spelldeck}
+
+\end{document}

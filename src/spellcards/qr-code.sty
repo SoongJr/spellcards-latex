@@ -1,0 +1,130 @@
+%%
+%% This is file `spellcards/qr-code.sty'
+%%
+%% QR code management for spellcards package
+%% Provides QR code validation, positioning, and rendering
+%%
+%% Part of the spellcards package
+%% Copyright (C) 2025 SoongJr
+%% License: Open Source (see LICENSE file)
+%%
+
+\ProvidesExplFile{spellcards/qr-code.sty}{2025/10/30}{1.0.0}
+{QR code module for spellcards package}
+
+%% ============================================================================
+%% QR Code Position Calculations
+%% ============================================================================
+
+%%% Calculate QR code shift based on QR code number
+%%% First QR code (index 0): 2cm - placed opposite page number
+%%% Second QR code (index 1): 4cm - needs space for page number
+%%% Stores result in \l_spellcard_qr_shift_dim
+\cs_new:Nn \spellcard_calculate_qr_shift:
+{
+  \int_compare:nNnTF { \g_spellcard_qr_code_int } = { 0 }
+    {
+      \dim_set:Nn \l_spellcard_qr_shift_dim { 2cm }
+    }
+    {
+      \dim_set:Nn \l_spellcard_qr_shift_dim { 4cm }
+    }
+}
+
+%% ============================================================================
+%% QR Code Placement Functions
+%% ============================================================================
+
+%%% Place QR code at south west corner
+%%% #1 = QR code content
+\cs_new:Nn \spellcard_place_qr_southwest:n
+{
+  \begin{tikzpicture}[remember~picture,~overlay]
+    \node [anchor=south~west,~xshift=\l_spellcard_qr_shift_dim,~yshift=1cm]
+    at~(current~page.south~west) { \qrcode{#1} };
+  \end{tikzpicture}
+}
+
+%%% Place QR code at south east corner
+%%% #1 = QR code content
+\cs_new:Nn \spellcard_place_qr_southeast:n
+{
+  \begin{tikzpicture}[remember~picture,~overlay]
+    \node [anchor=south~east,~xshift=-\l_spellcard_qr_shift_dim,~yshift=1cm]
+    at~(current~page.south~east) { \qrcode{#1} };
+  \end{tikzpicture}
+}
+
+%%% Process QR code placement on odd pages (page number on right)
+%%% #1 = QR code content
+\cs_new:Nn \spellcard_qr_code_odd_page:n
+{
+  \int_case:nn { \g_spellcard_qr_code_int }
+  {
+    { 0 } { \spellcard_place_qr_southwest:n { #1 } }  % First code: left side
+      { 1 } { \spellcard_place_qr_southeast:n { #1 } }  % Second code: right side
+  }
+}
+
+%%% Process QR code placement on even pages (page number on left)
+%%% #1 = QR code content
+\cs_new:Nn \spellcard_qr_code_even_page:n
+{
+  \int_case:nn { \g_spellcard_qr_code_int }
+  {
+    { 0 } { \spellcard_place_qr_southeast:n { #1 } }  % First code: right side
+      { 1 } { \spellcard_place_qr_southwest:n { #1 } }  % Second code: left side
+  }
+}
+
+%% ============================================================================
+%% QR Code Management
+%% ============================================================================
+
+%%% Add QR code to current page
+%%% #1 = QR code content (URL or text)
+%%% Validates maximum 2 codes per page
+%%% Calculates position based on page parity and QR code number
+\cs_new:Nn \spellcard_add_qr_code:n
+{
+  % Validate: maximum 2 QR codes per page
+  \int_compare:nNnT { \g_spellcard_qr_code_int } > { 1 }
+    {
+      \msg_error:nn { spellcard } { too-many-qr-codes }
+    }
+
+  % Calculate shift distance based on QR code number
+  \spellcard_calculate_qr_shift:
+
+  % Place QR code based on page parity
+  \int_if_odd:nTF { \value{page} }
+  {
+    \spellcard_qr_code_odd_page:n { #1 }
+  }
+  {
+    \spellcard_qr_code_even_page:n { #1 }
+  }
+
+  % Increment QR code counter
+  \int_gincr:N \g_spellcard_qr_code_int
+}
+
+%%% Reset QR code counter
+%%% Called at the start of each spell card environment
+%%% Can also be called manually with \clearpage for testing
+\cs_new:Nn \spellcard_reset_qr_counter:
+{
+  \int_gzero:N \g_spellcard_qr_code_int
+}
+
+%% ============================================================================
+%% User Commands
+%% ============================================================================
+
+%%% Add a QR code to the current page
+%%% Usage: \spellcardqr{https://example.com/spell/fireball}
+%%% Maximum 2 QR codes per page (use \clearpage for more)
+\NewDocumentCommand{\spellcardqr}{m}
+{
+  \spellcard_add_qr_code:n { #1 }
+}

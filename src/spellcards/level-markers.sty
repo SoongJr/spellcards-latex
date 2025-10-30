@@ -1,0 +1,138 @@
+%%
+%% This is file `spellcards/level-markers.sty'
+%%
+%% Spell level marker management for spellcards package
+%% Provides marker position calculations and rendering on page edges
+%%
+%% Part of the spellcards package
+%% Copyright (C) 2025 SoongJr
+%% License: Open Source (see LICENSE file)
+%%
+
+\ProvidesExplFile{spellcards/level-markers.sty}{2025/10/30}{1.0.0}
+{Level marker module for spellcards package}
+
+%% ============================================================================
+%% Marker Position Calculations
+%% ============================================================================
+
+%%% Calculate marker position at right edge based on spell level
+%%% #1 = spell level (0-9)
+%%% Updates \l_spellcard_marker_position_dim
+%%% Formula: ((1/16 * mod(level, 10)) * paperheight) + 2.5cm
+\cs_new:Nn \spellcard_calculate_marker_position:n
+{
+  % Calculate modulo 10 to prevent overflow for levels > 9
+  \fp_set:Nn \l_tmpa_spellcard_fp { #1 - 10 * floor(#1 / 10) }
+
+  % Calculate position: (1/16 * level_mod) * paperheight + 2.5cm
+  \fp_set:Nn \l_spellcard_marker_position_fp
+  {
+    ( \c_spellcard_marker_spacing_fp * \l_tmpa_spellcard_fp )
+    * \dim_to_fp:n { \paperheight }
+    + \c_spellcard_marker_offset_fp cm
+  }
+
+  % Convert to dimension for TikZ usage
+  \dim_set:Nn \l_spellcard_marker_position_dim
+  { \fp_to_dim:N \l_spellcard_marker_position_fp }
+}
+
+%%% Calculate marker x-shift based on printer margins
+%%% Returns dimension for TikZ xshift
+%%% With printer margins: -7mm
+%%% Without printer margins: -12mm (-7mm - 5mm)
+\cs_new:Nn \spellcard_get_marker_xshift:
+{
+  \bool_if:NTF \l_spellcard_has_printer_margin_bool
+  { -7mm }
+  { -12mm }
+}
+
+%%% Calculate marker guide width based on printer margins
+%%% Returns dimension for TikZ line drawing
+%%% With printer margins: 14mm
+%%% Without printer margins: 19mm (14mm + 5mm)
+\cs_new:Nn \spellcard_get_marker_guide_width:
+{
+  \bool_if:NTF \l_spellcard_has_printer_margin_bool
+  { 14mm }
+  { 19mm }
+}
+
+%% ============================================================================
+%% Marker Rendering
+%% ============================================================================
+
+%%% Draw spell level marker on right edge of page
+%%% #1 = spell level
+%%% Draws both the level number and guide lines for highlighting
+\cs_new_protected:Npn \spellcard_draw_spell_marker:n #1
+{
+  % Calculate marker position
+  \spellcard_calculate_marker_position:n { #1 }
+
+  % Calculate marker positioning based on printer margins
+  \dim_set:Nn \l_tmpa_dim
+  {
+    \bool_if:NTF \l_spellcard_has_printer_margin_bool
+    { 7mm }
+    { 12mm }
+  }
+  \dim_set:Nn \l_tmpb_dim
+  {
+    \bool_if:NTF \l_spellcard_has_printer_margin_bool
+    { 14mm }
+    { 19mm }
+  }
+
+  \begin{tikzpicture}[remember~ picture,~ overlay]
+    % Draw the spell level number at the right edge
+    \node [font=\Large, anchor=center,
+      xshift=-\dim_use:N \l_tmpa_dim,
+      yshift=-\l_spellcard_marker_position_dim]
+    at~ (current~ page.north~ east) {\textbf{#1}};
+
+    % Draw guide lines for highlighting
+    \draw[lightgray, dotted, line~ width=1pt]
+    (current~ page.north~ east)
+    ++(0cm, -\l_spellcard_marker_position_dim + 8mm)
+    -- ++(-\dim_use:N \l_tmpb_dim, 0)
+    -- ++(0, -16mm)
+    -- ++(\dim_use:N \l_tmpb_dim, 0);
+  \end{tikzpicture}
+}
+
+%%% Draw spell marker chart (reference card for all spell levels 0-9)
+%%% Creates a lookup card showing all spell level markers that users can color
+\cs_new_protected:Nn \spellcard_draw_marker_chart:
+{
+  \section*{\Huge look-up~ card~ for~ spell-level~ marker~ colors}
+  \vspace{1ex}
+  \raggedright\Large
+  To~ the~ right~ you~ see~ the~ markers~ for~ all~ possible~ spell~ levels.\\
+  These~ are~ intended~ to~ be~ colored~ with~ a~ highlighter~ and~ serve~ as~ a~ reference~
+  for~ which~ colors~ you~ decided~ to~ use~ when~ printing~ new~ cards.
+
+  % Draw markers for all spell levels (0-9)
+  \int_step_inline:nn { 10 }
+  {
+    \spellcard_draw_spell_marker:n { \int_eval:n { ##1 - 1 } }
+  }
+  \clearcard
+
+  % Reset page counter (same as spellcard environment)
+  \setcounter{page}{1}
+}
+
+%% ============================================================================
+%% User Commands
+%% ============================================================================
+
+%%% Spell marker chart command
+%%% Usage: \SpellMarkerChart
+%%% Creates a reference card showing all spell level markers (0-9) for coloring
+\NewDocumentCommand{\SpellMarkerChart}{}
+{
+  \spellcard_draw_marker_chart:
+}

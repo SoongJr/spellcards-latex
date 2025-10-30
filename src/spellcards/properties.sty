@@ -1,0 +1,46 @@
+%%
+%% This is file `spellcards/properties.sty'
+%%
+%% Property management for spellcards package
+%% Provides spell property storage and access via property lists
+%%
+%% Part of the spellcards package
+%% Copyright (C) 2025 SoongJr
+%% License: Open Source (see LICENSE file)
+%%
+
+\ProvidesExplFile{spellcards/properties.sty}{2025/10/30}{1.0.0}
+{Property management module for spellcards package}
+
+%% ============================================================================
+%% Property List Access Functions
+%% ============================================================================
+
+%%% Helper to check if a property value is NULL or empty
+%%% #1 = property key
+%%% Returns true if the property is NULL, empty, or undefined
+\prg_new_conditional:Npnn \spellcard_is_null:n #1 { p, T, F, TF }
+{
+  \tl_set:Nx \l_tmpd_tl { \prop_item:Nn \l_spellcard_spell_props { #1 } }
+  \tl_if_eq:NNTF \l_tmpd_tl \c_spellcard_null_value_tl
+  { \prg_return_true: }
+  {
+    \tl_if_empty:NTF \l_tmpd_tl
+    { \prg_return_true: }
+    { \prg_return_false: }
+  }
+}
+
+%% ============================================================================
+%% User Commands
+%% ============================================================================
+
+%%% Set a spell property (used within spell files)
+%%% #1 = property key (e.g., "school", "components", "duration")
+%%% #2 = property value
+%%% Usage: \spellprop{school}{evocation}
+%%%        \spellprop{components}{V, S, M (a bit of bat fur)}
+\NewDocumentCommand{\spellprop}{mm}
+{
+  \prop_put:Nnn \l_spellcard_spell_props { #1 } { #2 }
+}

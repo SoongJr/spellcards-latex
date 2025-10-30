@@ -1,0 +1,51 @@
+\documentclass[%
+  a4paper,
+  twoside,
+  DIV=14,
+  fontsize=12pt,
+  BCOR=0mm,
+  draft=true,
+]{scrartcl}
+
+\usepackage[utf8]{inputenc}
+\usepackage{calc}
+\usepackage{ifthen}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usepackage{qrcode}
+\usepackage{atbegshi}
+\usepackage{ifoddpage}
+\usepackage{longtable}
+
+% Load spellcards package WITHOUT cardify for testing
+\usepackage{spellcards}
+
+\begin{document}
+
+% Test spell with target and effect to verify third table rendering
+\begin{spelldeck}
+
+  \begin{spellcard}{sor}{Test Target Effect}{3}
+    \spellprop{school}{necromancy}
+    \spellprop{components}{V, S, DF}
+    \spellprop{castingtime}{1 standard action}
+    \spellprop{range}{medium (100 ft. + 10 ft./level)}
+    \spellprop{duration}{instantaneous}
+    \spellprop{savingthrow}{Fortitude negates}
+    \spellprop{spellresistance}{yes}
+    \spellprop{attackroll}{NULL}
+    \spellprop{targets}{one living creature}
+    \spellprop{effect}{ray of negative energy}
+
+    \spellcardinfo{}
+
+    This spell tests that the target/effect table renders correctly WITHOUT a top rule.
+    The two tables above should have bottom rules, and this third table should start
+    immediately below them without an extra line at the top.
+  \end{spellcard}
+
+\end{spelldeck}
+
+\end{document}
