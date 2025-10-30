@@ -15,11 +15,32 @@ Migration of spell card LaTeX project to expl3 (LaTeX3) programming layer is COM
 
 ## Architecture
 
-### Core Components
-- **spellcard-expl3.sty** (~1450 lines) - Modern expl3 package (replaces spellcard-templates.tex)
+### Current State (Pre-Refactoring)
+- **spellcard-expl3.sty** (~1450 lines) - Monolithic modern expl3 package
 - **cardify.tex** (~180 lines) - Page layout (unchanged, integrated successfully)
 - **spellcards.tex** (~30 lines) - Document entry point
 - **Generated spell files** - Property-based format using `\spellprop{key}{value}`
+
+### Target State (Post-Refactoring)
+- **spellcards.sty** (~100 lines) - Main package loader (renamed from spellcard-expl3.sty)
+- **spellcards/*.sty** (~1200 lines total) - 7 focused modules in subfolder
+  - `core.sty` - Foundation (variables, messages, constants)
+  - `properties.sty` - Spell data management
+  - `deck.sty` - Deck organization and labels
+  - `level-markers.sty` - Spell level indicators on right edge
+  - `qrcode.sty` - QR code system
+  - `info-table.sty` - Spell attribute table rendering
+  - `content-layout.sty` - Card structure orchestrator
+- **tests/*.tex** - Feature-specific test files (test-core.tex, test-properties.tex, etc.)
+- **cardify.tex** (~180 lines) - Page layout (unchanged)
+- **spellcards.tex** (~30 lines) - Document entry point (uses `\usepackage{spellcards}`)
+- **Generated spell files** - Modern PascalCase format: `\SpellProp{key}{value}`, `\SpellCardQR{url}`
+
+### Post-Cleanup State (After Phase 11)
+- ❌ **Legacy files removed**: spellcard-templates-legacy.tex, spellcards-legacy.tex, spells-legacy/
+- ❌ **Compatibility layer removed**: spellcard-templates-compat.tex
+- ❌ **Legacy Python code removed**: Legacy format parsing in file_scanner.py, legacy tests (~40 tests)
+- ✅ **Clean, modern codebase**: Only PascalCase commands, only modern format, ~320 tests
 
 ### Modern Implementation (expl3)
 - Property lists for spell data (`\prop`)
@@ -42,11 +63,18 @@ Migration of spell card LaTeX project to expl3 (LaTeX3) programming layer is COM
 **Phase 7: Python Generator** - Updated to output expl3 format, full GUI workflow functional
 **Phase 8: Verification** - PDF comparison confirms identical output (91 pages, 25 spells, zero warnings)
 
+### Current Priority: Refactoring 🔄
+
+**Phase 9: Package Refactoring** - Split monolithic package into 7 feature-based modules  
+**Phase 10: Command Naming Modernization** - PascalCase public API + bulk sed rename of existing cards  
+**Phase 11: Remove ALL Compatibility** - Delete legacy templates, legacy Python code, legacy tests  
+**Phase 12: Documentation** - Comprehensive user guide for modernized package
+
 ### Optional Future Enhancements 📋
 
 **Phase 3.2: Key-Value Interface** (deferred - nice-to-have for user customization)  
-**Phase 9: Documentation** - Document solutions, create comprehensive user guide  
-**Phase 10: Final Refactoring** - Command naming modernization (PascalCase public API), split package into modules, code audit
+**Index Card Generation** - Deck table of contents with spell counts by level  
+**Enhanced Validation** - Better error messages and spell filtering
 
 ## Key Implementation Details
 
@@ -92,32 +120,335 @@ Migration of spell card LaTeX project to expl3 (LaTeX3) programming layer is COM
 
 ## Next Session Priority Tasks
 
-### ✅ ALL CORE TASKS COMPLETE!
+### 🎯 Phase 9: Package Refactoring (HIGH PRIORITY)
 
-The modernization is **FEATURE COMPLETE**. Both versions produce identical 91-page PDFs with:
-- ✅ 25 spells properly formatted (Level 0-7)
-- ✅ All spell properties correct (Attack Roll, Spell Resist, Saving Throw, etc.)
-- ✅ Zero LaTeX warnings or errors
-- ✅ Identical content and layout verified via pdftotext comparison
-- ✅ Python generator fully integrated with expl3 format
-- ✅ GUI workflow functional (all 359 tests passing, 10.00/10 pylint)
+**Goal**: Split monolithic `spellcard-expl3.sty` (1450 lines) into maintainable, feature-based modules
+
+**Why Now**: 
+- ✅ Full feature parity achieved - safe time to refactor
+- ✅ Identical rendering verified - we have baseline to compare against
+- ✅ All tests passing - refactoring won't break functionality
+- 🎯 Before adding new features - clean foundation first
+
+#### Refactoring Strategy
+
+**Final Structure**:
+```
+src/
+├── spellcards.sty (~100 lines) - Main package loader
+├── spellcards.tex - Document entry point
+├── spellcards/ - Package modules (subfolder)
+│   ├── core.sty (~150 lines)
+│   ├── properties.sty (~180 lines)
+│   ├── deck.sty (~170 lines)
+│   ├── level-markers.sty (~140 lines)
+│   ├── qrcode.sty (~180 lines)
+│   ├── info-table.sty (~200 lines)
+│   └── content-layout.sty (~180 lines)
+└── spells/ - Generated spell cards
+```
+
+**Module Breakdown**:
+
+1. **core.sty** (~150 lines) - Foundation
+   - Variable declarations (bool, int, fp, tl, seq, prop)
+   - Constants and dimensions
+   - ALL message definitions (centralized)
+   - Utility functions (printer margin check, NULL validation)
+   - Dependencies: None
+
+2. **properties.sty** (~180 lines) - Spell Data Management
+   - Property list (`\l_spellcard_spell_props`)
+   - `\spellprop{key}{value}` command
+   - Property getters/setters
+   - Default values
+   - Dependencies: core.sty
+
+3. **deck.sty** (~170 lines) - Deck Organization
+   - Deck state management (`\begin{spelldeck}`, `\end{spelldeck}`)
+   - Deck registration and tracking (sequences)
+   - Deck label positioning calculations
+   - Deck label drawing (TikZ overlay at top edge)
+   - Deck queries (count, exists, map)
+   - Dependencies: core.sty, properties.sty
+
+4. **level-markers.sty** (~140 lines) - Spell Level Indicators
+   - Marker position calculation (right edge, based on spell level)
+   - Marker drawing (TikZ overlay)
+   - `\SpellMarkerChart` command (reference card)
+   - Dependencies: core.sty
+
+5. **qrcode.sty** (~180 lines) - QR Code System
+   - QR code counter management (max 2 per page)
+   - Position calculation (page parity-aware: odd/even pages)
+   - QR code placement (TikZ overlay)
+   - `\spellcardqr{url}` command
+   - Dependencies: core.sty
+
+6. **info-table.sty** (~200 lines) - Spell Attribute Table
+   - Table width calculations
+   - Side-by-side table rendering (left: Casting Time/Saving Throw, right: Duration/Range)
+   - `\spellcard_render_info:n` function (WITH `\ExplSyntaxOff/On` mode switching)
+   - `\renderattribute` LaTeX2e helper (for conditional rows)
+   - Dependencies: core.sty, properties.sty
+
+7. **content-layout.sty** (~180 lines) - Card Structure Orchestrator
+   - `\begin{spellcard}` environment
+   - Title rendering (`\section*` with spell name)
+   - Body placement (description content)
+   - `\includespell` command and print control
+   - Card lifecycle (clearcard, counter resets)
+   - Dependencies: ALL modules (orchestrator)
+
+**Total**: ~1200 lines (down from 1450 after trimming comments)
+
+#### Dependency Chain (Acyclic, One-Way)
+
+```
+spellcards.sty (main loader)
+  → core.sty (foundation)
+  → properties.sty ← core
+  → deck.sty ← core, properties
+  → level-markers.sty ← core
+  → qrcode.sty ← core
+  → info-table.sty ← core, properties
+  → content-layout.sty ← ALL (orchestrator)
+```
+
+#### Implementation Phases (Safest Order)
+
+**Phase 1: Extract Independent Features** (LOW RISK)
+1. ✅ Create `spellcards/core.sty` - All variables, messages, constants
+2. ✅ Create `spellcards/properties.sty` - Property list (depends on core only)
+3. ✅ Create `spellcards/level-markers.sty` - Fully independent (depends on core only)
+4. ✅ Create `spellcards/qrcode.sty` - Fully independent (depends on core only)
+
+**Phase 2: Extract Single-Dependency Features** (MEDIUM RISK)
+5. ⚠️ Create `spellcards/info-table.sty` - Depends on: core, properties
+   - **Critical**: Keep entire `\spellcard_render_info:n` function together
+   - **Critical**: Keep `\ExplSyntaxOff/On` dance intact
+
+**Phase 3: Extract Composite Features** (MEDIUM RISK)
+6. ⚠️ Create `spellcards/deck.sty` - Depends on: core, properties
+   - Includes deck state management AND deck label drawing
+   - Both are part of the "deck" concept
+
+**Phase 4: Extract Orchestrator** (HIGH RISK - DO LAST)
+7. ⚠️⚠️ Create `spellcards/content-layout.sty` - Depends on: ALL
+   - `\begin{spellcard}` environment
+   - Calls all other modules
+   - **Do this LAST** after all other modules are stable
+
+**Phase 5: Create Main Loader**
+8. ✅ Refactor `src/spellcards.sty` to just load modules in correct order
+9. ✅ Rename package: `spellcard-expl3.sty` → `spellcards.sty`
+
+**Phase 6: Reorganize Test Files**
+10. ✅ Create feature-specific test files in `src/tests/` subfolder:
+    - `test-core.tex` - Variables, constants, messages initialization
+    - `test-properties.tex` - Property list management, defaults
+    - `test-deck.tex` - Deck tracking, labels, queries
+    - `test-level-markers.tex` - Marker positioning, drawing, chart
+    - `test-qrcode.tex` - QR code validation, positioning (page parity), max 2 per page
+    - `test-info-table.tex` - Table rendering, width calculations
+    - `test-content-layout.tex` - Card environment, title, body, includespell
+    - `test-integration.tex` - Full spell cards (end-to-end)
+11. ✅ Remove old test files from `src/` root (test-expl3.tex, test-spell.tex, etc.)
+12. ✅ Update `.gitignore` for `src/tests/out/` directory
+
+**Rationale**: 
+- Feature-based tests match module structure
+- Easier to identify what broke when a test fails
+- Tests can use full `\usepackage{spellcards}` and only exercise specific features
+- Keeps `src/` root clean (only production files: spellcards.sty, spellcards.tex, cardify.tex)
+- Test outputs in dedicated `src/tests/out/` subfolder
+
+#### Critical Interdependencies (Watch Out!)
+
+**🔴 HIGH RISK: Info Table + LaTeX2e Mode Switching**
+- Problem: `\spellcard_render_info:n` switches between expl3 and LaTeX2e modes mid-function
+- Solution: Keep entire function in `info-table.sty` - DO NOT split the mode switching logic
+
+**🟡 MEDIUM RISK: Spell Card Environment (Orchestrator)**
+- Problem: `\begin{spellcard}` depends on ALL modules (deck, markers, QR, table, properties)
+- Solution: Extract this LAST after all other modules are stable
+
+**🟡 MEDIUM RISK: Deck Labels + Deck State**
+- Problem: Deck labels use deck state variables
+- Solution: Keep both in `deck.sty` - they're conceptually the same feature
+
+**🟢 NO RISK: Level Markers, QR Codes, Properties**
+- These are fully independent features with clean boundaries
+
+#### Testing Strategy
+
+**After Each Module Extraction**:
+1. ✅ Compile `src/spellcards.tex` - must succeed with exit code 0
+2. ✅ Compare PDF output with baseline (`spellcards.pdf` from before refactoring)
+3. ✅ Verify zero warnings/errors in log file
+4. ✅ Run chktex on changed files (for traditional LaTeX2e files only)
+
+**Final Verification**:
+1. ✅ Compile both `spellcards.tex` and `spellcards-legacy.tex`
+2. ✅ Compare PDFs - must remain identical (91 pages, 25 spells)
+3. ✅ All 359 Python tests still pass
+4. ✅ Pylint 10.00/10 maintained
+
+#### Refactoring Guidelines
+
+**✅ DO**:
+- Keep mode switches intact (`\ExplSyntaxOff` with `\ExplSyntaxOn`)
+- Maintain dependency order (Core → Features → Orchestrator)
+- Test after each extraction (compile after moving each module)
+- Keep related positioning code together (calculation + drawing for same feature)
+- Centralize messages (all in `core.sty`)
+- Trim obvious/redundant comments (target: ~100-150 comment lines total)
+- Remove empty lines between function definitions
+
+**❌ DON'T**:
+- Don't split info table rendering (`\spellcard_render_info:n` is atomic)
+- Don't separate deck state from deck labels (they're one feature)
+- Don't split orchestrator too early (do it last when other modules are stable)
+- Don't create circular dependencies (always one-way: Foundation → Features → Orchestrator)
+- Don't break working code without testing immediately
+
+---
+
+### 🎯 Phase 10: Command Naming Modernization (AFTER Phase 9)
+
+**Goal**: Modernize public API with PascalCase naming convention
+
+**Scope**: User-facing commands only (internal functions keep snake_case)
+
+**Examples**:
+- `\begin{spellcard}` → `\begin{SpellCard}`
+- `\spellprop{key}{value}` → `\SpellProp{key}{value}`
+- `\spellcardqr{url}` → `\SpellCardQR{url}`
+- `\includespell[options]{file}` → `\IncludeSpell[options]{file}`
+
+**Implementation Strategy** (No Backwards Compatibility):
+
+1. **Manual Prototype** (~1 hour)
+   - Manually modify 2-3 spell card files to use new PascalCase commands
+   - Update `spellcards.sty` to provide new command names
+   - Compile and verify PDFs render correctly
+
+2. **Bulk Rename Existing Files** (~30 min)
+   - Use `sed` to rename commands in all existing spell card files:
+     ```bash
+     find src/spells -name "*.tex" -exec sed -i \
+       -e 's/\\begin{spellcard}/\\begin{SpellCard}/g' \
+       -e 's/\\end{spellcard}/\\end{SpellCard}/g' \
+       -e 's/\\spellprop{/\\SpellProp{/g' \
+       -e 's/\\spellcardqr{/\\SpellCardQR{/g' \
+       -e 's/\\spellcardinfo{/\\SpellCardInfo{/g' \
+       {} \;
+     ```
+   - Verify with git diff
+   - Compile spellcards.tex to ensure all cards still work
+
+3. **Update Python Generator** (~2 hours)
+   - Modify `generators/latex_generator.py` to output new PascalCase commands
+   - Update all template strings
+   - Update test fixtures to expect new format
+   - Run all 359 tests - must pass
+
+4. **Regeneration Test** (~30 min)
+   - Select a few spells and regenerate via GUI
+   - Verify generated files use PascalCase
+   - Verify preservation features still work
+   - Compile and verify PDFs
+
+5. **Full Verification** (~1 hour)
+   - Regenerate ALL 25 spells
+   - Compile spellcards.tex
+   - Compare PDF with baseline (should be identical except for any DB updates)
+   - All 359 Python tests passing
+
+**Timeline**: ~5 hours total
+
+**Breaking Change**: YES - Old spell card files won't work after this phase
+**Mitigation**: All existing cards will be bulk-renamed with sed before generator is updated
+
+---
+
+### 🎯 Phase 11: Remove ALL Compatibility Layers (AFTER Phase 10)
+
+**Goal**: Clean up all legacy/compatibility code - we no longer need to support old formats
+
+**Rationale**: 
+- ✅ All spell cards regenerated with modern format (Phase 10)
+- ✅ No old-format cards exist anymore
+- ✅ No need to read/parse legacy format ever again
+- 🎯 Simpler codebase, easier maintenance
+
+**Removals**:
+
+1. **LaTeX Files** (~3 hours)
+   - ✅ Delete `src/spellcard-templates-compat.tex` (compatibility layer)
+   - ✅ Delete `src/spellcard-templates-legacy.tex` (old templates)
+   - ✅ Delete `src/spellcards-legacy.tex` (legacy entry point)
+   - ✅ Delete `src/spells-legacy/` directory (old spell format examples)
+   - ✅ Keep `src/spells-expl3/` if it contains reference examples, or remove if obsolete
+
+2. **Python Generator - Legacy Format Reading** (~2 hours)
+   - ❌ Remove legacy property extraction from `utils/file_scanner.py`
+     - Delete `\newcommand{\property}{value}` parsing
+     - Keep only `\SpellProp{key}{value}` parsing (new format)
+   - ❌ Remove legacy URL extraction
+     - Delete `\newcommand{\urlenglish}` parsing
+     - Keep only `\SpellCardQR{url}` parsing
+   - ❌ Update `extract_properties()` to only handle modern format
+   - ✅ Simplify `analyze_existing_card()` - no format detection needed
+
+3. **Python Tests - Legacy Test Cases** (~1 hour)
+   - ❌ Delete `TestPropertyExtractionLegacy` class from `tests/test_property_extraction.py`
+   - ❌ Delete `TestPropertyExtractionLegacyEdgeCases` class
+   - ✅ Keep only `TestPropertyExtractionExpl3` class (rename to just `TestPropertyExtraction`)
+   - ❌ Remove legacy test fixtures and sample files
+   - Update test count (will drop from 359 to ~320 tests)
+
+4. **Documentation Updates** (~30 min)
+   - Update README to remove legacy format references
+   - Update Python generator README
+   - Mark old format as "deprecated/removed" in changelog
+
+**Verification**:
+- ✅ All Python tests pass (~320 tests, down from 359)
+- ✅ Pylint 10.00/10 maintained
+- ✅ All spell cards compile successfully
+- ✅ No references to legacy format in codebase (grep check)
+
+**Timeline**: ~6.5 hours total
+
+**Benefits**:
+- 🎯 Simpler codebase (~200-300 lines removed from Python)
+- 🎯 No more format detection logic
+- 🎯 Easier to understand and maintain
+- 🎯 No confusion about which format to use
+
+---
+
+### 🎯 Phase 12: Documentation (FINAL)
+
+**Goal**: Comprehensive user guide for modernized package
+
+**Priority**: Do AFTER refactoring and command renaming are complete and stable
+
+---
 
 ### Optional Polishing Tasks (Future Sessions)
 
-1. **Documentation Updates** (LOW PRIORITY)
-   - Update main README with expl3 migration completion
-   - Create user guide for new features
-   - Document command API
-
-2. **Code Refactoring** (OPTIONAL)
-   - Command naming modernization (PascalCase for public API)
-   - Split 1450-line package into modules
-   - Code audit and cleanup
-
-3. **Enhanced Features** (NICE-TO-HAVE)
+1. **Enhanced Features** (NICE-TO-HAVE)
    - Index card generation for deck tables of contents
    - Spell filtering for deck building
    - Additional validation with better error messages
+   - Custom printer margin configuration UI
+
+2. **Performance Optimization** (IF NEEDED)
+   - Profile compilation time for large spell sets
+   - Optimize TikZ drawing if slow
+   - Cache calculations if beneficial
 
 ## Recent Work Sessions
 
@@ -294,8 +625,16 @@ The modernization is **FEATURE COMPLETE**. Both versions produce identical 91-pa
 
 ## Summary
 
-**🎉 The expl3 modernization is COMPLETE and VERIFIED!**
+**🎉 The expl3 modernization is FEATURE COMPLETE and VERIFIED!**
 
 Both legacy and modern implementations produce identical 91-page PDFs with 25 spells, zero compilation warnings, and matching content. The Python generator fully supports the expl3 format with all preservation features (descriptions, URLs, properties, width ratios). All 359 tests pass with 10.00/10 pylint score.
 
-**Ready for production use!**
+**Next Steps**: Package refactoring (Phase 9-12):
+1. **Phase 9**: Split into 7 feature-based modules (~2 days)
+2. **Phase 10**: PascalCase command names + bulk sed rename (~5 hours)
+3. **Phase 11**: Remove ALL legacy/compatibility code (~6.5 hours)
+4. **Phase 12**: Documentation (~ongoing)
+
+After Phase 11, we'll have a clean, modern codebase with no legacy baggage. Total estimated time: ~3-4 days of focused work.
+
+**Ready for production use now, and ready for refactoring!**
