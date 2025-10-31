@@ -1,104 +1,78 @@
 # LaTeX Spell Cards Project
 
-This project is designed to create easily printable spell cards for tabletop roleplaying games using LaTeX and KOMA Script classes for a specific character.  
+This project creates printable spell cards for Pathfinder 1e characters using LaTeX.
+Cards are designed to be printed on A6 index cards (4 per A4 sheet) with QR codes linking to online references.
 
-Printing cards for all spells, even for just one class, could easily consume a whole stack of paper,
-so we concentrate on printing the cards your character actually knows/uses.  
+## Documentation
+
+- **[User Guide](docs/user-guide.md)** - How to compile and customize spell cards
+- **[Generator Guide](docs/generator-guide.md)** - Using the Python GUI to generate spell cards
+- **[API Reference](docs/api-reference.md)** - Complete LaTeX command reference
+
+## Quick Start
+
+### Prerequisites
+
+- LaTeX installation (MikTeX, TeX Live, or use the included Docker environment)
+- Python 3.10+ for the spell card generator
+- Recommended: VS Code with LaTeX Workshop extension
+
+**Docker/Codespaces**: The easiest setup is using GitHub Codespaces or the provided devcontainer, which includes all dependencies.
+
+### Generate Spell Cards
+
+```bash
+spell_card_generator/spell_card_generator.sh
+```
+
+Follow the GUI workflow to select your character class and spells.
+
+### Compile PDF
+
+```bash
+latexmk -pdf src/spellcards.tex
+```
+
+Output: `src/out/spellcards.pdf` (4 A6 cards per A4 sheet)
 
 ## Project Structure
 
 ```
 spellcards-latex
-├── spell_card_generator             # Folder containing a GUI tool for generating spell cards
-├── src
-│   ├── spellcards.tex               # Main LaTeX document for compiling spell cards
-│   └── spells
-│       ├── spell_full.tsv           # Database of spells in TSV format
-│       └── spell1.tex               # LaTeX file for a specific spell card
-├── .vscode
-│   ├── extensions.json              # Recommended extensions for VS Code
-│   └── settings.json                # Workspace-specific settings for LaTeX
-├── .devcontainer
-│   └── devcontainer.json            # Configures the development environment settings
-├── Dockerfile                       # Defines the Docker image with necessary packages
-├── pyproject.toml                   # Python project configuration and dependencies
-├── requirements.txt                 # Python requirements (poetry)
-├── .gitignore                       # Files and directories to ignore by Git
-└── README.md                        # Documentation for the project
+├── docs/                            # Documentation
+│   ├── user-guide.md               # LaTeX usage guide
+│   ├── generator-guide.md          # Python generator guide
+│   └── api-reference.md            # Command reference
+├── spell_card_generator/           # Python GUI application
+│   ├── spell_full.tsv              # Spell database (TSV format)
+│   └── ...                         # Generator source code
+├── src/
+│   ├── spellcard.cls               # Document class (draft/final modes)
+│   ├── spellcards.sty              # Main package loader
+│   ├── spellcards.tex              # Main document
+│   ├── cardify.tex                 # A6-on-A4 layout
+│   ├── spellcards/                 # Package modules
+│   │   ├── core.sty                # Foundation (variables, messages)
+│   │   ├── properties.sty          # Spell data management
+│   │   ├── deck.sty                # Deck organization
+│   │   ├── level-markers.sty       # Spell level indicators
+│   │   ├── qr-code.sty             # QR code positioning
+│   │   ├── info-table.sty          # Attribute table rendering
+│   │   └── content-layout.sty      # Card structure
+│   └── spells/                     # Generated spell cards
+│       ├── sor/                    # Sorcerer spells
+│       │   ├── 0/                  # Level 0 (cantrips)
+│       │   │   ├── AcidSplash.tex
+│       │   │   └── ...
+│       │   ├── 1/                  # Level 1
+│       │   └── ...
+│       ├── wiz/                    # Wizard spells
+│       └── sor.tex                 # Sorcerer deck definitions
+├── .devcontainer/
+│   └── devcontainer.json           # VS Code dev container config
+├── Dockerfile                      # Docker image with dependencies
+└── README.md                       # This file
 ```
-
-## Getting Started
-
-### Prerequisites
-
-- Ensure that MikTeX is installed on your system.
-- Python 3.8+ for the GUI spell card generator
-- Install recommended extensions in VS Code for optimal LaTeX editing.
-
-The easiest way to do this is by using GitHub Codespaces or the provided Docker environment, which includes all necessary dependencies.
-
-**Note**: The devcontainer includes `fonts-noto-color-emoji` for Unicode symbol and emoji support in the spell card generator GUI. If you encounter display issues with symbols (✓, ✗, ⚠, etc.), rebuild the devcontainer to ensure fonts are properly installed.
-
-### Creating spell cards
-
-The file spell_card_generator/spell_full.tsv is a database of existing spells, exported from a [Google Doc](https://docs.google.com/spreadsheets/d/1cuwb3QSvWDD7GG5McdvyyRBpqycYuKMRsXgyrvxvLFI/edit?usp=sharing)  
-Creating LaTeX-formatted spell cards from this information is supported by tooling, but still requires manual modification afterwards.
-
-#### spell card generator
-
-Folder `spell_card_generator` contains a GUI application for generating spell cards from the spell database.  
-Start it by executing `spell_card_generator/spell_card_generator.sh` from the repository root.
-
-The generated files will be placed in `src/spells/<class>/<level>/` directories and need to be manually fine-tuned before including them in your document.
-
-#### Include and adjust the generated result
-Follow the instructions of the tool and this general workflow:  
-1. To actually include the generated card in the PDF it needs an `\input{}` statement in spellcards.tex (or one of its included files)
-1. Once thus included, take a look at linter violations and address them.  
-   If pandoc created code that needs additional packages to render the description, you will notice this here.
-1. Finally, take a look at the PDF:
-   1. Some parts of the pandoc-generated description, particularly tables, might not be well-formatted
-   1. If the text only barely spills onto the back of the card, consider altering the description so everything is on the front
-   1. Try to keep spells on a single card.  
-      It is better to heavily abridge the description and have to look up details when needed, than having to juggle four cards for a single spell (cf. Teleport or Permanency)
-   1. Fix hyphenation and under-/overfull boxes
-
-#### Re-creating spells
-This might be required if either `spell_full.tsv` or `spell_card_generator` have changed.
-
-The spell card generator GUI includes a "Select Existing" button, allowing users to re-import and update previously generated spell cards.  
-You will be asked to confirm the overwrite and whether you wish to preserve URLs,
-descriptions, and **property modifications**.
-
-**Property Preservation Feature**: When you customize spell properties
-(e.g. fix chktex warnings, clarify targets, simplify components...) in the generated `.tex` files,
-the generator can preserve your modifications even when regenerating from an updated database.
-
-**⚠️ Critical Requirement**: To preserve your modifications, you must first make a copy of the value
-and comment it with `% original: {value}` so the generator knows that you've modified this value
-and can detect changes in the database when they happen.
-
-**Note**: This preservation logic applies to spell properties (like `targets`, `castingtime`, etc.),
-but **not to URLs**. URLs are either preserved entirely from the
-existing card or generated fresh - there's no comparison or conflict detection for URL values.
-
-Example (version 2.1+ modern format):
-```latex
-% Line generated by spell_card_generator:
-\SpellProp{targets}{one object or 10-ft. square}
-
-% ✅ Your modification to address chktex warning:
-\SpellProp{targets}{one object or 10-ft.\ square}% original: {one object or 10-ft. square}
-
-% ❌ This would be interpreted as a generated value and overwritten by next generator run:
-\SpellProp{targets}{one object or 10-ft.\ square}
-```
-
-### Recommended Extensions
-
-- **LaTeX Workshop**: Provides a rich editing experience for LaTeX documents, including syntax highlighting, preview, and compilation.
-
-### Compiling the LaTeX Files
 
 #### in command line:
 1. Open the repository folder in a terminal.
@@ -119,30 +93,43 @@ Example (version 2.1+ modern format):
 1. Cut the DIN A4 pages into cards (somewhere between DIN A6/B7):  
    Unless you have professional equipment, your printer will not be able to produce the tolerances
    that would be necessary to just cut the printed pages down the center into DIN A6.  
-   For this reason, there are faint guides printed for you to cut along, both through the middle and along the margins.  
-   If you do not see the outer margins, increase the value for `\printermarginx` in [src/cardify.tex](src/cardify.tex).  
-   Tipps for best results:
-   - If your printer's in-tray is open to the environment, try to help it pull in the sheets as straight as possible.
-   - Use a cutting-mat, straight-edge and sharp craft knife. Using scissors will shift the pages if you cut multiple at a time.
-   - Take multiple, light cutting passes instead of a single heavy one. Heavy cuts will also move the papers.
-   - Ensure your blade's tip is still sharp. Consider using a fresh blade even if it seems wasteful. Paper is harsh on metal edges and dulls them quickly.
-1. Sort your cards (at least for spell-level).  
-   (The cards were supposed to be re-ordered so they would line up sorted after cutting, but that does not appear to work, so you have to sort manually.)
-1. Each spell's front face has a marker on the right-hand edge at a specific height for that level.  
-   Take a highlighter/textmarker or similar and color this in to make it easy to flip through a stack of these cards.  
-   Maybe get three different colors and alternate between them.
+## Printing Tips
 
-You may wish to consider printing multiple copies of each card to build "decks", e.g.:  
-All spells that deal damage without allowing spell resistance, all spells that give an advantage in social interactions, spells that are good against physically tough enemies, or against large numbers, or fire-resistant ones.  
-You'll probably end up with one deck of "misc" or seldom-used spells just to keep your "main deck" handleable.
+1. **Paper**: Use A4 cardstock (200-300 gsm recommended)
+2. **Settings**: Double-sided printing, no scaling (100% size)
+3. **Cutting**: Follow the thin cutting guides to get 4 roughly A6-sized cards per sheet
+4. **Coloring**: Use highlighters to color the spell level markers on the right edge
+5. **Organization**: Sort by level or create themed decks (combat, utility, etc.)
 
-### Contributing
+See the [User Guide](docs/user-guide.md) for detailed printing instructions.
 
-Feel free to add more spell cards by creating new `.tex` files in the `src/spells` directory. Follow the structure used in `spell1.tex` for consistency.
+### Documentation
 
-### License
+See `docs/` directory for:
+- `user-guide.md` - End-user documentation
+- `generator-guide.md` - Python application usage
+- `api-reference.md` - LaTeX command reference
 
-This project is open-source. Contributions are welcome, but this is very much a hobby project! Do not expect PRs to be pulled in a matter of hours, or even days.  
-Please ensure to follow the project's coding standards and guidelines.
+## Contributing
 
-If you simply wish to add your own spells, or make subjective adjustments to spells, it would be better to fork this repository and keep your changes there.
+Contributions are welcome! This is a hobby project, so please be patient with review times.
+
+For major changes:
+1. Open an issue to discuss the change
+2. Follow existing code quality standards (pylint 10/10, zero LaTeX warnings)
+3. Add tests for new functionality  
+   (LaTeX code is considered passing test if spellcards.pdf loks good... Apparently that's the industry standard)
+4. Update documentation
+
+For personal customizations (subjective spell changes), consider forking the repository.
+
+Feel free to add spells for your personal character to this repo (maybe fork, create cards, PR when you're satisfied).  
+It'll be good to have a pool of existing cards to draw from, especially of other classes.
+
+There isn't yet a good workflow for coordinating multiple characters... Maybe `src/spellcards-<char>.tex` files?  
+If there's interest, please let me know and I can consider publishing the package! Then it could be used in any LaTeX project, and the spell-cards-generator from this project used to create those cards. But those cards will not be shared, so everyone would need to create their own cards from scratch...  
+Anyweay, let's talk about this if there even is any interest by other people!
+
+## License
+
+This project is open-source. See LICENSE file for details.

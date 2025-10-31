@@ -12,26 +12,40 @@
 \ProvidesClass{spellcard}[2025/10/30 v1.0.0 Spell Card Document Class]
 
 %% ============================================================================
+%% Required Packages (Early Load)
+%% ============================================================================
+
+\RequirePackage{kvoptions}  % For key-value class options
+
+%% ============================================================================
 %% Class Options
 %% ============================================================================
 
-\newif\if@spellcard@draft
-\@spellcard@draftfalse  % Default to final mode (production-ready)
+\SetupKeyvalOptions{
+  family=spellcard,
+  prefix=spellcard@
+}
 
-\DeclareOption{draft}{\@spellcard@drafttrue}
-\DeclareOption{final}{\@spellcard@draftfalse}
+% Draft/final mode
+\DeclareBoolOption[false]{draft}
+\DeclareComplementaryOption{final}{draft}
+
+% Printer margins
+\DeclareStringOption{printer-margin-x}
+\DeclareStringOption{printer-margin-y}
+\DeclareStringOption{printer-margin}
 
 %% Pass unknown options to scrartcl
-\DeclareOption*{\PassOptionsToClass{\CurrentOption}{scrartcl}}
+\DeclareDefaultOption{\PassOptionsToClass{\CurrentOption}{scrartcl}}
 
-\ProcessOptions\relax
+\ProcessKeyvalOptions*
 
 %% ============================================================================
 %% Load Base Class
 %% ============================================================================
 
 % Build options list based on draft/final mode
-\if@spellcard@draft
+\ifspellcard@draft
   \PassOptionsToClass{oneside,draft}{scrartcl}
 \else
   \PassOptionsToClass{twoside}{scrartcl}
@@ -55,13 +69,43 @@
 %% Load Spellcards Package
 %% ============================================================================
 
-\RequirePackage{spellcards}
+% Build printer margin options to pass to spellcards package
+\def\@spellcard@package@options{}
+
+% Check each printer margin option and add if non-empty
+% kvoptions defines macros as empty strings by default, so we need to check:
+% 1. If the macro is defined (set by user)
+% 2. If it's not empty
+\RequirePackage{etoolbox}
+
+% Note: kvoptions creates macros even when not set, but they expand to empty
+% So we just need to check if the expansion is non-empty
+\ifdefvoid{\spellcard@printer@margin}{}{%
+  \edef\@spellcard@package@options{\@spellcard@package@options,printer-margin=\spellcard@printer@margin}%
+}
+
+\ifdefvoid{\spellcard@printer@margin@x}{}{%
+  \edef\@spellcard@package@options{\@spellcard@package@options,printer-margin-x=\spellcard@printer@margin@x}%
+}
+
+\ifdefvoid{\spellcard@printer@margin@y}{}{%
+  \edef\@spellcard@package@options{\@spellcard@package@options,printer-margin-y=\spellcard@printer@margin@y}%
+}
+
+% Load spellcards package with options (if any)
+\ifx\@spellcard@package@options\@empty
+  \RequirePackage{spellcards}
+\else
+  % Remove leading comma
+  \edef\@spellcard@package@options{\expandafter\@gobble\@spellcard@package@options}
+  \expandafter\RequirePackage\expandafter[\@spellcard@package@options]{spellcards}
+\fi
 
 %% ============================================================================
 %% Draft vs Final Mode Setup
 %% ============================================================================
 
-\if@spellcard@draft
+\ifspellcard@draft
   % Draft mode: No special layout changes needed
 \else
   % Final mode: Load cardify for A6-on-A4 layout

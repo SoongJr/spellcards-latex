@@ -735,9 +735,9 @@ class LaTeXGenerator:
 
         # Prepare \SpellCardInfo with optional width ratio
         spellcardinfo_line = (
-            f"\\SpellCardInfo[{preserved_width_ratio}]{{}}"
+            f"\\SpellCardInfo[{preserved_width_ratio}]"
             if preserved_width_ratio
-            else "\\SpellCardInfo{}"
+            else "\\SpellCardInfo"
         )
 
         # Get description for template
@@ -759,7 +759,7 @@ class LaTeXGenerator:
 %%%   * The generator will preserve your modified value and update the comment
 %%%     if the database changes, allowing you to review conflicts
 %%% - URLs: Edit \\SpellProp{{urlenglish}}{{...}} and \\SpellProp{{urlsecondary}}{{...}}
-%%% - Width ratio: Optional [ratio] parameter in \\SpellCardInfo[ratio]{{}}
+%%% - Width ratio: Optional [ratio] parameter in \\SpellCardInfo[ratio]
 %%%   preserves column width proportions if you've manually adjusted the table
 %%%
 %%% NOTE: Files without SPELL-CARD-VERSION are assumed to be legacy format
