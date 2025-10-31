@@ -281,10 +281,10 @@
 %% ============================================================================
 
 %%% Spell deck environment
-%%% Usage: \begin{spelldeck}[name] ... \end{spelldeck}
-%%%   or:  \begin{spelldeck}{name} ... \end{spelldeck}  (for cardify compatibility)
+%%% Usage: \begin{SpellDeck}[name] ... \end{SpellDeck}
+%%%   or:  \begin{SpellDeck}{name} ... \end{SpellDeck}  (for cardify compatibility)
 %%% First deck must have empty name, subsequent decks must be named
-\NewDocumentEnvironment{spelldeck}{O{} G{}}
+\NewDocumentEnvironment{SpellDeck}{O{} G{}}
 {
   % If optional bracket arg provided, use it; otherwise use mandatory brace arg (or default empty)
   \tl_if_empty:nTF {#1}
@@ -299,30 +299,30 @@
 %% User Commands for Deck Management
 %% ============================================================================
 
-%%% Register a spell manually in the current deck
-%%% Usage: \registerspell{spells/sor/1/MagicMissile.tex}{sor}{Magic Missile}{1}
-\NewDocumentCommand{\registerspell}{m m m m}
+%%% Internal command: Register a spell manually in the current deck (future: deck index cards)
+%%% Usage: \register_spell{spells/sor/1/MagicMissile.tex}{sor}{Magic Missile}{1}
+\NewDocumentCommand{\register_spell}{m m m m}
 {
   \spellcard_register_spell:nnnn { #1 } { #2 } { #3 } { #4 }
 }
 
-%%% Get count of spells in a deck
-%%% Usage: \deckspellcount{0} → prints number
-\NewDocumentCommand{\deckspellcount}{m}
+%%% Internal command: Get count of spells in a deck (future: deck index cards)
+%%% Usage: \deck_spell_count{0} → prints number
+\NewDocumentCommand{\deck_spell_count}{m}
 {
   \spellcard_get_deck_spell_count:n { #1 }
 }
 
-%%% Get total number of decks
-%%% Usage: \deckcount → prints number
-\NewDocumentCommand{\deckcount}{}
+%%% Internal command: Get total number of decks (future: deck index cards)
+%%% Usage: \deck_count → prints number
+\NewDocumentCommand{\deck_count}{}
 {
   \spellcard_get_deck_count:
 }
 
-%%% Show deck information (debugging)
-%%% Usage: \showdeck{0}
-\NewDocumentCommand{\showdeck}{m}
+%%% Debug utility: Show deck information
+%%% Usage: \ShowDeck{0}
+\NewDocumentCommand{\ShowDeck}{m}
 {
   \spellcard_show_deck:n { #1 }
 }

@@ -126,11 +126,11 @@ class TestFileScannerAnalyze:
     def test_analyze_existing_card_basic(self, tmp_path):
         """Test analyze_existing_card with basic file."""
         content = r"""
-\begin{spellcard}
+\begin{SpellCard}
 \newcommand{\urlenglish}{https://example.com/spell}
 \newcommand{\urlsecondary}{https://example.de/spell}
 \spellcardname{Fireball}
-\end{spellcard}
+\end{SpellCard}
 """
         file_path = tmp_path / "test.tex"
         file_path.write_text(content)
@@ -147,11 +147,11 @@ class TestFileScannerAnalyze:
     def test_analyze_existing_card_with_secondary_language(self, tmp_path):
         """Test analyze_existing_card detects secondary language."""
         content = r"""
-\begin{spellcard}
+\begin{SpellCard}
 \newcommand{\urlenglish}{https://example.com/spell}
 \newcommand{\urlsecondary}{https://example.de/spell}
 \href{https://example.de/spell}{German Link}
-\end{spellcard}
+\end{SpellCard}
 """
         file_path = tmp_path / "test.tex"
         file_path.write_text(content)
@@ -164,10 +164,10 @@ class TestFileScannerAnalyze:
     def test_analyze_existing_card_without_secondary_language(self, tmp_path):
         """Test analyze_existing_card when no secondary language."""
         content = r"""
-\begin{spellcard}
+\begin{SpellCard}
 \newcommand{\urlenglish}{https://example.com/spell}
 \spellcardname{Fireball}
-\end{spellcard}
+\end{SpellCard}
 """
         file_path = tmp_path / "test.tex"
         file_path.write_text(content)
@@ -180,10 +180,10 @@ class TestFileScannerAnalyze:
     def test_analyze_existing_card_fallback_to_href(self, tmp_path):
         """Test analyze_existing_card falls back to href for URLs."""
         content = r"""
-\begin{spellcard}
+\begin{SpellCard}
 \href{https://primary.com/spell}{Primary}
 \href{https://secondary.de/spell}{Secondary}
-\end{spellcard}
+\end{SpellCard}
 """
         file_path = tmp_path / "test.tex"
         file_path.write_text(content)
@@ -197,14 +197,14 @@ class TestFileScannerAnalyze:
     def test_analyze_existing_card_extracts_expl3_qr_codes(self, tmp_path):
         """Test analyze_existing_card extracts URLs from expl3 \\spellcardqr commands."""
         content = r"""%%%
-%%% SPELL-CARD-VERSION: 2.0-expl3
+%%% SPELL-CARD-VERSION: 2.1
 %%%
-\begin{spellcard}{sor}{Acid Splash}{0}
-  \spellprop{name}{Acid Splash}
-  \spellcardinfo{}
-  \spellcardqr{https://www.d20pfsrd.com/magic/all-spells/a/acid-splash}
-  \spellcardqr{http://prd.5footstep.de/Grundregelwerk/Zauber/Säurespritzer}
-\end{spellcard}
+\begin{SpellCard}{sor}{Acid Splash}{0}
+  \SpellProp{name}{Acid Splash}
+  \SpellCardInfo{}
+  \SpellCardQR{https://www.d20pfsrd.com/magic/all-spells/a/acid-splash}
+  \SpellCardQR{http://prd.5footstep.de/Grundregelwerk/Zauber/Säurespritzer}
+\end{SpellCard}
 """
         file_path = tmp_path / "test.tex"
         file_path.write_text(content, encoding="utf-8")
@@ -225,13 +225,13 @@ class TestFileScannerAnalyze:
     def test_analyze_existing_card_extracts_single_expl3_qr_code(self, tmp_path):
         """Test analyze_existing_card extracts single URL from expl3 format."""
         content = r"""%%%
-%%% SPELL-CARD-VERSION: 2.0-expl3
+%%% SPELL-CARD-VERSION: 2.1
 %%%
-\begin{spellcard}{sor}{Test}{1}
-  \spellprop{name}{Test Spell}
-  \spellcardinfo{}
-  \spellcardqr{https://www.google.com/acid-splash}
-\end{spellcard}
+\begin{SpellCard}{sor}{Test}{1}
+  \SpellProp{name}{Test Spell}
+  \SpellCardInfo{}
+  \SpellCardQR{https://www.google.com/acid-splash}
+\end{SpellCard}
 """
         file_path = tmp_path / "test.tex"
         file_path.write_text(content, encoding="utf-8")
@@ -282,7 +282,7 @@ class TestFileScannerAnalyze:
         """Test analyze_existing_card detects various German patterns."""
         patterns_to_test = [
             (r"\href{https://example.de/spell}{Link}", True),
-            (r"\spellcardqr{https://example.de/spell}", True),
+            (r"\SpellCardQR{https://example.de/spell}", True),
             (r"% German spell description", True),
             (r"% Deutsch spell description", True),
             (r"% English only content", False),

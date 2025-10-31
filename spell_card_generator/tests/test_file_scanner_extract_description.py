@@ -20,16 +20,16 @@ class TestExtractDescription:
     def test_extract_description_empty(self, tmp_path):
         """Test extract_description with no description (empty between markers)."""
         content = r"""
-\begin{spellcard}{sor}{Test Spell}{0}
+\begin{SpellCard}{sor}{Test Spell}{0}
   \newcommand{\name}{Test Spell}
   \ifprintcard
-    \spellcardinfo{}
+    \SpellCardInfo{}
     %
     % SPELL DESCRIPTION BEGIN
     % SPELL DESCRIPTION END
     %
   \fi
-\end{spellcard}
+\end{SpellCard}
 """
         file_path = tmp_path / "test.tex"
         file_path.write_text(content)
@@ -41,17 +41,17 @@ class TestExtractDescription:
     def test_extract_description_single_line_no_extra_indent(self, tmp_path):
         """Test extract_description with single line at base indentation."""
         content = r"""
-\begin{spellcard}{sor}{Test Spell}{0}
+\begin{SpellCard}{sor}{Test Spell}{0}
   \newcommand{\name}{Test Spell}
   \ifprintcard
-    \spellcardinfo{}
+    \SpellCardInfo{}
     %
     % SPELL DESCRIPTION BEGIN
     This is a single line description.
     % SPELL DESCRIPTION END
     %
   \fi
-\end{spellcard}
+\end{SpellCard}
 """
         file_path = tmp_path / "test.tex"
         file_path.write_text(content)
@@ -69,10 +69,10 @@ class TestExtractDescription:
         should have their base indentation stripped, but currently they don't.
         """
         content = r"""
-\begin{spellcard}{sor}{Test Spell}{0}
+\begin{SpellCard}{sor}{Test Spell}{0}
   \newcommand{\name}{Test Spell}
   \ifprintcard
-    \spellcardinfo{}
+    \SpellCardInfo{}
     %
     % SPELL DESCRIPTION BEGIN
     You fire a small orb of acid at the target.
@@ -82,7 +82,7 @@ class TestExtractDescription:
     % SPELL DESCRIPTION END
     %
   \fi
-\end{spellcard}
+\end{SpellCard}
 """
         file_path = tmp_path / "test.tex"
         file_path.write_text(content)
@@ -109,10 +109,10 @@ This acid disappears after 1 round."""
         The base indentation should be stripped, but the extra should be preserved.
         """
         content = r"""
-\begin{spellcard}{sor}{Test Spell}{0}
+\begin{SpellCard}{sor}{Test Spell}{0}
   \newcommand{\name}{Test Spell}
   \ifprintcard
-    \spellcardinfo{}
+    \SpellCardInfo{}
     %
     % SPELL DESCRIPTION BEGIN
     You can observe magical auras.
@@ -125,7 +125,7 @@ This acid disappears after 1 round."""
     % SPELL DESCRIPTION END
     %
   \fi
-\end{spellcard}
+\end{SpellCard}
 """
         file_path = tmp_path / "test.tex"
         file_path.write_text(content)
@@ -157,7 +157,7 @@ This concludes the spell description."""
     def test_extract_description_with_blank_lines(self, tmp_path):
         """Test extract_description preserves blank lines within description."""
         content = r"""
-\begin{spellcard}{sor}{Test Spell}{0}
+\begin{SpellCard}{sor}{Test Spell}{0}
   \ifprintcard
     %
     % SPELL DESCRIPTION BEGIN
@@ -169,7 +169,7 @@ This concludes the spell description."""
     % SPELL DESCRIPTION END
     %
   \fi
-\end{spellcard}
+\end{SpellCard}
 """
         file_path = tmp_path / "test.tex"
         file_path.write_text(content)
@@ -199,7 +199,7 @@ Third paragraph."""
         This test uses 8 spaces as the base indentation.
         """
         content = r"""
-\begin{spellcard}{sor}{Test Spell}{0}
+\begin{SpellCard}{sor}{Test Spell}{0}
   \ifprintcard
         %
         % SPELL DESCRIPTION BEGIN
@@ -210,7 +210,7 @@ Third paragraph."""
         % SPELL DESCRIPTION END
         %
   \fi
-\end{spellcard}
+\end{SpellCard}
 """
         file_path = tmp_path / "test.tex"
         file_path.write_text(content)
@@ -232,7 +232,7 @@ Back to base."""
     def test_extract_description_two_space_base_indentation(self, tmp_path):
         """Test extract_description with 2-space base indentation."""
         content = r"""
-\begin{spellcard}{sor}{Test Spell}{0}
+\begin{SpellCard}{sor}{Test Spell}{0}
   %
   % SPELL DESCRIPTION BEGIN
   First line at 2-space base.
@@ -241,7 +241,7 @@ Back to base."""
   Back to base.
   % SPELL DESCRIPTION END
   %
-\end{spellcard}
+\end{SpellCard}
 """
         file_path = tmp_path / "test.tex"
         file_path.write_text(content)
@@ -258,13 +258,13 @@ Back to base."""
     def test_extract_description_no_indentation(self, tmp_path):
         """Test extract_description when markers have no indentation."""
         content = r"""
-\begin{spellcard}{sor}{Test Spell}{0}
+\begin{SpellCard}{sor}{Test Spell}{0}
 % SPELL DESCRIPTION BEGIN
 No indentation at all.
 Second line also no indentation.
   But this line has 2 spaces.
 % SPELL DESCRIPTION END
-\end{spellcard}
+\end{SpellCard}
 """
         file_path = tmp_path / "test.tex"
         file_path.write_text(content)
@@ -280,7 +280,7 @@ Second line also no indentation.
     def test_extract_description_with_latex_commands(self, tmp_path):
         """Test extract_description preserves LaTeX commands and formatting."""
         content = r"""
-\begin{spellcard}{sor}{Test Spell}{0}
+\begin{SpellCard}{sor}{Test Spell}{0}
   \ifprintcard
     %
     % SPELL DESCRIPTION BEGIN
@@ -294,7 +294,7 @@ Second line also no indentation.
     % SPELL DESCRIPTION END
     %
   \fi
-\end{spellcard}
+\end{SpellCard}
 """
         file_path = tmp_path / "test.tex"
         file_path.write_text(content)
@@ -323,12 +323,12 @@ Second line also no indentation.
     def test_extract_description_no_markers(self, tmp_path):
         """Test extract_description when file has no description markers."""
         content = r"""
-\begin{spellcard}{sor}{Test Spell}{0}
+\begin{SpellCard}{sor}{Test Spell}{0}
   \newcommand{\name}{Test Spell}
   \ifprintcard
-    \spellcardinfo{}
+    \SpellCardInfo{}
   \fi
-\end{spellcard}
+\end{SpellCard}
 """
         file_path = tmp_path / "test.tex"
         file_path.write_text(content)
@@ -346,16 +346,16 @@ Second line also no indentation.
 %%%
 %
 % open a new spellcards environment
-\begin{spellcard}{sor}{Acid Splash}{0}
+\begin{SpellCard}{sor}{Acid Splash}{0}
   % make the data from TSV accessible for to the LaTeX part:
   \newcommand{\name}{Acid Splash}
   \newcommand{\school}{conjuration}
   \ifprintcard% Only print the card if the printcard flag is true
     % print the tabular information at the top of the card:
-    \spellcardinfo{}
+    \SpellCardInfo{}
     % draw a QR Code pointing at online resources for this spell on the front face:
-    \spellcardqr{\urlenglish}
-    \spellcardqr{\urlsecondary}
+    \SpellCardQR{\urlenglish}
+    \SpellCardQR{\urlsecondary}
     %
     % SPELL DESCRIPTION BEGIN
     You fire a small orb of acid at the target.
@@ -365,7 +365,7 @@ Second line also no indentation.
     % SPELL DESCRIPTION END
     %
   \fi%printcard
-\end{spellcard}
+\end{SpellCard}
 """
         file_path = tmp_path / "Acid Splash.tex"
         file_path.write_text(content)
@@ -395,13 +395,13 @@ This acid disappears after 1 round."""
         # This test just documents the assumption - we assume spaces only
         # as per the user's instructions
         content = r"""
-\begin{spellcard}{sor}{Test Spell}{0}
+\begin{SpellCard}{sor}{Test Spell}{0}
   \ifprintcard
     % SPELL DESCRIPTION BEGIN
     Line with spaces only.
     % SPELL DESCRIPTION END
   \fi
-\end{spellcard}
+\end{SpellCard}
 """
         file_path = tmp_path / "test.tex"
         file_path.write_text(content)

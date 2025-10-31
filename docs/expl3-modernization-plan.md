@@ -60,13 +60,13 @@ Migration of spell card LaTeX project to expl3 (LaTeX3) programming layer is COM
 **Phase 4: Layout** - QR code system, marker/label positioning, dimension calculations  
 **Phase 5: Table Rendering** - Side-by-side tabularx tables with proper paragraph handling  
 **Phase 6: Missing Features** - `\SpellMarkerChart` implementation (spell level reference card)  
-**Phase 7: Python Generator** - Updated to output expl3 format, full GUI workflow functional
-**Phase 8: Verification** - PDF comparison confirms identical output (91 pages, 25 spells, zero warnings)
+**Phase 7: Python Generator** - Updated to output expl3 format, full GUI workflow functional  
+**Phase 8: Verification** - PDF comparison confirms identical output (91 pages, 25 spells, zero warnings)  
+**Phase 9: Package Refactoring** - Split monolithic package into 7 feature-based modules (completed Oct 30)  
+**Phase 10: Command Naming Modernization** - PascalCase public API, version 2.1 (completed Oct 31) ✅
 
-### Current Priority: Refactoring 🔄
+### Next Priority: Final Cleanup 🎯
 
-**Phase 9: Package Refactoring** - Split monolithic package into 7 feature-based modules  
-**Phase 10: Command Naming Modernization** - PascalCase public API  
 **Phase 11: Remove ALL Compatibility** - Delete legacy templates, legacy Python code, legacy tests  
 **Phase 12: Documentation** - Comprehensive user guide for modernized package
 
@@ -548,6 +548,55 @@ src/
    - Cache calculations if beneficial
 
 ## Recent Work Sessions
+
+### October 31, 2025 - Phase 10 Complete: Command Naming Modernization ✅
+
+**Phase 10: PascalCase Public API & Version 2.1**
+
+**Goal**: Modernize user-facing commands with PascalCase naming convention, establishing clear distinction between public and internal APIs.
+
+**Achievements**:
+1. ✅ **Manual Prototype** (~1 hour):
+   - Updated 7 package files with PascalCase commands
+   - Renamed 3 internal commands to snake_case (`\register_spell`, `\deck_spell_count`, `\deck_count`)
+   - Removed 3 deprecated/unused commands (`\noprint`, `\spellattribute`, `\spellattributelast`)
+   - Compiled test spell files: 2 pages, exit code 0
+
+2. ✅ **Bulk Rename** (~30 min):
+   - Updated 47 spell card files with sed script
+   - Changed version to 2.1 across all files
+   - Compiled main document: 42 pages, exit code 0
+
+3. ✅ **Update Python Generator** (~2 hours):
+   - Modified `latex_generator.py` to output version 2.1 with PascalCase
+   - Updated `file_scanner.py` to recognize only PascalCase (no backward compatibility)
+   - Fixed test assertions
+   - All 359 tests passing, pylint 10.00/10
+
+4. ✅ **Regeneration Test** (~15 min):
+   - Used GUI to regenerate all 46 spell cards
+   - Only change: comments updated to reflect `\SpellProp` naming
+   - Compiled successfully: 42 pages, exit code 0
+
+**Command Mapping**:
+- Public API (PascalCase): `\SpellCard`, `\SpellProp`, `\SpellCardQR`, `\SpellCardInfo`, `\IncludeSpell`, `\SpellDeck`, `\ShowDeck`, `\SpellMarkerChart`
+- Internal API (snake_case): `\register_spell`, `\deck_spell_count`, `\deck_count` (reserved for future deck index cards)
+
+**Breaking Changes**:
+- Version 2.1 (from 2.0-expl3)
+- No backward compatibility with lowercase commands
+- All spell cards must use PascalCase
+
+**Quality Metrics**:
+- LaTeX: Exit code 0, zero warnings, 42 pages
+- Python: 359/359 tests passing, pylint 10.00/10, Black compliant
+- Coverage: 59% overall (latex_generator: 84%, file_scanner: 90%)
+
+**Documentation**: Created `docs/phase10-completion-summary.md` with full details.
+
+**Result**: Clean, modern API ready for production use! 🎉
+
+---
 
 ### October 30, 2025 - Phase 9.1 Complete: Document Class & Architecture Cleanup ✅
 

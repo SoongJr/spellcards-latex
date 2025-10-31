@@ -80,7 +80,7 @@
 %%% #2 = spell name (e.g., "Magic Missile")
 %%% #3 = spell level (0-9)
 %%% #4 = spell body (captured by +b argument)
-\NewDocumentEnvironment{spellcard}{mmm+b}
+\NewDocumentEnvironment{SpellCard}{mmm+b}
 {
   % Clear property list for this spell
   \prop_clear:N \l_spellcard_spell_props
@@ -116,10 +116,10 @@
 
 %%% Spell Inclusion Command
 %%% Usage: 
-%%%   \includespell{spells/sor/1/MagicMissile}           % print the spell
-%%%   \includespell[noprint]{spells/sor/1/MagicMissile}  % include without printing
-%%%   \includespell[print=false]{spells/sor/1/MagicMissile}  % same as noprint
-\NewDocumentCommand{\includespell}{O{} m}
+%%%   \IncludeSpell{spells/sor/1/MagicMissile}           % print the spell
+%%%   \IncludeSpell[noprint]{spells/sor/1/MagicMissile}  % include without printing
+%%%   \IncludeSpell[print=false]{spells/sor/1/MagicMissile}  % same as noprint
+\NewDocumentCommand{\IncludeSpell}{O{} m}
 {
   % Reset print option to default (true) before processing keys
   \bool_set_true:N \l_spellcard_include_print_bool
@@ -132,7 +132,7 @@
 }
 
 %%% Legacy \noprint command for backwards compatibility
-%%% New code should use \includespell[noprint]{...} instead
+%%% New code should use \IncludeSpell[noprint]{...} instead
 \NewDocumentCommand{\noprint}{m}
 {
   % Save current print state

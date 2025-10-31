@@ -38,9 +38,9 @@
 %%% Set a spell property (used within spell files)
 %%% #1 = property key (e.g., "school", "components", "duration")
 %%% #2 = property value
-%%% Usage: \spellprop{school}{evocation}
-%%%        \spellprop{components}{V, S, M (a bit of bat fur)}
-\NewDocumentCommand{\spellprop}{mm}
+%%% Usage: \SpellProp{school}{evocation}
+%%%        \SpellProp{components}{V, S, M (a bit of bat fur)}
+\NewDocumentCommand{\SpellProp}{mm}
 {
   \prop_put:Nnn \l_spellcard_spell_props { #1 } { #2 }
 }

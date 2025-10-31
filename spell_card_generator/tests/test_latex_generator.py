@@ -184,8 +184,8 @@ class TestLaTeXGenerator:
         assert isinstance(latex, str)
         assert isinstance(conflicts, list)
         assert len(conflicts) == 0
-        assert "\\begin{spellcard}" in latex
-        assert "\\end{spellcard}" in latex
+        assert "\\begin{SpellCard}" in latex
+        assert "\\end{SpellCard}" in latex
         assert "Fireball" in latex
         assert "wizard" in latex
 
@@ -243,14 +243,14 @@ class TestLaTeXGenerator:
 
         assert isinstance(conflicts, list)
         assert len(conflicts) == 0
-        assert r"\begin{spellcard}" in latex
+        assert r"\begin{SpellCard}" in latex
         assert "{wizard}" in latex
         assert "{Fireball}" in latex
         assert "{3}" in latex
         assert "https://english.com/spell" in latex
         assert "https://german.com/spell" in latex
-        assert "\\spellcardinfo" in latex
-        assert "\\spellcardqr" in latex
+        assert "\\SpellCardInfo" in latex
+        assert "\\SpellCardQR" in latex
 
     def test_generate_latex_template_inconclusive_attackroll_adds_warning(
         self, sample_spell_series
@@ -271,13 +271,13 @@ class TestLaTeXGenerator:
         assert isinstance(conflicts, list)
         assert len(conflicts) == 0
         # Now using expl3 format
-        assert r"\spellprop{attackroll}{inconclusive}" in latex
+        assert r"\SpellProp{attackroll}{inconclusive}" in latex
         # Should emit expl3 warning message
         assert r"\msg_warning:nnn { spellcard } { inconclusive-attack-roll }" in latex
         assert "{ Fireball }" in latex  # spell name in warning
 
     def test_generate_latex_template_urls_in_qr_codes(self, sample_spell_series):
-        """Test that URLs are output as \\spellcardqr{url} commands (expl3 format)."""
+        """Test that URLs are output as \\SpellCardQR{url} commands (expl3 format)."""
         generator = LaTeXGenerator()
         latex, conflicts = generator._generate_latex_template(
             sample_spell_series,
@@ -292,8 +292,8 @@ class TestLaTeXGenerator:
 
         assert isinstance(conflicts, list)
         # URLs should be in QR code commands, not properties
-        assert r"\spellcardqr{https://english.com/spell}" in latex
-        assert r"\spellcardqr{https://german.com/spell}" in latex
+        assert r"\SpellCardQR{https://english.com/spell}" in latex
+        assert r"\SpellCardQR{https://german.com/spell}" in latex
 
     def test_generate_latex_template_invalid_primary_url_adds_warning(
         self, sample_spell_series
@@ -313,14 +313,14 @@ class TestLaTeXGenerator:
 
         assert isinstance(conflicts, list)
         # Primary QR should have warning
-        assert r"\spellcardqr{https://invalid-url.example.com/spell}" in latex
+        assert r"\SpellCardQR{https://invalid-url.example.com/spell}" in latex
         expected_warning = (
             r"\msg_warning:nnn { spellcard } { invalid-url } "
             r"{ https://invalid-url.example.com/spell }"
         )
         assert expected_warning in latex
         # Secondary QR should NOT have warning
-        assert r"\spellcardqr{https://german.com/spell}" in latex
+        assert r"\SpellCardQR{https://german.com/spell}" in latex
         assert latex.count(r"\msg_warning:nnn { spellcard } { invalid-url }") == 1
 
     def test_generate_latex_template_invalid_secondary_url_adds_warning(
@@ -341,9 +341,9 @@ class TestLaTeXGenerator:
 
         assert isinstance(conflicts, list)
         # Primary QR should NOT have warning
-        assert r"\spellcardqr{https://english.com/spell}" in latex
+        assert r"\SpellCardQR{https://english.com/spell}" in latex
         # Secondary QR should have warning
-        assert r"\spellcardqr{https://invalid-secondary.example.com/spell}" in latex
+        assert r"\SpellCardQR{https://invalid-secondary.example.com/spell}" in latex
         expected_warning = (
             r"\msg_warning:nnn { spellcard } { invalid-url } "
             r"{ https://invalid-secondary.example.com/spell }"
@@ -369,13 +369,13 @@ class TestLaTeXGenerator:
 
         assert isinstance(conflicts, list)
         # Both URLs should have warnings
-        assert r"\spellcardqr{https://invalid-primary.example.com/spell}" in latex
+        assert r"\SpellCardQR{https://invalid-primary.example.com/spell}" in latex
         expected_primary = (
             r"\msg_warning:nnn { spellcard } { invalid-url } "
             r"{ https://invalid-primary.example.com/spell }"
         )
         assert expected_primary in latex
-        assert r"\spellcardqr{https://invalid-secondary.example.com/spell}" in latex
+        assert r"\SpellCardQR{https://invalid-secondary.example.com/spell}" in latex
         expected_secondary = (
             r"\msg_warning:nnn { spellcard } { invalid-url } "
             r"{ https://invalid-secondary.example.com/spell }"
@@ -420,9 +420,9 @@ class TestLaTeXGenerator:
 
         assert isinstance(conflicts, list)
         # Secondary QR should be commented
-        assert r"% \spellcardqr{<secondary-url>}" in latex
+        assert r"% \SpellCardQR{<secondary-url>}" in latex
         # Primary QR should be present
-        assert r"\spellcardqr{https://english.com/spell}" in latex
+        assert r"\SpellCardQR{https://english.com/spell}" in latex
 
     def test_generate_latex_template_placeholder_secondary_url(
         self, sample_spell_series
@@ -442,9 +442,9 @@ class TestLaTeXGenerator:
 
         assert isinstance(conflicts, list)
         # Secondary QR should be commented (placeholder detected)
-        assert r"% \spellcardqr{<secondary-url>}" in latex
+        assert r"% \SpellCardQR{<secondary-url>}" in latex
         # Primary QR should be present
-        assert r"\spellcardqr{https://english.com/spell}" in latex
+        assert r"\SpellCardQR{https://english.com/spell}" in latex
         # No warning for placeholder
         assert r"\msg_warning:nnn { spellcard } { invalid-url }" not in latex
 

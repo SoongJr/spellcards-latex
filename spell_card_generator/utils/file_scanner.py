@@ -199,7 +199,7 @@ class FileScanner:
             # Look for German/secondary language indicators
             german_patterns = [
                 r"\\href\{[^}]*\.de[^}]*\}",  # German URLs in href
-                r"\\spellcardqr\{[^}]*\.de[^}]*\}",  # German QR codes (expl3)
+                r"\\SpellCardQR\{[^}]*\.de[^}]*\}",  # German QR codes (expl3 v2.1+)
                 r"german",  # German language references
                 r"deutsch",  # German language references
             ]
@@ -221,7 +221,7 @@ class FileScanner:
                 secondary_match.group(1) if secondary_match else ""
             )
 
-            # Also check for expl3 format: \spellcardqr{url}
+            # Also check for expl3 format: \SpellCardQR{url} (v2.1+)
             # Skip commented lines by processing line-by-line
             if not analysis["primary_url"] or not analysis["secondary_url"]:
                 spellcardqr_urls = []
@@ -230,8 +230,8 @@ class FileScanner:
                     # Skip commented lines
                     if stripped.startswith("%"):
                         continue
-                    # Extract \spellcardqr{url}
-                    qr_match = re.search(r"\\spellcardqr\{([^}]+)\}", stripped)
+                    # Extract \SpellCardQR{url}
+                    qr_match = re.search(r"\\SpellCardQR\{([^}]+)\}", stripped)
                     if qr_match:
                         spellcardqr_urls.append(qr_match.group(1))
                 # Use expl3 URLs if legacy format didn't find them
@@ -254,9 +254,9 @@ class FileScanner:
                 url for url in urls if ".de" in url or "german" in url.lower()
             ]
 
-            # Extract width ratio from \spellcardinfo[RATIO]{}
-            # Pattern: \spellcardinfo[0.55]{} or \spellcardinfo{}
-            width_ratio_pattern = r"\\spellcardinfo\[([0-9.]+)\]\{\}"
+            # Extract width ratio from \SpellCardInfo[RATIO]{}
+            # Pattern: \SpellCardInfo[0.55]{} or \SpellCardInfo{}
+            width_ratio_pattern = r"\\SpellCardInfo\[([0-9.]+)\]\{\}"
             width_ratio_match = re.search(width_ratio_pattern, content)
             if width_ratio_match:
                 ratio_value = width_ratio_match.group(1)
@@ -369,7 +369,7 @@ class FileScanner:
         Extract all property definitions from a .tex file.
 
         Detects file version and uses appropriate parser:
-        - Version 2.0-expl3: Uses \\spellprop{property}{value} format
+        - Version 2.1+: Uses \\SpellProp{property}{value} format
         - Legacy (no version): Uses \\newcommand{\\property}{value} format
 
         Args:
@@ -397,9 +397,9 @@ class FileScanner:
     @staticmethod
     def _extract_properties_expl3(content: str) -> Dict[str, Tuple[str, Optional[str]]]:
         """
-        Extract properties from expl3 format: \\spellprop{property}{value}.
+        Extract properties from expl3 format: \\SpellProp{property}{value}.
 
-        Also extracts URLs from \\spellcardqr{url} commands.
+        Also extracts URLs from \\SpellCardQR{url} commands.
 
         Args:
             content: File content as string
@@ -412,11 +412,11 @@ class FileScanner:
 
         for line in lines:
             stripped = line.strip()
-            if not stripped.startswith(r"\spellprop"):
+            if not stripped.startswith(r"\SpellProp"):
                 continue
 
             # Extract property name
-            name_match = re.match(r"\\spellprop\{(\w+)\}", stripped)
+            name_match = re.match(r"\\SpellProp\{(\w+)\}", stripped)
             if not name_match:
                 continue
 
@@ -439,15 +439,15 @@ class FileScanner:
 
             properties[property_name] = (value, original_value)
 
-        # Extract URLs from \spellcardqr{url} commands (skip commented lines)
+        # Extract URLs from \SpellCardQR{url} commands (skip commented lines)
         qr_urls = []
         for line in lines:
             stripped = line.strip()
             # Skip commented lines (lines starting with % after whitespace)
             if stripped.startswith("%"):
                 continue
-            # Extract \spellcardqr{url} from non-commented lines
-            qr_match = re.search(r"\\spellcardqr\{([^}]+)\}", stripped)
+            # Extract \SpellCardQR{url} from non-commented lines
+            qr_match = re.search(r"\\SpellCardQR\{([^}]+)\}", stripped)
             if qr_match:
                 qr_urls.append(qr_match.group(1))
 

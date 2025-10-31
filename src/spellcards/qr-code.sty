@@ -122,9 +122,9 @@
 %% ============================================================================
 
 %%% Add a QR code to the current page
-%%% Usage: \spellcardqr{https://example.com/spell/fireball}
+%%% Usage: \SpellCardQR{https://example.com/spell/fireball}
 %%% Maximum 2 QR codes per page (use \clearpage for more)
-\NewDocumentCommand{\spellcardqr}{m}
+\NewDocumentCommand{\SpellCardQR}{m}
 {
   \spellcard_add_qr_code:n { #1 }
 }

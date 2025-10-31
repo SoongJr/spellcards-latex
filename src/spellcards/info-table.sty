@@ -205,23 +205,9 @@
 
 %%% Document-level command wrapper for rendering spell info tables
 %%% #1 = optional first table width ratio (default: 0.5)
-%%% Usage: \spellcardinfo         % 50/50 split
-%%%        \spellcardinfo[0.6]    % 60/40 split
-\NewDocumentCommand{\spellcardinfo}{O{0.5}}
+%%% Usage: \SpellCardInfo         % 50/50 split
+%%%        \SpellCardInfo[0.6]    % 60/40 split
+\NewDocumentCommand{\SpellCardInfo}{O{0.5}}
 {
   \spellcard_render_info:n { #1 }
-}
-
-%%% Document-level command for printing spell attributes
-%%% Usage: \spellattribute{Range}{25 ft + 5 ft/2 levels}
-\NewDocumentCommand{\spellattribute}{m m}
-{
-  \spellcard_attribute:nn { #1 } { #2 }
-}
-
-%%% Document-level command for printing last attribute
-%%% Usage: \spellattributelast{Duration}{1 round/level}
-\NewDocumentCommand{\spellattributelast}{m m}
-{
-  \spellcard_attribute_last:nn { #1 } { #2 }
 }
