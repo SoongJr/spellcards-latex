@@ -237,13 +237,10 @@ class TestWorkflowState:
         # Test defaults
         assert not state.enable_secondary_language
         assert state.secondary_language_code == "de"
-        assert len(state.secondary_language_urls) == 0
 
         # Enable secondary language
         state.enable_secondary_language = True
         state.secondary_language_code = "fr"
-        state.secondary_language_urls["Fireball"] = "http://example.fr/fireball"
 
         assert state.enable_secondary_language
         assert state.secondary_language_code == "fr"
-        assert len(state.secondary_language_urls) == 1

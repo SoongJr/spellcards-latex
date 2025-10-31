@@ -124,11 +124,13 @@ class TestFileScannerAnalyze:
         assert not analysis
 
     def test_analyze_existing_card_basic(self, tmp_path):
-        """Test analyze_existing_card with basic file."""
-        content = r"""
-\begin{SpellCard}
-\newcommand{\urlenglish}{https://example.com/spell}
-\newcommand{\urlsecondary}{https://example.de/spell}
+        """Test analyze_existing_card extracts basic information."""
+        content = r"""%%%
+%%% SPELL-CARD-VERSION: 2.1
+%%%
+\begin{SpellCard}{sor}{Fireball}{3}
+\SpellCardQR{https://example.com/spell}
+\SpellCardQR{https://example.de/spell}
 \spellcardname{Fireball}
 \end{SpellCard}
 """
@@ -146,11 +148,12 @@ class TestFileScannerAnalyze:
 
     def test_analyze_existing_card_with_secondary_language(self, tmp_path):
         """Test analyze_existing_card detects secondary language."""
-        content = r"""
-\begin{SpellCard}
-\newcommand{\urlenglish}{https://example.com/spell}
-\newcommand{\urlsecondary}{https://example.de/spell}
-\href{https://example.de/spell}{German Link}
+        content = r"""%%%
+%%% SPELL-CARD-VERSION: 2.1
+%%%
+\begin{SpellCard}{sor}{Test}{1}
+\SpellCardQR{https://example.com/spell}
+\SpellCardQR{https://example.de/spell}
 \end{SpellCard}
 """
         file_path = tmp_path / "test.tex"
@@ -178,11 +181,13 @@ class TestFileScannerAnalyze:
         assert analysis["secondary_url"] == ""
 
     def test_analyze_existing_card_fallback_to_href(self, tmp_path):
-        """Test analyze_existing_card falls back to href for URLs."""
-        content = r"""
-\begin{SpellCard}
-\href{https://primary.com/spell}{Primary}
-\href{https://secondary.de/spell}{Secondary}
+        """Test analyze_existing_card with modern SpellCardQR format."""
+        content = r"""%%%
+%%% SPELL-CARD-VERSION: 2.1
+%%%
+\begin{SpellCard}{sor}{Test}{1}
+\SpellCardQR{https://primary.com/spell}
+\SpellCardQR{https://secondary.de/spell}
 \end{SpellCard}
 """
         file_path = tmp_path / "test.tex"
@@ -190,7 +195,7 @@ class TestFileScannerAnalyze:
 
         analysis = FileScanner.analyze_existing_card(file_path)
 
-        # Should fall back to href URLs
+        # Should extract URLs from SpellCardQR
         assert "primary.com" in analysis["primary_url"]
         assert "secondary.de" in analysis["secondary_url"]
 

@@ -32,7 +32,6 @@ class WorkflowState:  # pylint: disable=too-many-instance-attributes
     # Secondary language settings
     enable_secondary_language: bool = False
     secondary_language_code: str = "de"
-    secondary_language_urls: Dict[str, str] = field(default_factory=dict)
 
     # Workflow navigation
     navigator: WorkflowNavigator = field(default_factory=create_default_workflow)
@@ -131,7 +130,6 @@ class WorkflowState:  # pylint: disable=too-many-instance-attributes
         elif step == 5:  # Secondary Language (shifted)
             self.enable_secondary_language = False
             self.secondary_language_code = "de"
-            self.secondary_language_urls.clear()
 
         self.set_step_valid(step, False)
 

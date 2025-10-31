@@ -169,7 +169,6 @@ class FileScanner:
             - has_secondary_language: bool
             - primary_url: str
             - secondary_url: str
-            - secondary_language_urls: List[str]
             - qr_codes: List[str]
             - width_ratio: Optional[str] (e.g., "0.55" from \\spellcardinfo[0.55]{})
             - file_size: int
@@ -188,7 +187,6 @@ class FileScanner:
                 "has_secondary_language": False,
                 "primary_url": "",
                 "secondary_url": "",
-                "secondary_language_urls": [],
                 "qr_codes": [],
                 "width_ratio": None,
                 "content_preview": (
@@ -209,50 +207,22 @@ class FileScanner:
                     analysis["has_secondary_language"] = True
                     break
 
-            # Extract URLs from \newcommand{\urlenglish} and \newcommand{\urlsecondary}
-            primary_url_pattern = r"\\newcommand\{\\urlenglish\}\{([^}]+)\}"
-            secondary_url_pattern = r"\\newcommand\{\\urlsecondary\}\{([^}]+)\}"
+            # Extract URLs from \SpellCardQR{url} (v2.1+)
+            spellcardqr_urls = []
+            for line in content.split("\n"):
+                stripped = line.strip()
+                # Skip commented lines
+                if stripped.startswith("%"):
+                    continue
+                # Extract \SpellCardQR{url}
+                qr_match = re.search(r"\\SpellCardQR\{([^}]+)\}", stripped)
+                if qr_match:
+                    spellcardqr_urls.append(qr_match.group(1))
 
-            primary_match = re.search(primary_url_pattern, content)
-            secondary_match = re.search(secondary_url_pattern, content)
-
-            analysis["primary_url"] = primary_match.group(1) if primary_match else ""
+            analysis["primary_url"] = spellcardqr_urls[0] if spellcardqr_urls else ""
             analysis["secondary_url"] = (
-                secondary_match.group(1) if secondary_match else ""
+                spellcardqr_urls[1] if len(spellcardqr_urls) > 1 else ""
             )
-
-            # Also check for expl3 format: \SpellCardQR{url} (v2.1+)
-            # Skip commented lines by processing line-by-line
-            if not analysis["primary_url"] or not analysis["secondary_url"]:
-                spellcardqr_urls = []
-                for line in content.split("\n"):
-                    stripped = line.strip()
-                    # Skip commented lines
-                    if stripped.startswith("%"):
-                        continue
-                    # Extract \SpellCardQR{url}
-                    qr_match = re.search(r"\\SpellCardQR\{([^}]+)\}", stripped)
-                    if qr_match:
-                        spellcardqr_urls.append(qr_match.group(1))
-                # Use expl3 URLs if legacy format didn't find them
-                if not analysis["primary_url"] and spellcardqr_urls:
-                    analysis["primary_url"] = spellcardqr_urls[0]
-                if not analysis["secondary_url"] and len(spellcardqr_urls) > 1:
-                    analysis["secondary_url"] = spellcardqr_urls[1]
-
-            # Also extract all \href URLs for backward compatibility
-            url_pattern = r"\\href\{([^}]+)\}"
-            urls = re.findall(url_pattern, content)
-
-            # If we didn't find URLs in newcommand or spellcardqr format, fall back to href
-            if not analysis["primary_url"] and urls:
-                analysis["primary_url"] = urls[0] if len(urls) > 0 else ""
-            if not analysis["secondary_url"] and urls:
-                analysis["secondary_url"] = urls[1] if len(urls) > 1 else ""
-
-            analysis["secondary_language_urls"] = [
-                url for url in urls if ".de" in url or "german" in url.lower()
-            ]
 
             # Extract width ratio from \SpellCardInfo[RATIO]{}
             # Pattern: \SpellCardInfo[0.55]{} or \SpellCardInfo{}
@@ -278,7 +248,6 @@ class FileScanner:
                 "has_secondary_language": False,
                 "primary_url": "",
                 "secondary_url": "",
-                "secondary_language_urls": [],
                 "qr_codes": [],
                 "width_ratio": None,
             }
@@ -345,32 +314,11 @@ class FileScanner:
             return ""
 
     @staticmethod
-    def _detect_spell_file_version(content: str) -> str:
-        """
-        Detect the version of a spell card file from its header comment.
-
-        Args:
-            content: Full file content as string
-
-        Returns:
-            Version string (e.g., "2.0-expl3", "1.0-legacy", "legacy" for no version)
-        """
-        # Look for SPELL-CARD-VERSION comment in first 20 lines
-        lines = content.split("\n", 20)
-        for line in lines[:20]:
-            match = re.search(r"SPELL-CARD-VERSION:\s*(\S+)", line)
-            if match:
-                return match.group(1)
-        return "legacy"  # No version marker = legacy format
-
-    @staticmethod
     def extract_properties(file_path: Path) -> Dict[str, Tuple[str, Optional[str]]]:
         """
         Extract all property definitions from a .tex file.
 
-        Detects file version and uses appropriate parser:
-        - Version 2.1+: Uses \\SpellProp{property}{value} format
-        - Legacy (no version): Uses \\newcommand{\\property}{value} format
+        Uses modern format: \\SpellProp{property}{value}
 
         Args:
             file_path: Path to the .tex file
@@ -384,12 +332,7 @@ class FileScanner:
 
         try:
             content = file_path.read_text(encoding="utf-8")
-            version = FileScanner._detect_spell_file_version(content)
-
-            # Use appropriate parser based on version
-            if version.startswith("2.") or "expl3" in version:
-                return FileScanner._extract_properties_expl3(content)
-            return FileScanner._extract_properties_legacy(content)
+            return FileScanner._extract_properties_expl3(content)
 
         except (OSError, UnicodeDecodeError, PermissionError):
             return {}
@@ -458,56 +401,6 @@ class FileScanner:
             if len(qr_urls) > 1:
                 properties["urlsecondary"] = (qr_urls[1], None)
 
-        return properties
-
-    @staticmethod
-    def _extract_properties_legacy(
-        content: str,
-    ) -> Dict[str, Tuple[str, Optional[str]]]:
-        """
-        Extract properties from legacy format: \\newcommand{\\property}{value}.
-
-        Legacy files store URLs in \\newcommand{\\urlenglish} and \\newcommand{\\urlsecondary}.
-
-        Args:
-            content: File content as string
-
-        Returns:
-            Dictionary mapping property names to (value, original_comment) tuples
-        """
-        properties: Dict[str, Tuple[str, Optional[str]]] = {}
-        lines = content.split("\n")
-
-        for line in lines:
-            stripped = line.strip()
-            if not stripped.startswith(r"\newcommand"):
-                continue
-
-            # Extract property name
-            name_match = re.match(r"\\newcommand\{\\(\w+)\}", stripped)
-            if not name_match:
-                continue
-
-            property_name = name_match.group(1)
-            after_name = stripped[name_match.end() :]
-            if not after_name.startswith("{"):
-                continue
-
-            # Extract value by counting braces
-            value, value_end = FileScanner._extract_braced_value(after_name)
-            if value is None:
-                continue
-
-            # Check for % original: {VALUE} comment
-            original_value = None
-            remainder = after_name[value_end + 1 :]
-            original_match = re.search(r"%\s*original:\s*\{([^}]*)\}", remainder)
-            if original_match:
-                original_value = original_match.group(1)
-
-            properties[property_name] = (value, original_value)
-
-        # Legacy files have URLs in \newcommand format, already extracted above
         return properties
 
     @staticmethod
