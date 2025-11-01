@@ -16,10 +16,10 @@
 %% Deck Index Card Generation
 %% ============================================================================
 
-%%% Generate an index card for a deck showing spell counts by level
+%%% Internal command to generate an index card for a deck
 %%% #1 = deck number
-%%% Creates a card with deck name and table of spell counts per level
-\NewDocumentCommand{\DeckIndexCard}{m}
+%%% Creates a card with deck name and list of spells organized by level
+\NewDocumentCommand{\spellcard_deck_index_card:n}{m}
 {
   \group_begin:
   % Only generate if deck exists

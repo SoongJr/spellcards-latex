@@ -75,8 +75,10 @@
   \tl_set:Nx \l_tmpa_spellcard_tl { name={\tl_use:N \l_spellcard_current_deck_name_tl},count={\int_use:N \l_spellcard_deck_count_int} }
   \prop_gput:NVn \g_spellcard_decks_prop \l_tmpa_spellcard_tl { \tl_use:N \l_tmpa_spellcard_tl }
 
-  % Automatically generate index card for this deck
-  \DeckIndexCard { \int_use:N \g_spellcard_deck_number_int }
+  % Automatically generate index card for this deck (if enabled via class option)
+  \ifspellcard@deckindex
+    \spellcard_deck_index_card:n { \int_use:N \g_spellcard_deck_number_int }
+  \fi
 
   % Increment the global deck counter
   \int_gincr:N \g_spellcard_deck_number_int

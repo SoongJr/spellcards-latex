@@ -58,6 +58,7 @@ spellcards-latex
 │   │   ├── level-markers.sty       # Spell level indicators
 │   │   ├── qr-code.sty             # QR code positioning
 │   │   ├── info-table.sty          # Attribute table rendering
+│   │   ├── deck-index.sty          # Deck index card generation
 │   │   └── content-layout.sty      # Card structure
 │   └── spells/                     # Generated spell cards
 │       ├── sor/                    # Sorcerer spells

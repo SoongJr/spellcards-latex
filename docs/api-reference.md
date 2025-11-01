@@ -1,7 +1,7 @@
 # LaTeX Spell Cards - API Reference
 
-**Version**: 2.1  
-**Date**: October 31, 2025
+**Version**: 2.2  
+**Date**: November 1, 2025
 
 ## Public Commands
 
@@ -18,6 +18,8 @@ Custom document class for spell card generation.
 **Options**:
 - `[final]` (default): Double-sided, cardified layout (4 cards per A4 sheet)
 - `[draft]`: Single-sided, no cardify (1 card per page)
+- `[deckindex]` (default: true): Automatically generate deck index cards
+- `[deckindex=false]`: Disable automatic deck index card generation
 - `[printer-margin=<dimension>]`: Uniform printer margin adjustment (e.g., `5mm`)
 - `[printer-margin-x=<dimension>]`: Horizontal printer margin only
 - `[printer-margin-y=<dimension>]`: Vertical printer margin only
@@ -27,9 +29,14 @@ Custom document class for spell card generation.
 \documentclass{spellcard}                              % Final mode (default)
 \documentclass[final]{spellcard}                       % Explicit final mode
 \documentclass[draft]{spellcard}                       % Draft mode for testing
+\documentclass[deckindex=false]{spellcard}             % Disable deck index cards
 \documentclass[printer-margin=3mm]{spellcard}          % Uniform 3mm margin
 \documentclass[printer-margin-x=2mm,printer-margin-y=5mm]{spellcard}  % Separate x/y margins
 ```
+
+**Deck Index Cards**:
+- **Default**: Enabled - generates an index card at the end of each deck listing all spells within
+- **Disable**: Use `[deckindex=false]` if you don't want index cards
 
 **Printer Margins**:
 - **Default**: No printer margins (assumes full page printing)
@@ -219,11 +226,19 @@ Groups spells into a named deck with visual label.
 **Behavior**:
 - Deck name displayed at top of each card in italics (as entered)
 - Deck tracking for future index card generation
+- **Automatic index card**: When the deck ends, an index card is automatically generated (if `deckindex` option is enabled)
 
 **Restrictions**:
 - First deck must be unnamed (empty braces or brackets)
 - Consecutive decks must be provided a name
 - Decks cannot be nested
+
+**Index Cards**:
+Each deck automatically generates an index card showing:
+- All spells in the deck (including those with `[noprint]`)
+- Organized by spell level
+
+To disable automatic index card generation, use `\documentclass[deckindex=false]{spellcard}`.
 
 ---
 
@@ -346,6 +361,9 @@ The following are internal functions (snake_case) not intended for direct use:
 ---
 
 ## Version History
+
+### Version 2.2 (November 1, 2025)
+- Added automatic deck index card generation with `deckindex` document class option (default: true)
 
 ### Version 2.1 (October 31, 2025)
 - PascalCase public API

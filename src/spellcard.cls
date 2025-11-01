@@ -30,6 +30,9 @@
 \DeclareBoolOption[false]{draft}
 \DeclareComplementaryOption{final}{draft}
 
+% Deck index cards (default: enabled)
+\DeclareBoolOption[true]{deckindex}
+
 % Printer margins
 \DeclareStringOption{printer-margin-x}
 \DeclareStringOption{printer-margin-y}

@@ -1,7 +1,7 @@
 # LaTeX Spell Cards - User Guide
 
-**Version**: 2.1  
-**Date**: October 31, 2025
+**Version**: 2.2  
+**Date**: November 1, 2025
 
 ## Overview
 
@@ -49,6 +49,28 @@ The project uses a custom document class with two modes:
 - **Double-sided** printing layout
 - **Cardified**: 4 A6 cards per A4 sheet, individually rotated so elements that should print at the edge of the card can be printed
 - **Production-ready**: Use this for final output
+
+### Deck Index Cards
+
+By default, the document class automatically generates **index cards** for each spell deck.
+These list all spells in the deck, organized by level, providing a quick reference when organizing your physical cards.
+
+**Enabled by default** (recommended):
+```latex
+\documentclass{spellcard}
+% or explicitly:
+\documentclass[deckindex]{spellcard}
+```
+
+**To disable** (if you don't want index cards):
+```latex
+\documentclass[deckindex=false]{spellcard}
+```
+
+**What you get**: At the end of each `\begin{SpellDeck}...\end{SpellDeck}` environment, an index card is automatically generated showing:
+- Deck name (or "Known Spells" for the unnamed deck)
+- All spells organized by level
+- Two-column layout for space efficiency
 
 ## Organizing Spells
 
@@ -140,9 +162,7 @@ This is useful for:
 - Planning which spells to prepare later
 - Printing only new spells gained at a level-up without removing already-printed spells from source
 - Keeping deck organization intact while testing
-- Future Bonus: There are plans to introduce an index card at the end of a deck.  
-  This index card will have to know which spells the character knows, but if you're learning new spells
-  you won't want to print all the old ones again.
+- **Deck index cards**: Spells marked with `[noprint]` still appear on the deck's index card, even though their full cards aren't printed. This lets you print an updated index card showing all known spells without reprinting cards you already have.
 
 ## Customizing Spell Cards
 
