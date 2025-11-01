@@ -1,0 +1,148 @@
+%%
+%% This is file `spellcards/deck-index.sty'
+%%
+%% Deck index card generation for spellcards package
+%% Provides commands to generate index cards listing all spells in a deck
+%%
+%% Part of the spellcards package
+%% Copyright (C) 2025 SoongJr
+%% License: Open Source (see LICENSE file)
+%%
+
+\ProvidesExplFile{spellcards/deck-index.sty}{2025/11/01}{1.0.0}
+{Deck index card module for spellcards package}
+
+%% ============================================================================
+%% Deck Index Card Generation
+%% ============================================================================
+
+%%% Generate an index card for a deck showing spell counts by level
+%%% #1 = deck number
+%%% Creates a card with deck name and table of spell counts per level
+\NewDocumentCommand{\DeckIndexCard}{m}
+{
+  \group_begin:
+  % Only generate if deck exists
+  \spellcard_if_deck_exists:nTF { #1 }
+  {
+    \spellcard_generate_deck_index_card:n { #1 }
+  }
+  {
+    \msg_warning:nnn { spellcard } { deck-not-found } { #1 }
+  }
+  \group_end:
+}
+
+%%% Internal function to generate the deck index card
+%%% #1 = deck number
+\cs_new:Nn \spellcard_generate_deck_index_card:n
+{
+  % Suppress deck labels during index card generation
+  \bool_gset_true:N \g_spellcard_suppress_deck_label_bool
+
+  % Suppress page numbers for the entire index card (including overflow pages)
+  % as it is only expected to have a front and a back face.
+  \pagestyle{empty}
+
+  % Deck name as section title ("Known Spells" for unnamed deck)
+  % Check if deck has a name using tl_if_empty test
+  \tl_set:Nx \l_tmpa_tl { \spellcard_get_deck_name:n { #1 } }
+  \tl_if_empty:NTF \l_tmpa_tl
+  {
+    % Unnamed deck - use default title
+    \section*{\Huge Known~Spells}
+  }
+  {
+    % Named deck - use custom title
+    \section*{\Huge \tl_use:N \l_tmpa_tl }
+  }
+
+  % Print spell list grouped by level in two columns with smart split
+  \noindent
+  \spellcard_build_spell_list_two_columns:n { #1 }
+
+  \vfill
+
+  % Restore deck label drawing
+  \bool_gset_false:N \g_spellcard_suppress_deck_label_bool
+
+  % Restore page numbering and ensure index is output before next deck
+  \pagestyle{plain}
+  \cleardoublepage
+}
+
+%% ============================================================================
+%% Spell List Layout Functions
+%% ============================================================================
+
+%%% Build spell list with level headers (alternative layout)
+%%% #1 = deck number
+%%% Format: Level headers with spell lists below
+\cs_new_protected:Npn \spellcard_build_spell_list_by_level:n #1
+{
+  % Copy level list to temp sequence and sort numerically
+  \seq_clear:N \l_tmpa_seq
+  \int_step_inline:nnnn {0} {1} {9}
+  {
+    \seq_if_exist:cT { g_spellcard_deck_ #1 _level_ ##1 _seq }
+    {
+      \seq_if_empty:cF { g_spellcard_deck_ #1 _level_ ##1 _seq }
+      {
+        \par\noindent\subsection*{Level~##1}
+        % Typeset each spell name on its own line (####1 is the spell name from seq_map_inline)
+        \seq_map_inline:cn { g_spellcard_deck_ #1 _level_ ##1 _seq } { ####1 \\ }
+      }
+    }
+  }
+}
+
+%%% Build spell list in two columns with multicol (inline format with level prefixes)
+%%% #1 = deck number
+%%% Format: "X -- Spell Name" with alternating bold levels (excluding empty levels)
+\cs_new_protected:Npn \spellcard_build_spell_list_two_columns:n #1
+{
+  % Use multicol for automatic balancing
+  \begin{multicols}{2}
+    \raggedright\Large
+
+    % Track whether current level should be bold (alternates, skipping empty levels)
+    \bool_set_true:N \l_tmpa_bool  % Start with bold for first populated level
+
+    % Iterate over levels that exist in the deck
+    \seq_map_inline:cn { g_spellcard_deck_ #1 _levels_seq }
+    {
+      \seq_if_exist:cT { g_spellcard_deck_ #1 _level_ ##1 _seq }
+      {
+        \seq_if_empty:cF { g_spellcard_deck_ #1 _level_ ##1 _seq }
+        {
+          % Store the level number for use in nested inline
+          \tl_set:Nn \l_tmpb_tl { ##1 }
+
+          % Render each spell with compact level prefix
+          \seq_map_inline:cn { g_spellcard_deck_ #1 _level_ ##1 _seq }
+          {
+            \bool_if:NTF \l_tmpa_bool
+            {
+              % Bold level prefix (####1 is the spell name in nested map)
+              \textbf{\tl_use:N \l_tmpb_tl~--} ~ ####1 \\
+            }
+            {
+              % Normal level prefix
+              \tl_use:N \l_tmpb_tl~--~ ####1 \\
+            }
+          }
+          % Add some vertical space between levels
+          \bigbreak
+
+          % Toggle bold for next populated level
+          \bool_set:Nn \l_tmpa_bool { ! \l_tmpa_bool }
+        }% check name sequence not empty
+      }% check name sequence exists
+    }% iterate over levels
+  \end{multicols}
+}
+
+\endinput
+%%
+%% End of file `spellcards/deck-index.sty'.
+%%
