@@ -60,7 +60,7 @@ jobs:
           args: -pdf -latexoption=-file-line-error -latexoption=-interaction=nonstopmode -latexoption=-shell-escape
       - name: Upload ${{ env.file }}.pdf
         # upload exactly this generated PDF (will show up at the bottom of each run of this github action)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ env.file }}.pdf
           path: src/out/${{ env.file }}.pdf
