@@ -9,7 +9,7 @@
 %%
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{spellcard}[2025/10/30 v1.0.0 Spell Card Document Class]
+\ProvidesClass{spellcard}[2025/11/01 v2.2.0 Spell Card Document Class]
 
 %% ============================================================================
 %% Required Packages (Early Load)

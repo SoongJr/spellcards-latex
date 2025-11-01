@@ -1,7 +1,7 @@
 # Spell Card Generator - User Guide
 
-**Version**: 2.1  
-**Date**: October 31, 2025
+**Version**: 2.2  
+**Date**: November 1, 2025
 
 ## Overview
 

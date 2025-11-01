@@ -75,41 +75,37 @@ spellcards-latex
 └── README.md                       # This file
 ```
 
-#### in command line:
+## Compilation
+
+### in command line:
 1. Open the repository folder in a terminal.
 2. Run `latexmk -pdf src/spellcards.tex`.
-3. The output PDF will be generated in directory `src/out` and opened in VS Code, refreshing when .tex files change (refresh is performed by LaTeX Workshop extension on save of files).
+3. The output PDF will be generated in directory `src/out`.
 
-#### in VS Code:
+### In VS Code:
 1. Open any .tex file in VS Code, e.g. the root file `src/spellcards.tex`.
 2. Use the LaTeX Workshop extension to compile the document. This can typically be done by pressing `Ctrl + Alt + B`, using the command palette, or opening the extension tab ("TeX" icon).
 3. The output PDF will be generated in directory `src/out`, open from Explorer tab or from LaTeX Workshop extension tab for additional options.
 
-### Printing and post-processing
-1. In `src/spellcards.tex` ensure you're out of drafting mode and "cardify" is included before creating the PDF
-1. Print the PDF double-sided:
-   - If your printer supports double-sided printing and can deal with the card-stock you use, just use that.
-   - Otherwise, print all odd pages first, then put the stack of print-outs back into the printer so the next print goes onto the backside.  
-     Now print the even pages _in reverse order_
-1. Cut the DIN A4 pages into cards (somewhere between DIN A6/B7):  
-   Unless you have professional equipment, your printer will not be able to produce the tolerances
-   that would be necessary to just cut the printed pages down the center into DIN A6.  
-## Printing Tips
+## Printing
 
+### Print Settings
 1. **Paper**: Use A4 cardstock (200-300 gsm recommended)
-2. **Settings**: Double-sided printing, no scaling (100% size)
-3. **Cutting**: Follow the thin cutting guides to get 4 roughly A6-sized cards per sheet
-4. **Coloring**: Use highlighters to color the spell level markers on the right edge
-5. **Organization**: Sort by level or create themed decks (combat, utility, etc.)
+2. **Print Settings**: 
+   - No scaling (100% size)
+   - Double-sided printing, or a manual workaround:
+      - Print all odd pages first
+      - Put the stack back into the printer (oriented the "right" way!)
+      - Print even pages in reverse order
+
+### Post-Processing
+1. **Cutting**: Follow the thin cutting guides to get 4 roughly A6-sized cards per sheet  
+   **Note**: Unless you have professional equipment, your printer may not produce tolerances necessary to cut exactly down the center into A6.
+2. **Coloring**: Use highlighters to color the spell level markers on the right edge
+3. **Organization**: Sort by level or create themed decks (combat, utility, etc.)
+
 
 See the [User Guide](docs/user-guide.md) for detailed printing instructions.
-
-### Documentation
-
-See `docs/` directory for:
-- `user-guide.md` - End-user documentation
-- `generator-guide.md` - Python application usage
-- `api-reference.md` - LaTeX command reference
 
 ## Contributing
 
