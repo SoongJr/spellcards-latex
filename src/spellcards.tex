@@ -11,9 +11,7 @@
 % (once you've printed this, you are expected to comment this line)
 \SpellMarkerChart{}
 
-% include actual spell cards, these class-specific files contain the actual spells to include in the PDF, usually the ones for a character's current level-up.
-% It is rare that all spells are needed at once, but if you do wish to do that, here's the command to run:
-%   class=sor bash -c 'cd src && find "spells/${class}" -name "*.tex" | sed "s/\.tex$//" | xargs -I{} printf "\\includespell{%s.tex}\n" {} > "spells/${class}.tex"'
-\input{spells/sor}
+% include the spells for a given class (or potentially a specific character):
+\input{spells/sor.tex}
 
 \end{document}

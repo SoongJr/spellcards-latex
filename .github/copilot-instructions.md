@@ -42,11 +42,14 @@ latexmk -pv- -pdf src/spellcards.tex </dev/null
 latexmk -pv- -pdf src/test-expl3.tex </dev/null
 pdftotext src/out/test-expl3.pdf -
 pdftotext src/out/test-expl3.pdf - | grep "pattern"
+pdftotext src/out/test-expl3.pdf - | head -n 90 | tail -n 30
 ```
 
 If  you wish to parse the output of latex compiler, using `latexmk ... | grep` often breaks the auto-approval detection.
 It is often better to discard latexmk's output, decide on the result according to its exit code,
 then look at the log file in src/out to see what went wrong.
+
+`sed` is not auto-approved, it is better to use `head` and/or `tail` is possible.
 
 #### Modern expl3 Package Features
 

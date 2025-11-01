@@ -28,6 +28,13 @@
 \bool_new:N \l_spellcard_include_print_bool
 \bool_set_true:N \l_spellcard_include_print_bool
 
+\bool_new:N \g_spellcard_suppress_deck_label_bool
+\bool_gset_false:N \g_spellcard_suppress_deck_label_bool
+
+%% Boolean to control content buffering during deck processing
+\bool_new:N \g_spellcard_buffer_content_bool
+\bool_gset_false:N \g_spellcard_buffer_content_bool
+
 %% ============================================================================
 %% Integer Variables
 %% ============================================================================
@@ -40,6 +47,17 @@
 
 \int_new:N \l_spellcard_spell_level_int
 \int_zero:N \l_spellcard_spell_level_int
+
+\int_new:N \l_spellcard_level_count_int
+\int_zero:N \l_spellcard_level_count_int
+
+% Scratch integers for index card layout calculations
+\int_new:N \l_spellcard_scratch_a_int
+\int_new:N \l_spellcard_scratch_b_int
+\int_new:N \l_spellcard_scratch_c_int
+\int_new:N \l_spellcard_scratch_d_int
+\int_new:N \l_spellcard_scratch_e_int
+\int_new:N \l_spellcard_scratch_f_int
 
 %% ============================================================================
 %% Token List Variables
@@ -72,6 +90,13 @@
 \tl_new:N \l_spellcard_qr_code_content_tl
 \tl_new:N \l_tmpa_spellcard_tl
 \tl_new:N \l_tmpb_spellcard_tl
+\tl_new:N \l_tmpc_tl
+\tl_new:N \l_tmpd_tl
+\tl_new:N \l_spellcard_deck_index_table_tl  % For building deck index card table content
+
+%% Token list to buffer spell card content during deck processing
+\tl_new:N \g_spellcard_content_buffer_tl
+\tl_gclear:N \g_spellcard_content_buffer_tl
 
 %% ============================================================================
 %% Floating Point Variables

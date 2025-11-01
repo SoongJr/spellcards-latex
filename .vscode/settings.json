@@ -25,6 +25,7 @@
         "chktex": true,
         "pdflatex": true,
         "latexmk": true,
+        "timeout 10s latexmk": true,
         "timeout 30s latexmk": true,
         "timeout 60s latexmk": true,
         "latexindent": true,

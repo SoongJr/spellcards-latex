@@ -1,6 +1,13 @@
-%%% ALL SPELLS %%%
 % there is always exactly one spell deck without a name (must be first),
 % which contains all spells known to this character:
+%%% ALL SPELLS %%%
+% include actual spell cards to define which spells this character knows.
+% usually you will print all of them only once, and then set them to `print=false`
+% and only print newly added spells your character learns during level-up.
+% If you're creating a new file from scratch, here's how to list all existing spells from the project root:
+%    class=sor bash -c 'cd src && find "spells/${class}" -name "*.tex" -exec printf "  \\IncludeSpell[print]{%s}\n" {} \;'
+% Some spells may also be commented out entirely. These are usually spells the character used to know, but has exchanged for another.
+% Or spells taken from the list available to that class, but not known to this specific character.
 \begin{SpellDeck}{}
   \IncludeSpell[print]{spells/sor/0/Acid Splash.tex}
   \IncludeSpell[print]{spells/sor/0/Dancing Lights.tex}
@@ -12,6 +19,7 @@
   \IncludeSpell[print]{spells/sor/0/Read Magic.tex}
   \IncludeSpell[print]{spells/sor/0/Resistance.tex}
   \IncludeSpell[print]{spells/sor/1/Burning Hands.tex}
+  % not known \IncludeSpell[print]{spells/sor/1/Comprehend Languages.tex}
   \IncludeSpell[print]{spells/sor/1/Expeditious Retreat.tex}
   \IncludeSpell[print]{spells/sor/1/Feather Fall.tex}
   \IncludeSpell[print]{spells/sor/1/Grease.tex}
@@ -27,6 +35,7 @@
   \IncludeSpell[print]{spells/sor/3/Fireball.tex}
   \IncludeSpell[print]{spells/sor/3/Fly.tex}
   \IncludeSpell[print]{spells/sor/3/Protection from Energy.tex}
+  % not known \IncludeSpell[print]{spells/sor/3/Tiny Hut.tex}
   \IncludeSpell[print]{spells/sor/3/Tongues.tex}
   \IncludeSpell[print]{spells/sor/4/Black Tentacles.tex}
   \IncludeSpell[print]{spells/sor/4/Elemental Body I.tex}
@@ -37,6 +46,7 @@
   \IncludeSpell[print]{spells/sor/5/Permanency.tex}
   \IncludeSpell[print]{spells/sor/5/Teleport.tex}
   \IncludeSpell[print]{spells/sor/5/Transmute Rock to Mud.tex}
+  % not known \IncludeSpell[print]{spells/sor/5/Wall Of Force.tex}
   \IncludeSpell[print]{spells/sor/5/Wall Of Stone.tex}
   \IncludeSpell[print]{spells/sor/6/Chain Lightning.tex}
   \IncludeSpell[print]{spells/sor/6/Disintegrate.tex}

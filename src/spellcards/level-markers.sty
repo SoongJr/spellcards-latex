@@ -107,6 +107,10 @@
 %%% Creates a lookup card showing all spell level markers that users can color
 \cs_new_protected:Nn \spellcard_draw_marker_chart:
 {
+  \group_begin:
+  % Suppress page numbers for this chart (only has a single face)
+  \thispagestyle{empty}
+
   \section*{\Huge look-up~ card~ for~ spell-level~ marker~ colors}
   \vspace{1ex}
   \raggedright\Large
@@ -119,10 +123,10 @@
   {
     \spellcard_draw_spell_marker:n { \int_eval:n { ##1 - 1 } }
   }
+  % Restore page numbering for spell cards
+  \pagestyle{plain}
   \cleardoublepage
-
-  % Reset page counter (same as spellcard environment)
-  \setcounter{page}{1}
+  \group_end:
 }
 
 %% ============================================================================
