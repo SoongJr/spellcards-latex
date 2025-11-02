@@ -86,40 +86,29 @@
   }
 }
 
-%% ============================================================================
-%% LaTeX2e Compatibility Layer
-%% ============================================================================
-%% CRITICAL: Mode switching for tabularx compatibility
-%% The tabularx package requires LaTeX2e syntax mode
-%% This helper command is defined in LaTeX2e mode to work within tables
-
-%%% Document-level command for use in tables (LaTeX2e mode)
-%%% Must be defined outside ExplSyntax to work inside tabular environments
-\ExplSyntaxOff
-\newcommand{\renderattribute}[2]{%
-  \ifthenelse{\equal{#2}{NULL}}{}{\textbf{#1:} & #2 \\ \midrule}%
-}%
-\ExplSyntaxOn
 
 %% ============================================================================
 %% Main Rendering Function
 %% ============================================================================
-%% CRITICAL: This function switches between ExplSyntax and LaTeX2e modes
-%% to maintain compatibility with tabularx and calc packages
-
 %%% Internal function to render spell card info
 %%% #1 = first table width ratio (default 0.5)
 %%% Follows the legacy implementation pattern more closely
 %%% Renders tables directly without pre-building token lists
+\newcommand{\renderattribute}[2]{%
+  \ifthenelse{\equal{#2}{NULL}}{}{\textbf{#1:} & #2 \\ \midrule}%
+}%
+\newcommand{\renderattributelast}[2]{%
+  \ifthenelse{\equal{#2}{NULL}}{}{\textbf{#1:} & #2 \\ \bottomrule}%
+}%
 \cs_new_protected:Npn \spellcard_render_info:n #1
 {
   \group_begin:
 
   % Export property values to LaTeX2e macros for use in tables
   \cs_set:Npx \castingtime { \prop_item:Nn \l_spellcard_spell_props { castingtime } }
+  \cs_set:Npx \attackroll { \prop_item:Nn \l_spellcard_spell_props { attackroll } }
   \cs_set:Npx \savingthrow { \prop_item:Nn \l_spellcard_spell_props { savingthrow } }
   \cs_set:Npx \spellresistance { \prop_item:Nn \l_spellcard_spell_props { spellresistance } }
-  \cs_set:Npx \attackroll { \prop_item:Nn \l_spellcard_spell_props { attackroll } }
   \cs_set:Npx \duration { \prop_item:Nn \l_spellcard_spell_props { duration } }
   \cs_set:Npx \area { \prop_item:Nn \l_spellcard_spell_props { area } }
   \cs_set:Npx \range { \prop_item:Nn \l_spellcard_spell_props { range } }
@@ -127,27 +116,23 @@
   \cs_set:Npx \school { \prop_item:Nn \l_spellcard_spell_props { school } }
   \cs_set:Npx \descriptor { \prop_item:Nn \l_spellcard_spell_props { descriptor } }
 
-  % CRITICAL: Switch to LaTeX2e mode for tabularx
-  % The tabularx and calc packages require standard LaTeX2e syntax
-  \ExplSyntaxOff%
   \normalsize\par\noindent%
   \def\firsttablewidth{#1}%
   \def\secondtablewidth{\fpeval{1-#1}}%
 
   % First table: Casting Time, Saving Throw, Spell Resistance, Attack Roll
-  \begin{tabularx}{\firsttablewidth\textwidth}[b]{r>{\raggedright\arraybackslash}X}%
+  \begin{tabularx}{\firsttablewidth\textwidth-.5\tabcolsep}[b]{r>{\raggedright\arraybackslash}X}%
     \toprule%
     \renderattribute{Casting\ Time}{\castingtime}%
+    \renderattribute{Attack\ Roll}{\attackroll}%
     \renderattribute{Saving\ Throw}{\savingthrow}%
-    \renderattribute{Spell\ Resist}{\spellresistance}%
-    \ifthenelse{\equal{\attackroll}{NULL}}{}{%
-    \textbf{Attack\ Roll:} & \attackroll \\ \bottomrule%
-    }%
+    % last attribute must always be present to render a bottomrule instead of midrul
+    \renderattributelast{Spell\ Resist}{\spellresistance}%
   \end{tabularx}%
   \hfill%
 
   % Second table: Duration, Area, Range, Components, School
-  \begin{tabularx}{\secondtablewidth\textwidth-\tabcolsep}[b]{r>{\raggedright\arraybackslash}X}%
+  \begin{tabularx}{\secondtablewidth\textwidth-.5\tabcolsep}[b]{r>{\raggedright\arraybackslash}X}%
     \toprule%
     \renderattribute{Duration}{\duration}%
     \renderattribute{Area}{\area}%
@@ -155,12 +140,10 @@
     \renderattribute{Comp.}{\components}%
     % School row - always present, with optional descriptor for evocation
     \ifthenelse{\equal{\school}{evocation} \AND\NOT\equal{\descriptor}{NULL}}%
-    {\textbf{School:} & \school{}\ (\descriptor{})} %
-    {\textbf{School:} & \school{}                }  \\ \bottomrule%
+    {\renderattributelast{School}{\school\ (\descriptor)}}%
+    {\renderattributelast{School}{\school}}%
   \end{tabularx}%
-
-  % CRITICAL: Return to ExplSyntax mode
-  \ExplSyntaxOn
+  \\
 
   % Third table for Target/Effect (if either exists)
   \bool_set_false:N \l_tmpa_bool
@@ -168,11 +151,11 @@
   \spellcard_is_null:nF { effect } { \bool_set_true:N \l_tmpa_bool }
   \bool_if:NT \l_tmpa_bool
   {
-    \\
     \begin{tabularx}{\textwidth}{r>{\raggedright\arraybackslash}X}
       \spellcard_render_attribute:nn { Target: } { targets }
       \spellcard_render_attribute:nn { Effect: } { effect }
     \end{tabularx}
+    \\
   }
 
   \group_end:
