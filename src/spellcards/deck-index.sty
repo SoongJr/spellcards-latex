@@ -23,12 +23,9 @@
 {
   \group_begin:
   % Only generate if deck exists
-  \spellcard_if_deck_exists:nTF { #1 }
+  \spellcard_if_deck_exists:nT { #1 }
   {
     \spellcard_generate_deck_index_card:n { #1 }
-  }
-  {
-    \msg_warning:nnn { spellcard } { deck-not-found } { #1 }
   }
   \group_end:
 }
