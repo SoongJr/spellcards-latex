@@ -216,7 +216,7 @@
 
   %% Front side (page 1)
   \begin{center}{\Huge\bfseries Area~of~Effect}\end{center}
-  \vspace{0.5em}
+  \vspace{2em}
 
   % Row 1: Three diagrams (5ft radius, 10ft radius, 15ft cones with proper width allocation)
   \noindent\hfill
@@ -255,21 +255,22 @@
   \noindent
   \begin{center}
     \AoELinesConsolidated\\[0.3em]
-    {\small 30-foot~lines}
+    {\small 30-foot~lines}\hspace{5em}
   \end{center}
   \vspace{2em}
 
 
   % Burst/Emanation/Spread explanations
-  \noindent\textbf{Burst:}~Affects~whatever~it~catches~in~its~area.~%
-  Cannot~extend~around~corners~(blocked~by~total~cover).\par
-  \vspace{0.3em}
-
-  \noindent\textbf{Emanation:}~Like~burst,~but~continues~to~radiate~%
-  from~origin~for~spell~duration.\par
-  \vspace{0.3em}
-
-  \noindent\textbf{Spread:}~Like~burst,~but~CAN~extend~around~corners.\par
+  \Large
+  \begin{description}
+    \item[Burst:]~Effect~radiates~in~straight~lines~from~a~point.\\
+          Does~not~affect~targets~with~total~cover.~Usually~instantaneous.
+    \item[Emanation:]~Like~burst,~but~effect~persists~for~the~spell's~duration.\\
+          Still~blocked~by~total~cover.
+    \item[Spread:]~Effect~fills~the~area~from~the~origin,~
+          extending~even~around~corners~
+          until~its~length~reaches~the~radius~specified.
+  \end{description}
 
   % QR codes at bottom using proper spell card positioning
   \tl_if_empty:nF { #1 } { \SpellCardQR{#1} }
