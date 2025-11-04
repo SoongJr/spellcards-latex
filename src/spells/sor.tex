@@ -5,112 +5,112 @@
 % usually you will print all of them only once, and then set them to `print=false`
 % and only print newly added spells your character learns during level-up.
 % If you're creating a new file from scratch, here's how to list all existing spells from the project root:
-%    class=sor bash -c 'cd src && find "spells/${class}" -name "*.tex" -exec printf "  \\IncludeSpell[print]{%s}\n" {} \;'
+%    class=sor bash -c 'cd src && find "spells/${class}" -name "*.tex" -exec printf "  \\IncludeSpell[print=false]{%s}\n" {} \;'
 % Some spells may also be commented out entirely. These are usually spells the character used to know, but has exchanged for another.
 % Or spells taken from the list available to that class, but not known to this specific character.
-\begin{SpellDeck}{}
-  \IncludeSpell[print]{spells/sor/0/Acid Splash.tex}
-  \IncludeSpell[print]{spells/sor/0/Dancing Lights.tex}
-  \IncludeSpell[print]{spells/sor/0/Detect Magic.tex}
-  \IncludeSpell[print]{spells/sor/0/Ghost Sound.tex}
-  \IncludeSpell[print]{spells/sor/0/Mage Hand.tex}
-  \IncludeSpell[print]{spells/sor/0/Prestidigitation.tex}
-  \IncludeSpell[print]{spells/sor/0/Ray of Frost.tex}
-  \IncludeSpell[print]{spells/sor/0/Read Magic.tex}
-  \IncludeSpell[print]{spells/sor/0/Resistance.tex}
+\begin{SpellDeck}[deckindex=true]{}
+  \IncludeSpell[print=false]{spells/sor/0/Acid Splash.tex}
+  \IncludeSpell[print=false]{spells/sor/0/Dancing Lights.tex}
+  \IncludeSpell[print=false]{spells/sor/0/Detect Magic.tex} % has back face
+  \IncludeSpell[print=false]{spells/sor/0/Ghost Sound.tex}
+  \IncludeSpell[print=false]{spells/sor/0/Mage Hand.tex}
+  \IncludeSpell[print=false]{spells/sor/0/Prestidigitation.tex}
+  \IncludeSpell[print=false]{spells/sor/0/Ray of Frost.tex}
+  \IncludeSpell[print=false]{spells/sor/0/Read Magic.tex}
+  \IncludeSpell[print=false]{spells/sor/0/Resistance.tex}
 
-  \IncludeSpell[print]{spells/sor/1/Burning Hands.tex}
-  % not known \IncludeSpell[print]{spells/sor/1/Comprehend Languages.tex}
-  \IncludeSpell[print]{spells/sor/1/Expeditious Retreat.tex}
-  \IncludeSpell[print]{spells/sor/1/Feather Fall.tex}
-  \IncludeSpell[print]{spells/sor/1/Grease.tex}
-  \IncludeSpell[print]{spells/sor/1/Magic Missile.tex}
-  \IncludeSpell[print]{spells/sor/1/Shocking Grasp.tex}
+  \IncludeSpell[print=false]{spells/sor/1/Burning Hands.tex}
+  % not known \IncludeSpell[print=false]{spells/sor/1/Comprehend Languages.tex}
+  \IncludeSpell[print=false]{spells/sor/1/Expeditious Retreat.tex}
+  \IncludeSpell[print=false]{spells/sor/1/Feather Fall.tex}
+  \IncludeSpell[print=false]{spells/sor/1/Grease.tex}
+  \IncludeSpell[print=false]{spells/sor/1/Magic Missile.tex}
+  \IncludeSpell[print=false]{spells/sor/1/Shocking Grasp.tex}
 
-  \IncludeSpell[print]{spells/sor/2/Darkvision.tex}
-  \IncludeSpell[print]{spells/sor/2/Flaming Sphere.tex}
-  \IncludeSpell[print]{spells/sor/2/Glitterdust.tex}
-  \IncludeSpell[print]{spells/sor/2/Knock.tex}
-  \IncludeSpell[print]{spells/sor/2/Scorching Ray.tex}
-  \IncludeSpell[print]{spells/sor/2/See Invisibility.tex}
+  \IncludeSpell[print=false]{spells/sor/2/Darkvision.tex}
+  \IncludeSpell[print=false]{spells/sor/2/Flaming Sphere.tex}
+  \IncludeSpell[print=false]{spells/sor/2/Glitterdust.tex}
+  \IncludeSpell[print=false]{spells/sor/2/Knock.tex}
+  \IncludeSpell[print=false]{spells/sor/2/Scorching Ray.tex}
+  \IncludeSpell[print=false]{spells/sor/2/See Invisibility.tex}
 
-  \IncludeSpell[print]{spells/sor/3/Dispel Magic.tex}
-  \IncludeSpell[print]{spells/sor/3/Fireball.tex}
-  \IncludeSpell[print]{spells/sor/3/Fly.tex}
-  \IncludeSpell[print]{spells/sor/3/Protection from Energy.tex}
-  % not known \IncludeSpell[print]{spells/sor/3/Tiny Hut.tex}
-  \IncludeSpell[print]{spells/sor/3/Tongues.tex}
+  \IncludeSpell[print=false]{spells/sor/3/Dispel Magic.tex} % has back face
+  \IncludeSpell[print=false]{spells/sor/3/Fireball.tex}
+  \IncludeSpell[print=false]{spells/sor/3/Fly.tex}
+  \IncludeSpell[print=false]{spells/sor/3/Protection from Energy.tex}
+  % not known \IncludeSpell[print=false]{spells/sor/3/Tiny Hut.tex}
+  \IncludeSpell[print=false]{spells/sor/3/Tongues.tex}
 
-  \IncludeSpell[print]{spells/sor/4/Black Tentacles.tex}
-  \IncludeSpell[print]{spells/sor/4/Elemental Body I.tex}
-  \IncludeSpell[print]{spells/sor/4/Ice Storm.tex}
-  \IncludeSpell[print]{spells/sor/4/Invisibility, Greater.tex}
-  \IncludeSpell[print]{spells/sor/4/Secure Shelter.tex}
+  \IncludeSpell[print=false]{spells/sor/4/Black Tentacles.tex}
+  \IncludeSpell[print=false]{spells/sor/4/Elemental Body I.tex}
+  \IncludeSpell[print=false]{spells/sor/4/Ice Storm.tex}
+  \IncludeSpell[print=false]{spells/sor/4/Invisibility, Greater.tex}
+  \IncludeSpell[print=false]{spells/sor/4/Secure Shelter.tex}
 
-  \IncludeSpell[print]{spells/sor/5/Elemental Body II.tex}
-  \IncludeSpell[print]{spells/sor/5/Permanency.tex}
-  \IncludeSpell[print]{spells/sor/5/Teleport.tex}
-  \IncludeSpell[print]{spells/sor/5/Transmute Rock to Mud.tex}
-  % not known \IncludeSpell[print]{spells/sor/5/Wall Of Force.tex}
-  \IncludeSpell[print]{spells/sor/5/Wall Of Stone.tex}
+  \IncludeSpell[print=false]{spells/sor/5/Elemental Body II.tex}
+  \IncludeSpell[print=false]{spells/sor/5/Permanency.tex}
+  \IncludeSpell[print=false]{spells/sor/5/Teleport.tex} % has back face
+  \IncludeSpell[print=false]{spells/sor/5/Transmute Rock to Mud.tex}
+  % not known \IncludeSpell[print=false]{spells/sor/5/Wall Of Force.tex}
+  \IncludeSpell[print=false]{spells/sor/5/Wall Of Stone.tex}
 
-  \IncludeSpell[print]{spells/sor/6/Chain Lightning.tex}
-  \IncludeSpell[print]{spells/sor/6/Disintegrate.tex}
-  \IncludeSpell[print]{spells/sor/6/Elemental Body III.tex}
-  \IncludeSpell[print]{spells/sor/6/Freezing Sphere.tex}
+  \IncludeSpell[print=false]{spells/sor/6/Chain Lightning.tex}
+  \IncludeSpell[print=false]{spells/sor/6/Disintegrate.tex}
+  \IncludeSpell[print=false]{spells/sor/6/Elemental Body III.tex}
+  \IncludeSpell[print=false]{spells/sor/6/Freezing Sphere.tex}
 
-  \IncludeSpell[print]{spells/sor/7/Elemental Body IV.tex}
-  \IncludeSpell[print]{spells/sor/7/Mage's Magnificent Mansion.tex}
-  \IncludeSpell[print]{spells/sor/7/Reverse Gravity.tex}
+  \IncludeSpell[print=false]{spells/sor/7/Elemental Body IV.tex}
+  \IncludeSpell[print=false]{spells/sor/7/Mage's Magnificent Mansion.tex}
+  \IncludeSpell[print=false]{spells/sor/7/Reverse Gravity.tex}
 \end{SpellDeck}
 
 %%% usage-specific decks %%%
-\begin{SpellDeck}{damage-dealing}
-  \IncludeSpell[print]{spells/sor/0/Acid Splash.tex}
-  \IncludeSpell[print]{spells/sor/0/Ray of Frost.tex}
-  \IncludeSpell[print]{spells/sor/1/Burning Hands.tex}
-  \IncludeSpell[print]{spells/sor/1/Magic Missile.tex}
-  \IncludeSpell[print]{spells/sor/1/Shocking Grasp.tex}
-  \IncludeSpell[print]{spells/sor/2/Flaming Sphere.tex}
-  \IncludeSpell[print]{spells/sor/2/Scorching Ray.tex}
-  \IncludeSpell[print]{spells/sor/3/Fireball.tex}
-  \IncludeSpell[print]{spells/sor/4/Black Tentacles.tex}
-  \IncludeSpell[print]{spells/sor/4/Ice Storm.tex}
-  \IncludeSpell[print]{spells/sor/6/Chain Lightning.tex}
-  \IncludeSpell[print]{spells/sor/6/Disintegrate.tex}
-  \IncludeSpell[print]{spells/sor/6/Freezing Sphere.tex}
+\begin{SpellDeck}[deckindex=false]{damage-dealing}
+  \IncludeSpell[print=false]{spells/sor/0/Acid Splash.tex}
+  \IncludeSpell[print=false]{spells/sor/0/Ray of Frost.tex}
+  \IncludeSpell[print=false]{spells/sor/1/Burning Hands.tex}
+  \IncludeSpell[print=false]{spells/sor/1/Magic Missile.tex}
+  \IncludeSpell[print=false]{spells/sor/1/Shocking Grasp.tex}
+  \IncludeSpell[print=false]{spells/sor/2/Flaming Sphere.tex}
+  \IncludeSpell[print=false]{spells/sor/2/Scorching Ray.tex}
+  \IncludeSpell[print=false]{spells/sor/3/Fireball.tex}
+  \IncludeSpell[print=false]{spells/sor/4/Black Tentacles.tex}
+  \IncludeSpell[print=false]{spells/sor/4/Ice Storm.tex}
+  \IncludeSpell[print=false]{spells/sor/6/Chain Lightning.tex}
+  \IncludeSpell[print=false]{spells/sor/6/Disintegrate.tex}
+  \IncludeSpell[print=false]{spells/sor/6/Freezing Sphere.tex}
 \end{SpellDeck}
 
-\begin{SpellDeck}{buffs}
-  \IncludeSpell[print]{spells/sor/0/Resistance.tex}
-  \IncludeSpell[print]{spells/sor/1/Expeditious Retreat.tex}
-  \IncludeSpell[print]{spells/sor/2/Darkvision.tex}
-  \IncludeSpell[print]{spells/sor/3/Fly.tex}
-  \IncludeSpell[print]{spells/sor/2/See Invisibility.tex}
-  \IncludeSpell[print]{spells/sor/3/Protection from Energy.tex}
-  \IncludeSpell[print]{spells/sor/4/Invisibility, Greater.tex}
+\begin{SpellDeck}[deckindex=false]{buffs}
+  \IncludeSpell[print=false]{spells/sor/0/Resistance.tex}
+  \IncludeSpell[print=false]{spells/sor/1/Expeditious Retreat.tex}
+  \IncludeSpell[print=false]{spells/sor/2/Darkvision.tex}
+  \IncludeSpell[print=false]{spells/sor/3/Fly.tex}
+  \IncludeSpell[print=false]{spells/sor/2/See Invisibility.tex}
+  \IncludeSpell[print=false]{spells/sor/3/Protection from Energy.tex}
+  \IncludeSpell[print=false]{spells/sor/4/Invisibility, Greater.tex}
 \end{SpellDeck}
 
-\begin{SpellDeck}{utility}
-  \IncludeSpell[print]{spells/sor/0/Dancing Lights.tex}
-  \IncludeSpell[print]{spells/sor/0/Detect Magic.tex}
-  \IncludeSpell[print]{spells/sor/0/Ghost Sound.tex}
-  \IncludeSpell[print]{spells/sor/0/Mage Hand.tex}
-  \IncludeSpell[print]{spells/sor/0/Prestidigitation.tex}
-  \IncludeSpell[print]{spells/sor/0/Read Magic.tex}
-  \IncludeSpell[print]{spells/sor/1/Feather Fall.tex}
-  \IncludeSpell[print]{spells/sor/1/Grease.tex}
-  \IncludeSpell[print]{spells/sor/2/Glitterdust.tex}
-  \IncludeSpell[print]{spells/sor/2/Knock.tex}
-  \IncludeSpell[print]{spells/sor/3/Dispel Magic.tex}
-  \IncludeSpell[print]{spells/sor/3/Tongues.tex}
-  \IncludeSpell[print]{spells/sor/4/Secure Shelter.tex}
-  \IncludeSpell[print]{spells/sor/5/Permanency.tex}
-  \IncludeSpell[print]{spells/sor/5/Teleport.tex}
-  \IncludeSpell[print]{spells/sor/5/Transmute Rock to Mud.tex}
-  \IncludeSpell[print]{spells/sor/5/Wall Of Stone.tex}
-  \IncludeSpell[print]{spells/sor/7/Mage's Magnificent Mansion.tex}
-  \IncludeSpell[print]{spells/sor/7/Reverse Gravity.tex}
+\begin{SpellDeck}[deckindex=false]{utility}
+  \IncludeSpell[print=false]{spells/sor/0/Dancing Lights.tex}
+  \IncludeSpell[print=false]{spells/sor/0/Detect Magic.tex} % has back face
+  \IncludeSpell[print=false]{spells/sor/0/Ghost Sound.tex}
+  \IncludeSpell[print=false]{spells/sor/0/Mage Hand.tex}
+  \IncludeSpell[print=false]{spells/sor/0/Prestidigitation.tex}
+  \IncludeSpell[print=false]{spells/sor/0/Read Magic.tex}
+  \IncludeSpell[print=false]{spells/sor/1/Feather Fall.tex}
+  \IncludeSpell[print=false]{spells/sor/1/Grease.tex}
+  \IncludeSpell[print=false]{spells/sor/2/Glitterdust.tex}
+  \IncludeSpell[print=false]{spells/sor/2/Knock.tex}
+  \IncludeSpell[print=false]{spells/sor/3/Dispel Magic.tex} % has back face
+  \IncludeSpell[print=false]{spells/sor/3/Tongues.tex}
+  \IncludeSpell[print=false]{spells/sor/4/Secure Shelter.tex}
+  \IncludeSpell[print=false]{spells/sor/5/Permanency.tex}
+  \IncludeSpell[print=false]{spells/sor/5/Teleport.tex} % has back face
+  \IncludeSpell[print=false]{spells/sor/5/Transmute Rock to Mud.tex}
+  \IncludeSpell[print=false]{spells/sor/5/Wall Of Stone.tex}
+  \IncludeSpell[print=false]{spells/sor/7/Mage's Magnificent Mansion.tex}
+  \IncludeSpell[print=false]{spells/sor/7/Reverse Gravity.tex}
 \end{SpellDeck}
 
 %% TODO: spell-like abilities
