@@ -339,8 +339,9 @@ latexmk -pvc -pdf src/spellcards.tex
 1. **Paper Size**: Use A4 paper (210mm × 297mm)
 2. **Print Settings**: 
    - Double-sided printing recommended (front and back aligned)
+   - Pro tip: There are actually very few cards with a back face, so most even pages will be empty.  
+     So feel free to get just those pages out of the stack and just print the even pages belonging to those cards.  
    - No scaling (100% size)
-   - Normal quality sufficient
 3. **Cutting**: Follow the cutting guides (thin lines) to get 4 A6 cards (105mm × 148mm) per sheet
 4. **Card Stock**: 200-300 gsm cardstock recommended for durability
 5. **Sleeving**: Standard trading card sleeves (66mm × 92mm) fit A6 cards folded in half
